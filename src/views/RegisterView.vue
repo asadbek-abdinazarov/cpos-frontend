@@ -1,0 +1,382 @@
+<script setup>
+import { ref, onMounted } from 'vue'
+import { useRouter } from 'vue-router'
+import { useI18n } from 'vue-i18n'
+import terminalImg from '@/assets/images/terminal.png'
+
+const { t } = useI18n()
+
+const router = useRouter()
+const form = ref({
+  firstname: '',
+  lastname: '',
+  phone: '',
+  orgType: 'legal', // 'legal' or 'individual'
+  orgName: '',
+  stir: '',
+  password: '',
+  confirmPassword: ''
+})
+
+onMounted(() => {
+  document.title = `CPOS - ${t('nav.register')}`
+})
+
+const handleRegister = () => {
+  if (form.value.password !== form.value.confirmPassword) {
+    alert(t('auth.passwords_mismatch'))
+    return
+  }
+  console.log('Registering:', form.value)
+  // Add registration logic here
+  router.push('/login')
+}
+</script>
+
+<template>
+  <div class="auth-container">
+    <!-- Left Side: Image -->
+    <div class="auth-image-section" data-aos="fade-right" data-aos-duration="1000">
+      <div class="image-overlay"></div>
+      <img :src="terminalImg" alt="CPOS System" class="bg-image" />
+      <div class="image-content">
+        <h2>Join Thousands of Businesses</h2>
+        <p>Start your journey with the most advanced POS system in Uzbekistan.</p>
+      </div>
+    </div>
+
+    <!-- Right Side: Register Form -->
+    <div class="auth-form-section" data-aos="fade-left" data-aos-duration="1000">
+      <div class="form-wrapper">
+        <div class="headers">
+          <h1>{{ t('auth.create_account') }}</h1>
+          <p class="subtitle">{{ t('auth.start_trial_subtitle') }}</p>
+        </div>
+
+        <form @submit.prevent="handleRegister" class="auth-form">
+          <div class="form-row">
+            <div class="form-group">
+              <label for="firstname">{{ t('auth.firstname') }}</label>
+              <input type="text" id="firstname" v-model="form.firstname" required placeholder="John" />
+            </div>
+            <div class="form-group">
+              <label for="lastname">{{ t('auth.lastname') }}</label>
+              <input type="text" id="lastname" v-model="form.lastname" required placeholder="Doe" />
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label for="phone">{{ t('auth.phone') }}</label>
+            <input type="tel" id="phone" v-model="form.phone" required placeholder="+998 90 123 45 67" />
+          </div>
+
+          <div class="form-group">
+            <label>{{ t('auth.org_type') }}</label>
+            <div class="radio-group">
+              <label class="radio-label">
+                <input type="radio" value="legal" v-model="form.orgType" />
+                <span class="radio-custom"></span>
+                {{ t('auth.legal') }}
+              </label>
+              <label class="radio-label">
+                <input type="radio" value="individual" v-model="form.orgType" />
+                <span class="radio-custom"></span>
+                {{ t('auth.individual') }}
+              </label>
+            </div>
+          </div>
+
+          <div class="form-row">
+            <div v-if="form.orgType === 'legal'" class="form-group">
+              <label for="orgName">{{ t('auth.org_name') }}</label>
+              <input type="text" id="orgName" v-model="form.orgName" placeholder="My Company LLC" />
+            </div>
+
+            <div class="form-group">
+              <label for="stir">{{ t('auth.stir') }}</label>
+              <input type="text" id="stir" v-model="form.stir" required placeholder="123456789" />
+            </div>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label for="password">{{ t('auth.password') }}</label>
+              <!-- Fixed: Using type="password" to mask input -->
+              <input type="password" id="password" v-model="form.password" required placeholder="••••••••" />
+            </div>
+            <div class="form-group">
+              <label for="confirmPassword">{{ t('auth.confirm_password') }}</label>
+               <!-- Fixed: Using type="password" to mask input -->
+              <input type="password" id="confirmPassword" v-model="form.confirmPassword" required placeholder="••••••••" />
+            </div>
+          </div>
+
+          <button type="submit" class="btn-primary-auth">{{ t('auth.register_btn') }}</button>
+        </form>
+
+        <div class="form-footer">
+          <p>{{ t('auth.already_account') }} <router-link to="/login" class="link">{{ t('auth.login_link') }}</router-link></p>
+          <router-link to="/" class="back-home-link">
+            <span class="arrow-icon">←</span> {{ t('auth.back_to_home') }}
+          </router-link>
+        </div>
+      </div>
+    </div>
+  </div>
+</template>
+
+<style scoped>
+.auth-container {
+  display: flex;
+  min-height: 100vh;
+  width: 100%;
+  background-color: #FFFFFF;
+}
+
+/* Left Side - Image */
+.auth-image-section {
+  flex: 1;
+  position: relative;
+  background-color: #0F172A;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  overflow: hidden;
+}
+
+.bg-image {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  opacity: 0.6;
+}
+
+.image-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(to top, rgba(15, 23, 42, 0.9), rgba(15, 23, 42, 0.4));
+  z-index: 1;
+}
+
+.image-content {
+  position: relative;
+  z-index: 2;
+  color: white;
+  padding: 4rem;
+  max-width: 600px;
+  text-align: center;
+  margin-bottom: 2rem;
+}
+
+.image-content h2 {
+  font-size: 2.5rem;
+  font-weight: 700;
+  margin-bottom: 1rem;
+  color: white;
+}
+
+.image-content p {
+  font-size: 1.1rem;
+  opacity: 0.9;
+  line-height: 1.6;
+}
+
+/* Right Side - Form */
+.auth-form-section {
+  flex: 1;
+  display: flex;
+  align-items: center; /* Center vertically if content allows, or 'flex-start' with padding */
+  justify-content: center;
+  padding: 2rem;
+  background-color: #FFFFFF;
+  overflow-y: auto; /* Allow scrolling on right side if form is long */
+}
+
+.form-wrapper {
+  width: 100%;
+  max-width: 500px; /* Slightly wider for 2-col inputs */
+  padding: 2rem 0;
+}
+
+.auth-logo {
+  height: 80px;
+  width: auto;
+}
+
+.headers {
+  text-align: center;
+  margin-bottom: 2rem;
+}
+
+.headers h1 {
+  font-size: 2rem;
+  font-weight: 700;
+  color: #0F172A;
+  margin-bottom: 0.5rem;
+}
+
+.subtitle {
+  color: #64748B;
+  font-size: 0.95rem;
+}
+
+/* Form Styles */
+.auth-form {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+}
+
+.form-row {
+  display: flex;
+  gap: 1rem;
+}
+
+.form-row .form-group {
+  flex: 1;
+}
+
+.form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.form-group label {
+  font-size: 0.9rem;
+  font-weight: 500;
+  color: #334155;
+}
+
+.form-group input[type="text"],
+.form-group input[type="email"],
+.form-group input[type="password"],
+.form-group input[type="tel"] {
+  padding: 0.75rem 1rem;
+  border: 1px solid #E2E8F0;
+  border-radius: 8px;
+  font-size: 0.95rem;
+  transition: all 0.2s ease;
+  outline: none;
+}
+
+.form-group input:focus {
+  border-color: #007BFF;
+  box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.1);
+}
+
+/* Radio Group */
+.radio-group {
+  display: flex;
+  gap: 1.5rem;
+  margin-top: 0.25rem;
+}
+
+.radio-label {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  cursor: pointer;
+  font-size: 0.95rem;
+  color: #475569;
+}
+
+.radio-label input {
+  display: none;
+}
+
+.radio-custom {
+  width: 18px;
+  height: 18px;
+  border: 2px solid #CBD5E1;
+  border-radius: 50%;
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
+}
+
+.radio-label input:checked + .radio-custom {
+  border-color: #007BFF;
+}
+
+.radio-label input:checked + .radio-custom::after {
+  content: '';
+  width: 10px;
+  height: 10px;
+  background-color: #007BFF;
+  border-radius: 50%;
+}
+
+.btn-primary-auth {
+  background-color: #007BFF;
+  color: white;
+  padding: 0.85rem;
+  border: none;
+  border-radius: 8px;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+  margin-top: 1rem;
+}
+
+.btn-primary-auth:hover {
+  background-color: #0056b3;
+}
+
+.form-footer {
+  margin-top: 2rem;
+  text-align: center;
+  font-size: 0.95rem;
+  color: #64748B;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  align-items: center;
+}
+
+.link {
+  color: #007BFF;
+  text-decoration: none;
+  font-weight: 600;
+}
+
+.link:hover {
+  text-decoration: underline;
+}
+
+.back-home-link {
+  color: #64748B;
+  text-decoration: none;
+  font-size: 0.9rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  transition: color 0.2s;
+}
+
+.back-home-link:hover {
+  color: #0F172A;
+}
+
+.arrow-icon {
+  font-size: 1.1rem;
+  line-height: 1;
+}
+
+/* Responsive */
+@media (max-width: 900px) {
+  .auth-image-section {
+    display: none;
+  }
+}
+</style>

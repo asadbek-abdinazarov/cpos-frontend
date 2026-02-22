@@ -1,0 +1,211 @@
+{
+  "nav": {
+    "features": "Imkoniyatlar",
+    "hardware": "Uskunalar",
+    "pricing": "Narxlar",
+    "support": "Yordam",
+    "login": "Kirish",
+    "register": "Ro'yxatdan o'tish",
+    "start_trial": "Bepul sinab ko'rish"
+  },
+  "hero": {
+    "title_prefix": "Kichik biznes katta qadamlar",
+    "title_highlight": "CPOS bilan",
+    "subtitle": "Bizning zamonaviy, intuitiv va kuchli Savdo Nuqtasi tizimi bilan biznes jarayonlaringizni soddalashtiring. O'sish uchun ishlab chiqilgan.",
+    "cta": "Bepul sinab ko'rish",
+    "watch_demo": "Videoni ko'rish"
+  },
+
+  "stats": {
+    "active_businesses": "Faol bizneslar",
+    "transactions": "Tranzaksiyalar",
+    "uptime": "Ish vaqti"
+  },
+  "integrations": {
+    "title": "Sevimli vositalaringiz bilan integratsiya",
+    "subtitle": "Biznesingizni boshqarish uchun barcha kerakli tizimlar bilan uzluksiz bog'laning.",
+    "categories": {
+      "payments": "To'lovlar",
+      "state": "Davlat xizmatlari",
+      "accounting": "Buxgalteriya",
+      "delivery": "Yetkazib berish"
+    }
+  },
+  "testimonials": {
+    "title": "Mijozlarimiz fikri",
+    "subtitle": "O'zbekiston bo'ylab yuzlab tadbirkorlar nega CPOS ni tanlashadi.",
+    "list": [
+      {
+        "quote": "CPOS bilan ishlash juda oson. Xodimlarim 15 daqiqada o'rganib olishdi.",
+        "name": "Azizbek T.",
+        "business": "Kiyim do'koni"
+      },
+      {
+        "quote": "Ombor qoldiqlarini nazorat qilish endi muammo emas. Rahmat!",
+        "name": "Malika S.",
+        "business": "Minimarket"
+      },
+      {
+        "quote": "Texnik yordam juda tez ishlaydi. Har qanday savolga javob berishadi.",
+        "name": "Jamshid K.",
+        "business": "Kofe shop"
+      }
+    ]
+  },
+  "features": {
+    "title": "Nega aynan bizning",
+    "title_highlight": "POS?",
+    "subtitle": "Chakana savdo biznesingizni samarali boshqarish uchun barcha kerakli vositalar.",
+    "list": {
+      "inventory": {
+        "title": "Aqlli Ombor",
+        "desc": "Real vaqt rejimida zaxiralarni kuzatish. Kam qolgan mahsulotlar haqida avtomatik ogohlantirishlar."
+      },
+      "analytics": {
+        "title": "Savdo Analitikasi",
+        "desc": "Daromad, eng ko'p sotilgan tovarlar va xodimlar samaradorligi bo'yicha batafsil hisobotlar."
+      },
+      "crm": {
+        "title": "Mijozlar Bazasi (CRM)",
+        "desc": "Mijozlar tarixini kuzatish va sodiq xaridorlarni rag'batlantirish uchun o'rnatilgan tizim."
+      },
+      "offline": {
+        "title": "Oflayn Rejim",
+        "desc": "Internet yo'qolganda ham savdoni davom ettiring. Ma'lumotlar avtomatik sinxronlanadi."
+      }
+    }
+  },
+  "detailed_features": {
+    "title": "Do'koningizni boshqarish uchun barcha narsa",
+    "subtitle": "CPOS O'zbekistondagi kafelar, chakana savdo do'konlari va xizmat ko'rsatish korxonalari uchun operatsiyalarni soddalashtirishga mo'ljallangan.",
+    "analytics": {
+      "title": "Real vaqt rejimida biznes tahlili",
+      "desc": "Bizning keng qamrovli hisobot vositalarimiz bilan ma'lumotlarga asoslangan qarorlar qabul qiling.",
+      "list": ["Savdo samaradorligi hisobotlari", "Foyda marjasi tahlili", "Excel/PDF ga eksport qilish"]
+    },
+    "inventory": {
+      "title": "Aqlli Ombor Boshqaruvi",
+      "desc": "Hech qachon zaxirangiz tugab qolmasin. Tizimimiz zaxiralarni avtomatik kuzatib boradi va ogohlantiradi.",
+      "list": ["Real vaqtda zaxiralarni kuzatish", "Shtrix-kodni qo'llab-quvvatlash", "Ta'minotchilar boshqaruvi"]
+    },
+    "payments": {
+      "title": "Qulay Mahalliy To'lovlar",
+      "desc": "Mijozlaringiz istagan usulda to'lovlarni qabul qiling. O'zbekiston to'lov tizimlari bilan integratsiyalashgan.",
+      "list": ["Payme & Click integratsiyasi", "Avtomatik fiskal cheklar", "QR kod orqali to'lovlar"]
+    }
+  },
+  "hardware": {
+    "title": "Professional Uskunalar",
+    "subtitle": "CPOS uchun mo'ljallangan zamonaviy va ishonchli uskunalar to'plamlari bilan peshtaxtangizni yangilang.",
+    "view_catalog": "To'liq katalogni ko'rish",
+    "request_quote": "Narxni so'rash",
+    "products": {
+      "terminal": { "title": "CPOS Dual Terminal", "desc": "Mijozlar uchun displeyga ega sensorli terminal." },
+      "printer": { "title": "Yuqori tezlikdagi printer", "desc": "Avto-kesgichli ishonchli termal chek printeri." },
+      "scanner": { "title": "Simsiz Skaner", "desc": "Uzoq batareya quvvatiga ega ergonomik 2D shtrix-kod skaneri." }
+    }
+  },
+  "pricing": {
+    "title": "Oddiy va shaffof narxlar",
+    "monthly": "Oylik",
+    "annual": "Yillik",
+    "save": "20% tejang",
+    "popular": "OMMABOP",
+    "plans": {
+      "starter": {
+        "name": "Boshlang'ich",
+        "desc": "Endi ish boshlagan kichik do'konlar uchun.",
+        "btn": "Boshlash",
+        "features": ["1 Kassa", "Asosiy hisobotlar", "500 tagacha mahsulot"]
+      },
+      "growth": {
+        "name": "O'sish",
+        "desc": "Xodimlarga ega o'sib borayotgan bizneslar uchun.",
+        "btn": "Bepul sinab ko'rish",
+        "features": ["2 Kassa", "Kengaytirilgan tahlil", "Cheksiz mahsulotlar", "Xodimlarni boshqarish"]
+      },
+      "enterprise": {
+        "name": "Korporativ",
+        "desc": "Tarmoqlar va franshizalar uchun.",
+        "price": "Kelishilgan",
+        "btn": "Sotuv bo'limi bilan bog'lanish",
+        "features": ["Cheksiz kassalar", "Ko'p joylashuvli sinxronizatsiya", "API kirish", "Shaxsiy yordam menejeri"]
+      }
+    }
+  },
+
+  "faq": {
+    "title": "Ko'p so'raladigan savollar",
+    "subtitle": "Sizni qiziqtirgan savollarga javoblar.",
+    "list": [
+      {
+        "q": "Internet bo'lmasa dastur ishlaydimi?",
+        "a": "Ha, albatta. Internet paydo bo'lganda ma'lumotlar avtomatik sinxronlanadi."
+      },
+      {
+        "q": "Fiskal printer bilan ishlaydimi?",
+        "a": "Ha, biz barcha mashhur fiskal printerlar va terminallar bilan integratsiya qilinganmiz."
+      },
+      {
+        "q": "Shartnoma tuzish shartmi?",
+        "a": "Siz oylik to'lov asosida istalgan vaqtda xizmatdan foydalanishni to'xtatishingiz mumkin."
+      },
+      {
+        "q": "Texnik yordam bormi?",
+        "a": "Ha, biznes vaqti davomida telefon va Telegram orqali qo'llab-quvvatlaymiz."
+      }
+    ]
+  },
+  "contact": {
+    "title": "Biz bilan bog'laning",
+    "subtitle": "Savollaringiz bormi? Bizga yozing yoki qo'ng'iroq qiling.",
+    "form": {
+      "name": "Ismingiz",
+      "phone": "Telefon raqamingiz",
+      "message": "Xabar",
+      "submit": "Yuborish",
+      "success": "Xabaringiz muvaffaqiyatli yuborildi!",
+      "placeholder_name": "Ismingizni kiriting",
+      "placeholder_phone": "+998 90 123 45 67",
+      "placeholder_message": "Savolingiz yoki taklifingiz..."
+    }
+  },
+  "auth": {
+    "welcome_back": "Xush kelibsiz",
+    "sign_in_subtitle": "Kirish uchun ma'lumotlaringizni kiriting.",
+    "email": "Email manzili",
+    "email_placeholder": "Emailingizni kiriting",
+    "password": "Parol",
+    "remember_me": "Eslab qolish",
+    "forgot_password": "Parolni unutdingizmi?",
+    "login_btn": "Kirish",
+    "no_account": "Hisobingiz yo'qmi?",
+    "register_link": "Ro'yxatdan o'tish",
+    "create_account": "Hisob yaratish",
+    "start_trial_subtitle": "14 kunlik bepul sinovni bugun boshlang.",
+    "firstname": "Ism",
+    "lastname": "Familiya",
+    "phone": "Telefon raqam",
+    "org_type": "Tashkilot turi",
+    "legal": "Yuridik shaxs",
+    "individual": "Jismoniy shaxs",
+    "org_name": "Tashkilot nomi",
+    "stir": "STIR (INN)",
+    "confirm_password": "Parolni tasdiqlang",
+    "register_btn": "Ro'yxatdan o'tish",
+    "already_account": "Allaqachon hisobingiz bormi?",
+    "login_link": "Kirish",
+    "passwords_mismatch": "Parollar mos kelmadi!",
+    "back_to_home": "Bosh sahifaga qaytish"
+  },
+  "footer": {
+    "desc": "Chakana savdo biznesingizni yangi avlod bulut texnologiyalari bilan kuchaytiring.",
+    "product": "Mahsulot",
+    "company": "Kompaniya",
+    "contact": "Aloqa",
+    "about": "Biz haqimizda",
+    "privacy": "Maxfiylik siyosati",
+    "terms": "Foydalanish shartlari",
+    "rights": "Barcha huquqlar himoyalangan."
+  }
+}

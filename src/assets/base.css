@@ -1,0 +1,69 @@
+/* Color Palette */
+:root {
+  --color-primary: #007BFF;       /* Vibrant Blue */
+  --color-primary-dark: #0056b3;  /* Darker Blue for hover states */
+  --color-secondary: #000000;     /* Deep Black for contrast */
+  --color-background: #FFFFFF;    /* Clean White background */
+  --color-surface: #F8F9FA;       /* Light Gray for sections */
+  --color-text-main: #212529;     /* Dark Gray for primary text */
+  --color-text-light: #6c757d;    /* Muted Gray for secondary text */
+  --color-white: #FFFFFF;
+  --color-black: #000000;
+
+  --font-family-base: 'Poppins', sans-serif;
+
+  --shadow-sm: 0 2px 4px rgba(0,0,0,0.05);
+  --shadow-md: 0 4px 6px rgba(0,0,0,0.1);
+  --shadow-lg: 0 10px 15px rgba(0,0,0,0.1);
+}
+
+/* Reset & Base Styles */
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  font-family: var(--font-family-base);
+  background-color: var(--color-background);
+  color: var(--color-text-main);
+  line-height: 1.6;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  width: 100%;
+  overflow-x: hidden;
+}
+
+h1, h2, h3, h4, h5, h6 {
+  font-weight: 600;
+  line-height: 1.2;
+  margin-bottom: 1rem;
+  color: var(--color-secondary);
+}
+
+a {
+  text-decoration: none;
+  color: inherit;
+  transition: color 0.3s ease;
+}
+
+ul {
+  list-style: none;
+}
+
+img {
+  max-width: 100%;
+  height: auto;
+  display: block;
+}
+
+button {
+  font-family: inherit;
+  cursor: pointer;
+  border: none;
+  background: none;
+}
