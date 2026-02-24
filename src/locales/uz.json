@@ -6,7 +6,10 @@
     "support": "Yordam",
     "login": "Kirish",
     "register": "Ro'yxatdan o'tish",
-    "start_trial": "Bepul sinab ko'rish"
+    "start_trial": "Bepul sinab ko'rish",
+    "dashboard": "Kabinetga o'tish",
+    "logout": "Chiqish",
+    "success-logout": "Chiqish muvaffaqiyatli bo'ldi!"
   },
   "hero": {
     "title_prefix": "Kichik biznes katta qadamlar",
@@ -196,7 +199,20 @@
     "already_account": "Allaqachon hisobingiz bormi?",
     "login_link": "Kirish",
     "passwords_mismatch": "Parollar mos kelmadi!",
-    "back_to_home": "Bosh sahifaga qaytish"
+    "back_to_home": "Bosh sahifaga qaytish",
+    "username": "Foydalanuvchi nomi",
+    "email_register": "Email manzili",
+    "org_address": "Tashkilot manzili",
+    "org_phone": "Tashkilot telefoni",
+    "register_error": "Ro'yxatdan o'tishda xatolik yuz berdi",
+    "registering": "Ro'yxatdan o'tilmoqda...",
+    "login_error": "Kirish paytida xatolik yuz berdi",
+    "logging_in": "Kirilmoqda...",
+    "username_placeholder": "Foydalanuvchi nomini kiriting",
+    "login_success": "Muvaffaqiyatli kirdingiz!",
+    "register_success": "Muvaffaqiyatli ro'yxatdan o'tdingiz!",
+    "session_restored": "Sessiya muvaffaqiyatli yangilandi",
+    "session_expired": "Sessiya tugadi, tizimga qayta kiring"
   },
   "footer": {
     "desc": "Chakana savdo biznesingizni yangi avlod bulut texnologiyalari bilan kuchaytiring.",

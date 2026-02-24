@@ -1,39 +1,137 @@
 <script setup>
-import { ref } from 'vue'
+import { ref, onMounted } from 'vue'
 import {
   User,
   Lock,
   Bell,
   CreditCard,
-  Save,
-  Camera,
-  Shield,
-  /*
-  Globe,
-  Moon,
-  Mail
-  */
+  Building2,
+  Store,
+  Package,
+  Pencil,
+  Check,
+  X as XIcon,
+  Mail,
+  Phone,
+  Calendar,
+  Clock,
+  MapPin,
+  Hash,
+  Activity,
+  Save
 } from 'lucide-vue-next'
+import { getUserProfile } from '@/services/api'
+import { useNotification } from '@/composables/useNotification'
 
-const activeTab = ref('general')
+const { showNotification } = useNotification()
 
-const tabs = [
-  { id: 'general', label: 'General', icon: User },
+const activeTab = ref('personal')
+
+// Tab configuration
+const availableTabs = ref([
+  { id: 'personal', label: 'Personal Info', icon: User },
+  { id: 'organization', label: 'Organization', icon: Building2 },
+  { id: 'shop', label: 'Shop', icon: Store },
+  { id: 'warehouse', label: 'Warehouse', icon: Package },
   { id: 'security', label: 'Security', icon: Lock },
-  { id: 'notifications', label: 'Notifications', icon: Bell },
-  { id: 'billing', label: 'Billing', icon: CreditCard },
-]
+  { id: 'notifications', label: 'Notifications', icon: Bell }
+])
 
-// Mock Data Models
-const generalSettings = ref({
-  storeName: 'My Awesome Store',
-  email: 'admin@cpos.uz',
-  phone: '+998 90 123 45 67',
-  currency: 'USD',
-  timezone: 'UTC+5 (Tashkent)',
-  language: 'English'
+const userData = ref({
+  username: '',
+  firstName: '',
+  lastName: '',
+  phone: '',
+  email: '',
+  isActive: false,
+  createdAt: '',
+  updatedAt: '',
+  roles: [],
+  organization: null,
+  shop: null
 })
 
+const editableUser = ref({})
+const isEditing = ref(false)
+
+const fetchProfile = async () => {
+  try {
+    const res = await getUserProfile()
+    if (res.data && res.data.success) {
+      const u = res.data.data
+      userData.value = {
+        username: u.username || '',
+        firstName: u.firstName || '',
+        lastName: u.lastName || '',
+        phone: u.phone || '',
+        email: u.email || '',
+        isActive: !!u.isActive,
+        createdAt: u.createdAt || '',
+        updatedAt: u.updatedAt || '',
+        roles: u.roles ? u.roles.map(r => ({
+          name: r.name,
+          permissions: r.permissions ? r.permissions.map(p => ({
+            name: p.name
+          })) : []
+        })) : [],
+        organization: u.organization ? {
+          name: u.organization.name || '',
+          stir: u.organization.stir || '',
+          address: u.organization.address || '',
+          phone: u.organization.phone || '',
+          isActive: !!u.organization.isActive
+        } : null,
+        shop: u.shop ? {
+          name: u.shop.name || '',
+          address: u.shop.address || '',
+          phone: u.shop.phone || '',
+          isActive: !!u.shop.isActive,
+          warehouse: u.shop.warehouse ? {
+            name: u.shop.warehouse.name || '',
+            address: u.shop.warehouse.address || '',
+            phone: u.shop.warehouse.phone || '',
+            isActive: !!u.shop.warehouse.isActive
+          } : null
+        } : null
+      }
+
+      // Filter tabs based on available data
+      availableTabs.value = [
+        { id: 'personal', label: 'Personal Info', icon: User },
+        ...(userData.value.organization ? [{ id: 'organization', label: 'Organization', icon: Building2 }] : []),
+        ...(userData.value.shop ? [{ id: 'shop', label: 'Shop Details', icon: Store }] : []),
+        ...(userData.value.shop && userData.value.shop.warehouse ? [{ id: 'warehouse', label: 'Warehouse', icon: Package }] : []),
+        { id: 'security', label: 'Security', icon: Lock },
+        { id: 'notifications', label: 'Notifications', icon: Bell }
+      ]
+    }
+  } catch (error) {
+    console.error('Failed to fetch user profile:', error)
+    showNotification({ type: 'error', message: 'Failed to load profile data.' })
+  }
+}
+
+onMounted(() => {
+  fetchProfile()
+})
+
+const startEditing = () => {
+  editableUser.value = JSON.parse(JSON.stringify(userData.value))
+  isEditing.value = true
+}
+
+const cancelEditing = () => {
+  isEditing.value = false
+}
+
+const saveChanges = () => {
+  // Mock save API behavior
+  Object.assign(userData.value, editableUser.value)
+  isEditing.value = false
+  showNotification({ type: 'success', message: 'Profile updated successfully!' })
+}
+
+// Mock Data for other tabs
 const securitySettings = ref({
   currentPassword: '',
   newPassword: '',
@@ -49,9 +147,8 @@ const notificationSettings = ref({
   pushNotifications: true
 })
 
-const saveSettings = () => {
-  // Mock save functionality
-  alert('Settings saved successfully!')
+const saveOtherSettings = () => {
+  showNotification({ type: 'success', message: 'Settings saved successfully!' })
 }
 </script>
 
@@ -62,15 +159,17 @@ const saveSettings = () => {
       <p class="text-subtitle">Manage your account and store preferences</p>
     </div>
 
+  
+
     <div class="settings-container">
       <!-- Sidebar / Tabs -->
-      <div class="settings-sidebar">
+      <div class="settings-sidebar card">
         <button
-          v-for="tab in tabs"
+          v-for="tab in availableTabs"
           :key="tab.id"
           class="tab-btn"
           :class="{ active: activeTab === tab.id }"
-          @click="activeTab = tab.id"
+          @click="activeTab = tab.id; isEditing = false"
         >
           <component :is="tab.icon" class="tab-icon" />
           {{ tab.label }}
@@ -80,101 +179,224 @@ const saveSettings = () => {
       <!-- Content Area -->
       <div class="settings-content card">
         
-        <!-- General Tab -->
-        <div v-if="activeTab === 'general'" class="tab-pane">
+        <!-- Personal Info Tab -->
+        <div v-if="activeTab === 'personal'" class="tab-pane">
           <div class="pane-header">
-            <h2>General Information</h2>
-            <p>Update your store's basic information.</p>
-          </div>
-
-          <div class="form-group avatar-section">
-            <div class="avatar-wrapper">
-              <span class="avatar-placeholder">S</span>
-              <button class="upload-btn">
-                <Camera class="icon-sm" />
-              </button>
+            <div class="header-titles">
+               <h2>Personal Information</h2>
+               <p>Update your personal details and contact info.</p>
             </div>
-            <div class="avatar-info">
-              <h3>Store Logo</h3>
-              <p>Recommended size: 500x500px</p>
+            <div class="card-actions">
+               <button v-if="!isEditing" class="action-btn edit" @click="startEditing">
+                 <Pencil class="icon-sm" /> Edit
+               </button>
+               <div v-else class="action-group">
+                 <button class="action-btn cancel" @click="cancelEditing"><XIcon class="icon-sm" /> Cancel</button>
+                 <button class="action-btn save" @click="saveChanges"><Check class="icon-sm" /> Save</button>
+               </div>
             </div>
           </div>
 
-          <form @submit.prevent="saveSettings" class="settings-form">
-            <div class="form-row">
-              <div class="form-group">
-                <label>Store Name</label>
-                <input v-model="generalSettings.storeName" type="text" class="input-field" />
-              </div>
-              <div class="form-group">
-                <label>Contact Email</label>
-                <input v-model="generalSettings.email" type="email" class="input-field" />
-              </div>
+          <div class="card-body grid-2">
+            <div class="data-group">
+              <label><User class="label-icon"/> Username</label>
+              <p v-if="!isEditing">{{ userData.username || '—' }}</p>
+              <input v-else v-model="editableUser.username" class="premium-input" />
             </div>
+            <div class="data-group">
+              <label><Activity class="label-icon"/> Status</label>
+              <span class="status-badge sm" :class="userData.isActive ? 'badge-success' : 'badge-danger'">
+                    {{ userData.isActive ? 'Active' : 'Inactive' }}
+              </span>
+            </div>
+            <div class="data-group">
+              <label><User class="label-icon"/> First Name</label>
+              <p v-if="!isEditing">{{ userData.firstName || '—' }}</p>
+              <input v-else v-model="editableUser.firstName" class="premium-input" />
+            </div>
+            <div class="data-group">
+              <label><User class="label-icon"/> Last Name</label>
+              <p v-if="!isEditing">{{ userData.lastName || '—' }}</p>
+              <input v-else v-model="editableUser.lastName" class="premium-input" />
+            </div>
+            <div class="data-group">
+              <label><Phone class="label-icon"/> Phone Number</label>
+              <p v-if="!isEditing">{{ userData.phone || '—' }}</p>
+              <input v-else v-model="editableUser.phone" class="premium-input" />
+            </div>
+            <div class="data-group">
+              <label><Mail class="label-icon"/> Email Address</label>
+              <p v-if="!isEditing">{{ userData.email || '—' }}</p>
+              <input v-else v-model="editableUser.email" class="premium-input" />
+            </div>
+             <div class="data-group">
+              <label><Calendar class="label-icon"/> Created At</label>
+              <p class="text-subtle">{{ userData.createdAt ? new Date(userData.createdAt).toLocaleString('uz-UZ') : '—' }}</p>
+            </div>
+            <div class="data-group">
+              <label><Clock class="label-icon"/> Updated At</label>
+              <p class="text-subtle">{{ userData.updatedAt ? new Date(userData.updatedAt).toLocaleString('uz-UZ') : '—' }}</p>
+            </div>
+          </div>
+        </div>
 
-            <div class="form-row">
-              <div class="form-group">
-                <label>Phone Number</label>
-                <input v-model="generalSettings.phone" type="text" class="input-field" />
-              </div>
-              <div class="form-group">
-                <label>Currency</label>
-                <select v-model="generalSettings.currency" class="input-field">
-                  <option value="USD">USD ($)</option>
-                  <option value="UZS">UZS (so'm)</option>
-                  <option value="EUR">EUR (€)</option>
-                </select>
-              </div>
+        <!-- Organization Tab -->
+        <div v-if="activeTab === 'organization' && userData.organization" class="tab-pane">
+          <div class="pane-header">
+             <div class="header-titles">
+                <h2>Organization Details</h2>
+                <p>Manage your company's profile information.</p>
+             </div>
+             <div class="card-actions">
+               <button v-if="!isEditing" class="action-btn edit" @click="startEditing">
+                 <Pencil class="icon-sm" /> Edit
+               </button>
+               <div v-else class="action-group">
+                 <button class="action-btn cancel" @click="cancelEditing"><XIcon class="icon-sm" /> Cancel</button>
+                 <button class="action-btn save" @click="saveChanges"><Check class="icon-sm" /> Save</button>
+               </div>
             </div>
+          </div>
 
-             <div class="form-row">
-              <div class="form-group">
-                <label>Timezone</label>
-                <select v-model="generalSettings.timezone" class="input-field">
-                  <option>UTC+5 (Tashkent)</option>
-                  <option>UTC+0 (London)</option>
-                  <option>UTC-5 (New York)</option>
-                </select>
-              </div>
-              <div class="form-group">
-                <label>Language</label>
-                <select v-model="generalSettings.language" class="input-field">
-                  <option>English</option>
-                  <option>Uzbek</option>
-                  <option>Russian</option>
-                </select>
-              </div>
+          <div class="card-body grid-2">
+            <div class="data-group col-span-2">
+              <label><Building2 class="label-icon"/> Organization Name</label>
+              <h4 class="highlight-text" v-if="!isEditing">{{ userData.organization.name || '—' }}</h4>
+              <input v-else v-model="editableUser.organization.name" class="premium-input" />
             </div>
+            <div class="data-group">
+              <label><Hash class="label-icon"/> STIR</label>
+              <p class="mono-text" v-if="!isEditing">{{ userData.organization.stir || '—' }}</p>
+              <input v-else v-model="editableUser.organization.stir" class="premium-input mono-text" />
+            </div>
+            <div class="data-group">
+              <label><Phone class="label-icon"/> Org Phone</label>
+              <p v-if="!isEditing">{{ userData.organization.phone || '—' }}</p>
+              <input v-else v-model="editableUser.organization.phone" class="premium-input" />
+            </div>
+            <div class="data-group col-span-2">
+              <label><MapPin class="label-icon"/> Address</label>
+              <p v-if="!isEditing">{{ userData.organization.address || '—' }}</p>
+              <input v-else v-model="editableUser.organization.address" class="premium-input" />
+            </div>
+            <div class="data-group">
+              <label><Activity class="label-icon"/> Status</label>
+              <span class="status-badge sm" :class="userData.organization.isActive ? 'badge-success' : 'badge-danger'">
+                {{ userData.organization.isActive ? 'Active' : 'Inactive' }}
+              </span>
+            </div>
+          </div>
+        </div>
 
-            <div class="form-actions">
-              <button type="submit" class="btn btn-primary">
-                <Save class="icon-sm" /> Save Changes
-              </button>
+        <!-- Shop Tab -->
+        <div v-if="activeTab === 'shop' && userData.shop" class="tab-pane">
+          <div class="pane-header">
+             <div class="header-titles">
+                <h2>Shop Details</h2>
+                <p>Information about your primary store branch.</p>
+             </div>
+             <div class="card-actions">
+               <button v-if="!isEditing" class="action-btn edit" @click="startEditing">
+                 <Pencil class="icon-sm" /> Edit
+               </button>
+               <div v-else class="action-group">
+                 <button class="action-btn cancel" @click="cancelEditing"><XIcon class="icon-sm" /> Cancel</button>
+                 <button class="action-btn save" @click="saveChanges"><Check class="icon-sm" /> Save</button>
+               </div>
             </div>
-          </form>
+          </div>
+
+          <div class="card-body grid-2">
+             <div class="data-group col-span-2">
+                <label><Store class="label-icon"/> Shop Name</label>
+                <h4 class="highlight-text" v-if="!isEditing">{{ userData.shop.name || '—' }}</h4>
+                <input v-else v-model="editableUser.shop.name" class="premium-input" />
+              </div>
+              <div class="data-group">
+                <label><Phone class="label-icon"/> Phone</label>
+                <p v-if="!isEditing">{{ userData.shop.phone || '—' }}</p>
+                <input v-else v-model="editableUser.shop.phone" class="premium-input" />
+              </div>
+              <div class="data-group">
+                <label><Activity class="label-icon"/> Status</label>
+                <span class="status-badge sm" :class="userData.shop.isActive ? 'badge-success' : 'badge-danger'">
+                  {{ userData.shop.isActive ? 'Active' : 'Inactive' }}
+                </span>
+              </div>
+              <div class="data-group col-span-2">
+                <label><MapPin class="label-icon"/> Address</label>
+                <p v-if="!isEditing">{{ userData.shop.address || '—' }}</p>
+                <input v-else v-model="editableUser.shop.address" class="premium-input" />
+              </div>
+          </div>
+        </div>
+
+        <!-- Warehouse Tab -->
+        <div v-if="activeTab === 'warehouse' && userData.shop?.warehouse" class="tab-pane">
+          <div class="pane-header">
+             <div class="header-titles">
+                <h2>Warehouse Details</h2>
+                <p>Information about your associated warehouse storage.</p>
+             </div>
+             <div class="card-actions">
+               <button v-if="!isEditing" class="action-btn edit" @click="startEditing">
+                 <Pencil class="icon-sm" /> Edit
+               </button>
+               <div v-else class="action-group">
+                 <button class="action-btn cancel" @click="cancelEditing"><XIcon class="icon-sm" /> Cancel</button>
+                 <button class="action-btn save" @click="saveChanges"><Check class="icon-sm" /> Save</button>
+               </div>
+            </div>
+          </div>
+
+          <div class="card-body grid-2">
+              <div class="data-group col-span-2">
+                <label><Package class="label-icon"/> Warehouse Name</label>
+                <h4 class="highlight-text" v-if="!isEditing">{{ userData.shop.warehouse.name || '—' }}</h4>
+                <input v-else v-model="editableUser.shop.warehouse.name" class="premium-input" />
+              </div>
+              <div class="data-group">
+                <label><Phone class="label-icon"/> Phone</label>
+                <p v-if="!isEditing">{{ userData.shop.warehouse.phone || '—' }}</p>
+                <input v-else v-model="editableUser.shop.warehouse.phone" class="premium-input" />
+              </div>
+              <div class="data-group">
+                <label><Activity class="label-icon"/> Status</label>
+                 <span class="status-badge sm" :class="userData.shop.warehouse.isActive ? 'badge-success' : 'badge-danger'">
+                  {{ userData.shop.warehouse.isActive ? 'Active' : 'Inactive' }}
+                </span>
+              </div>
+              <div class="data-group col-span-2">
+                <label><MapPin class="label-icon"/> Address</label>
+                <p v-if="!isEditing">{{ userData.shop.warehouse.address || '—' }}</p>
+                <input v-else v-model="editableUser.shop.warehouse.address" class="premium-input" />
+              </div>
+          </div>
         </div>
 
         <!-- Security Tab -->
         <div v-if="activeTab === 'security'" class="tab-pane">
           <div class="pane-header">
-            <h2>Security Settings</h2>
-            <p>Manage your password and authentication methods.</p>
+            <div class="header-titles">
+               <h2>Security Settings</h2>
+               <p>Manage your password and authentication methods.</p>
+            </div>
           </div>
 
-          <form @submit.prevent="saveSettings" class="settings-form">
+          <form @submit.prevent="saveOtherSettings" class="settings-form">
             <div class="form-group">
               <label>Current Password</label>
-              <input v-model="securitySettings.currentPassword" type="password" class="input-field" placeholder="••••••••" />
+              <input v-model="securitySettings.currentPassword" type="password" class="premium-input" placeholder="••••••••" />
             </div>
 
             <div class="form-row">
               <div class="form-group">
                 <label>New Password</label>
-                <input v-model="securitySettings.newPassword" type="password" class="input-field" placeholder="••••••••" />
+                <input v-model="securitySettings.newPassword" type="password" class="premium-input" placeholder="••••••••" />
               </div>
               <div class="form-group">
                 <label>Confirm New Password</label>
-                <input v-model="securitySettings.confirmPassword" type="password" class="input-field" placeholder="••••••••" />
+                <input v-model="securitySettings.confirmPassword" type="password" class="premium-input" placeholder="••••••••" />
               </div>
             </div>
 
@@ -183,7 +405,7 @@ const saveSettings = () => {
             <div class="toggle-section">
               <div class="toggle-info">
                 <div class="toggle-header">
-                  <Shield class="icon-md text-primary" />
+                  <Lock class="icon-md text-primary" />
                   <h3>Two-Factor Authentication</h3>
                 </div>
                 <p>Add an extra layer of security to your account.</p>
@@ -205,8 +427,10 @@ const saveSettings = () => {
         <!-- Notifications Tab -->
          <div v-if="activeTab === 'notifications'" class="tab-pane">
           <div class="pane-header">
-            <h2>Notifications</h2>
-            <p>Choose what you want to be notified about.</p>
+            <div class="header-titles">
+               <h2>Notifications</h2>
+               <p>Choose what you want to be notified about.</p>
+            </div>
           </div>
 
           <div class="notification-group">
@@ -248,20 +472,10 @@ const saveSettings = () => {
           </div>
 
           <div class="form-actions">
-             <button @click="saveSettings" class="btn btn-primary">
+             <button @click="saveOtherSettings" class="btn btn-primary">
                 <Save class="icon-sm" /> Save Preferences
               </button>
           </div>
-        </div>
-
-        <!-- Billing (Placeholder) -->
-        <div v-if="activeTab === 'billing'" class="tab-pane">
-           <div class="empty-state">
-             <CreditCard class="empty-icon" />
-             <h3>Billing & Plans</h3>
-             <p>Billing management is coming soon.</p>
-             <button class="btn btn-outline">Contact Support</button>
-           </div>
         </div>
 
       </div>
@@ -279,7 +493,7 @@ const saveSettings = () => {
 }
 
 .page-header {
-  margin-bottom: 1rem;
+  margin-bottom: 0.5rem;
 }
 
 .page-title {
@@ -294,29 +508,92 @@ const saveSettings = () => {
   font-size: 0.95rem;
 }
 
+
+.status-indicator {
+  position: absolute;
+  bottom: 8px;
+  right: 8px;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  border: 4px solid #2563EB;
+}
+
+.status-indicator.active { background-color: #10B981; }
+.status-indicator.inactive { background-color: #EF4444; }
+
+.hero-text {
+  color: white;
+}
+
+.user-fullname {
+  font-size: 1.5rem;
+  margin: 0 0 0.2rem 0;
+  font-weight: 700;
+}
+
+.user-username {
+  font-size: 0.95rem;
+  opacity: 0.8;
+  margin: 0 0 1rem 0;
+}
+
+.user-badges {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.role-badge {
+  background: rgba(255, 255, 255, 0.2);
+  padding: 0.25rem 0.8rem;
+  border-radius: 99px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  backdrop-filter: blur(4px);
+}
+
+.status-badge {
+  padding: 0.25rem 0.8rem;
+  border-radius: 99px;
+  font-size: 0.85rem;
+  font-weight: 600;
+}
+
+.badge-success { background: #DCFCE7; color: #166534; }
+.badge-danger { background: #FEE2E2; color: #991B1B; }
+
+/* Main Settings Layout */
 .settings-container {
   display: flex;
   gap: 2rem;
   align-items: flex-start;
 }
 
+.card {
+  background: white;
+  border-radius: 16px;
+  border: 1px solid #F1F5F9;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+}
+
 /* Sidebar */
 .settings-sidebar {
-  width: 250px;
+  width: 260px;
   display: flex;
   flex-direction: column;
-  gap: 0.5rem;
   flex-shrink: 0;
+  padding: 1rem;
+  gap: 0.25rem;
 }
 
 .tab-btn {
   display: flex;
   align-items: center;
   gap: 0.75rem;
-  padding: 0.75rem 1rem;
+  padding: 0.85rem 1rem;
   background: transparent;
   border: none;
-  border-radius: 8px;
+  border-radius: 10px;
   color: #64748B;
   font-weight: 500;
   cursor: pointer;
@@ -325,7 +602,7 @@ const saveSettings = () => {
 }
 
 .tab-btn:hover {
-  background-color: #F1F5F9;
+  background-color: #F8FAFC;
   color: #0F172A;
 }
 
@@ -343,15 +620,11 @@ const saveSettings = () => {
 /* Content Area */
 .settings-content {
   flex: 1;
-  background: white;
-  border-radius: 16px;
-  border: 1px solid #F1F5F9;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
-  min-height: 400px;
+  min-height: 480px;
 }
 
 .tab-pane {
-  padding: 2rem;
+  padding: 2.5rem;
   animation: fadeIn 0.3s ease;
 }
 
@@ -361,216 +634,212 @@ const saveSettings = () => {
 }
 
 .pane-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
   margin-bottom: 2rem;
-  border-bottom: 1px solid #F1F5F9;
-  padding-bottom: 1rem;
+  border-bottom: 2px solid #F8FAFC;
+  padding-bottom: 1.5rem;
 }
 
-.pane-header h2 {
+.header-titles h2 {
+  font-size: 1.4rem;
+  font-weight: 700;
+  color: #0F172A;
+  margin: 0 0 0.25rem 0;
+}
+
+.header-titles p {
+  color: #64748B;
+  font-size: 0.95rem;
+  margin: 0;
+}
+
+/* Edit actions */
+.card-actions {
+  display: flex;
+  gap: 0.5rem;
+}
+.action-group {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.action-btn {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-weight: 600;
+  padding: 0.5rem 1rem;
+  border-radius: 8px;
+  font-size: 0.9rem;
+  cursor: pointer;
+  transition: all 0.2s;
+  border: 1px solid #E2E8F0;
+  background: white;
+  color: #64748B;
+}
+
+.action-btn.edit:hover { background: #F8FAFC; color: #2563EB; border-color: #CBD5E1; }
+.action-btn.save { background: #2563EB; color: white; border-color: #2563EB; }
+.action-btn.save:hover { background: #1D4ED8; }
+.action-btn.cancel:hover { background: #FEF2F2; color: #EF4444; border-color: #FCA5A5; }
+
+/* Data Grid */
+.grid-2 {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 2rem;
+}
+
+.col-span-2 { grid-column: span 2; }
+
+.data-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+}
+
+.data-group label {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: #94A3B8;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.label-icon { width: 14px; height: 14px; stroke-width: 2.5; }
+
+.data-group p {
+  margin: 0;
+  font-size: 1.05rem;
+  font-weight: 500;
+  color: #1E293B;
+  word-break: break-word;
+}
+
+.data-group .highlight-text {
+  margin: 0;
   font-size: 1.25rem;
   font-weight: 700;
   color: #0F172A;
-  margin-bottom: 0.5rem;
 }
 
-.pane-header p {
-  color: #64748B;
-  font-size: 0.9rem;
+.data-group .text-subtle { color: #64748B; }
+.data-group .mono-text { font-family: 'Courier New', Courier, monospace; letter-spacing: 1px; font-weight: 600;}
+
+/* Input edit mode */
+.premium-input {
+  width: 100%;
+  padding: 0.75rem 1rem;
+  background: #F8FAFC;
+  border: 1px solid #CBD5E1;
+  border-radius: 8px;
+  font-size: 1rem;
+  color: #0F172A;
+  font-weight: 500;
+  transition: all 0.2s ease;
+  font-family: inherit;
 }
 
-/* Forms */
+.premium-input:focus {
+  outline: none;
+  background: white;
+  border-color: #3B82F6;
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.15);
+}
+
+/* Forms (Security, Notifications) */
 .settings-form {
   display: flex;
   flex-direction: column;
   gap: 1.5rem;
 }
-
 .form-group {
   display: flex;
   flex-direction: column;
   gap: 0.5rem;
   flex: 1;
 }
-
 .form-row {
   display: flex;
   gap: 1.5rem;
 }
 
-label {
+.form-group label {
   font-size: 0.9rem;
-  font-weight: 500;
+  font-weight: 600;
   color: #334155;
 }
 
-.input-field {
-  padding: 0.6rem 1rem;
-  border: 1px solid #E2E8F0;
-  border-radius: 8px;
-  font-size: 0.95rem;
-  color: #0F172A;
-  background: white;
-  outline: none;
-  transition: border-color 0.2s;
-}
-
-.input-field:focus {
-  border-color: #2563EB;
-  box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.1);
-}
-
-/* Avatar Section */
-.avatar-section {
-  display: flex;
-  flex-direction: row;
-  align-items: center;
-  gap: 1.5rem;
-  margin-bottom: 1rem;
-}
-
-.avatar-wrapper {
-  position: relative;
-  width: 80px;
-  height: 80px;
-}
-
-.avatar-placeholder {
-  width: 100%;
-  height: 100%;
-  background-color: #EFF6FF;
-  color: #2563EB;
-  font-size: 2rem;
-  font-weight: 700;
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.upload-btn {
-  position: absolute;
-  bottom: 0;
-  right: 0;
-  width: 28px;
-  height: 28px;
-  background: #2563EB;
-  color: white;
-  border: 2px solid white;
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-}
-
-.avatar-info h3 {
-  font-size: 1rem;
-  font-weight: 600;
-  color: #0F172A;
-}
-
-.avatar-info p {
-  font-size: 0.85rem;
-  color: #64748B;
-}
-
-/* Actions */
-.form-actions {
-  margin-top: 1rem;
-  display: flex;
-  justify-content: flex-end;
-}
-
-.btn {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  padding: 0.6rem 1.2rem;
-  border-radius: 8px;
-  font-weight: 600;
-  cursor: pointer;
-  border: none;
-  font-size: 0.9rem;
-  transition: all 0.2s;
-}
-
-.btn-primary {
-  background-color: #2563EB;
-  color: white;
-}
-
-.btn-primary:hover {
-  background-color: #1D4ED8;
-}
-
-.btn-outline {
-  background: white;
-  border: 1px solid #E2E8F0;
-  color: #475569;
-}
-
-.icon-sm { width: 18px; height: 18px; }
-
-/* Separator */
 .separator {
   border: none;
   border-top: 1px solid #F1F5F9;
   margin: 1rem 0;
 }
 
-/* Toggle Sections */
+.form-actions {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 1rem;
+}
+
+.btn {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.75rem 1.5rem;
+  border-radius: 8px;
+  font-weight: 600;
+  cursor: pointer;
+  border: none;
+  font-size: 0.95rem;
+  transition: all 0.2s;
+}
+
+.btn-primary { background-color: #2563EB; color: white; }
+.btn-primary:hover { background-color: #1D4ED8; }
+
 .toggle-section {
   display: flex;
   justify-content: space-between;
   align-items: center;
 }
-
 .toggle-header {
   display: flex;
   align-items: center;
   gap: 0.5rem;
   margin-bottom: 0.25rem;
 }
-
 .toggle-header h3 {
   font-size: 1rem;
   font-weight: 600;
   color: #0F172A;
 }
-
 .toggle-info p {
   color: #64748B;
   font-size: 0.9rem;
 }
-
-.icon-md { width: 20px; height: 20px; }
 .text-primary { color: #2563EB; }
+.icon-md { width: 20px; height: 20px; }
 
-/* Toggle Switch */
 .toggle-switch {
   position: relative;
   width: 44px;
   height: 24px;
 }
-
-.toggle-switch input {
-  opacity: 0;
-  width: 0;
-  height: 0;
-}
-
+.toggle-switch input { opacity: 0; width: 0; height: 0; }
 .toggle-switch label {
   position: absolute;
   cursor: pointer;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
+  inset: 0;
   background-color: #CBD5E1;
   transition: .4s;
   border-radius: 24px;
 }
-
 .toggle-switch label:before {
   position: absolute;
   content: "";
@@ -582,23 +851,22 @@ label {
   transition: .4s;
   border-radius: 50%;
 }
+.toggle-switch input:checked + label { background-color: #2563EB; }
+.toggle-switch input:checked + label:before { transform: translateX(20px); }
 
-.toggle-switch input:checked + label {
-  background-color: #2563EB;
+/* Notifications Checkbox */
+.notification-group h3 {
+  font-size: 1.1rem;
+  font-weight: 600;
+  margin-bottom: 1.25rem;
 }
 
-.toggle-switch input:checked + label:before {
-  transform: translateX(20px);
-}
-
-/* Checkbox Rows */
 .checkbox-row {
   display: flex;
   align-items: flex-start;
   gap: 1rem;
   margin-bottom: 1.5rem;
 }
-
 .checkbox-row input[type="checkbox"] {
   width: 18px;
   height: 18px;
@@ -606,85 +874,41 @@ label {
   accent-color: #2563EB;
   cursor: pointer;
 }
-
 .checkbox-row label {
   display: flex;
   flex-direction: column;
   cursor: pointer;
 }
-
 .checkbox-row label strong {
   color: #0F172A;
   font-weight: 600;
   margin-bottom: 2px;
 }
-
 .checkbox-row label span {
   color: #64748B;
-  font-size: 0.85rem;
+  font-size: 0.9rem;
 }
 
-/* Empty State */
-.empty-state {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  height: 300px;
-  text-align: center;
-  color: #64748B;
-}
-
-.empty-icon {
-  width: 48px;
-  height: 48px;
-  color: #CBD5E1;
-  margin-bottom: 1rem;
-}
-
-.empty-state h3 {
-  font-size: 1.25rem;
-  color: #0F172A;
-  margin-bottom: 0.5rem;
-}
-
-.empty-state .btn {
-  margin-top: 1.5rem;
-}
-
-/* Responsive */
-@media (max-width: 768px) {
+@media (max-width: 900px) {
   .settings-container {
     flex-direction: column;
-    gap: 1.5rem;
   }
-
   .settings-sidebar {
     width: 100%;
     flex-direction: row;
     overflow-x: auto;
-    padding-bottom: 0.5rem;
+    padding: 0.5rem;
   }
-
   .tab-btn {
     white-space: nowrap;
-    padding: 0.6rem 0.8rem;
-    font-size: 0.9rem;
+    padding: 0.6rem 1rem;
   }
+}
 
-  .form-row {
-    flex-direction: column;
-    gap: 1rem;
-  }
-
-  .toggle-section {
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 1rem;
-  }
-
-  .toggle-switch {
-    margin-top: 0.5rem;
-  }
+@media (max-width: 640px) {
+  .grid-2 { grid-template-columns: 1fr; }
+  .col-span-2 { grid-column: span 1; }
+  .form-row { flex-direction: column; }
+  .pane-header { flex-direction: column; gap: 1rem; }
 }
 </style>

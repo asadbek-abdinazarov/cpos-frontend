@@ -9,10 +9,13 @@ import {
   ShoppingBag, 
   Users, 
   Settings,
-  X 
+  X,
+  LogOut
 } from 'lucide-vue-next'
-import { ref } from 'vue'
-import UserProfileDialog from './UserProfileDialog.vue'
+import { ref, onMounted } from 'vue'
+import { useRouter } from 'vue-router'
+import { logout, getUserProfile } from '@/services/api'
+import { useNotification } from '@/composables/useNotification'
 
 const props = defineProps({
   isOpen: {
@@ -24,7 +27,9 @@ const props = defineProps({
 const emit = defineEmits(['close'])
 
 const route = useRoute()
+const router = useRouter()
 const { t } = useI18n()
+const { showNotification } = useNotification()
 
 // This will eventually come from i18n
 const menuItems = [
@@ -40,29 +45,84 @@ const isActive = (path) => {
   return route.path === path
 }
 
-const showProfile = ref(false)
+const userData = ref({
+  username: '',
+  firstName: '',
+  lastName: '',
+  phone: '',
+  email: '',
+  isActive: false,
+  createdAt: '',
+  updatedAt: '',
+  roles: [],
+  organization: null,
+  shop: null
+})
 
-const testUserData = {
-  firstName: 'Admin',
-  lastName: 'User',
-  phone: '+998 90 123 45 67',
-  email: 'admin@cpos.uz',
-  role: 'Store Manager',
-  organizationName: 'CPOS LLC',
-  organizationAddress: 'Tashkent City, Chilonzor District, 19',
-  organizationPhone: '+998 71 200 00 00',
-  stir: '309567891',
-  subscription: 'Premium Plan',
-  store: {
-    id: 'ST-001',
-    name: 'Main Store',
-    address: 'Tashkent, Sergeli District, Industrial Zone'
+const fetchProfile = async () => {
+  try {
+    const res = await getUserProfile()
+    if (res.data && res.data.success) {
+      const u = res.data.data
+      userData.value = {
+        username: u.username || '',
+        firstName: u.firstName || '',
+        lastName: u.lastName || '',
+        phone: u.phone || '',
+        email: u.email || '',
+        isActive: !!u.isActive,
+        createdAt: u.createdAt || '',
+        updatedAt: u.updatedAt || '',
+        roles: u.roles ? u.roles.map(r => ({
+          name: r.name,
+          permissions: r.permissions ? r.permissions.map(p => ({
+            name: p.name
+          })) : []
+        })) : [],
+        organization: u.organization ? {
+          name: u.organization.name || '',
+          stir: u.organization.stir || '',
+          address: u.organization.address || '',
+          phone: u.organization.phone || '',
+          isActive: !!u.organization.isActive
+        } : null,
+        shop: u.shop ? {
+          name: u.shop.name || '',
+          address: u.shop.address || '',
+          phone: u.shop.phone || '',
+          isActive: !!u.shop.isActive,
+          warehouse: u.shop.warehouse ? {
+            name: u.shop.warehouse.name || '',
+            address: u.shop.warehouse.address || '',
+            phone: u.shop.warehouse.phone || '',
+            isActive: !!u.shop.warehouse.isActive
+          } : null
+        } : null
+      }
+    }
+  } catch (error) {
+    console.error('Failed to fetch user profile:', error)
   }
 }
 
-const handleUpdateUser = (updatedUser) => {
-  // In a real app, this would be an API call
-  Object.assign(testUserData, updatedUser)
+onMounted(() => {
+  fetchProfile()
+})
+
+const handleLogout = async () => {
+  try {
+    await logout()
+  } catch (error) {
+    console.error('Logout error UI side: ', error)
+  } finally {
+    // We remove local items and redirect even if the /logout endpoint fails
+    localStorage.removeItem('refreshToken')
+    localStorage.removeItem('accessToken')
+    localStorage.removeItem('username')
+    localStorage.removeItem('userId')
+    router.push('/')
+    showNotification({ type: 'info', message: t('nav.success-logout')})
+  }
 }
 </script>
 
@@ -92,20 +152,11 @@ const handleUpdateUser = (updatedUser) => {
     </nav>
 
     <div class="sidebar-footer">
-      <div class="user-info" @click="showProfile = true">
-        <div class="avatar">AD</div>
-        <div class="details">
-          <p class="name">{{ testUserData.firstName }} {{ testUserData.lastName }}</p>
-          <p class="role">{{ testUserData.role }}</p>
-        </div>
-      </div>
+      <button class="logout-btn" @click="handleLogout" :title="t('nav.logout') || 'Log Out'">
+        <LogOut class="icon-sm" />
+        <span class="label">{{ t('nav.logout') || 'Log Out' }}</span>
+      </button>
     </div>
-    <UserProfileDialog 
-      :is-open="showProfile" 
-      :user="testUserData" 
-      @close="showProfile = false" 
-      @update="handleUpdateUser"
-    />
   </aside>
 </template>
 
@@ -242,6 +293,28 @@ const handleUpdateUser = (updatedUser) => {
 .details .role {
   font-size: 0.8rem;
   color: #64748B;
+}
+
+.logout-btn {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  width: 100%;
+  padding: 0.75rem 1rem;
+  margin-top: 0.5rem;
+  border: none;
+  background: transparent;
+  color: #EF4444; /* red-500 */
+  border-radius: 8px;
+  cursor: pointer;
+  font-family: inherit;
+  font-weight: 500;
+  font-size: 0.9rem;
+  transition: all 0.2s;
+}
+
+.logout-btn:hover {
+  background-color: #FEF2F2; /* red-50 */
 }
 
 @media (max-width: 1024px) {

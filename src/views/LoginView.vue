@@ -3,22 +3,66 @@ import { ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { useI18n } from 'vue-i18n'
 import terminalImg from '@/assets/images/terminal.png'
+import { login } from '@/services/api'
+import { useNotification } from '@/composables/useNotification'
+import { Eye, EyeOff } from 'lucide-vue-next'
 
 const { t } = useI18n()
 const router = useRouter()
-const email = ref('')
+const { showNotification } = useNotification()
+const username = ref('')
 const password = ref('')
 const rememberMe = ref(false)
+const loading = ref(false)
+const errorMessage = ref('')
+const showPassword = ref(false)
 
 onMounted(() => {
   document.title = `CPOS - ${t('nav.login')}`
 })
 
-const handleLogin = () => {
-  // Add authentication logic here
-  console.log('Logging in with:', email.value, password.value)
-  // Navigate to dashboard or home
-  router.push('/dashboard')
+function getDeviceMac() {
+  let mac = localStorage.getItem('deviceMac')
+  if (!mac) {
+    mac = 'WEB-' + crypto.randomUUID()
+    localStorage.setItem('deviceMac', mac)
+  }
+  return mac
+}
+
+const handleLogin = async () => {
+  errorMessage.value = ''
+  loading.value = true
+
+  try {
+    const response = await login({
+      username: username.value,
+      password: password.value,
+      deviceMac: getDeviceMac(),
+    })
+
+    const data = response.data
+
+    if (data.success && data.data) {
+      localStorage.setItem('refreshToken', data.data.refreshToken)
+      localStorage.setItem('username', data.data.username)
+      localStorage.setItem('userId', data.data.userId)
+      showNotification({ type: 'success', message: t('auth.login_success') })
+      router.push('/dashboard')
+    } else {
+      errorMessage.value = data.message || t('auth.login_error')
+      showNotification({ type: 'error', message: errorMessage.value })
+    }
+  } catch (error) {
+    if (error.response && error.response.data && error.response.data.message) {
+      errorMessage.value = error.response.data.message
+    } else {
+      errorMessage.value = t('auth.login_error')
+    }
+    showNotification({ type: 'error', message: errorMessage.value })
+  } finally {
+    loading.value = false
+  }
 }
 </script>
 
@@ -44,36 +88,48 @@ const handleLogin = () => {
 
         <form @submit.prevent="handleLogin" class="login-form">
           <div class="form-group">
-            <label for="email">{{ t('auth.email') }}</label>
+            <label for="username">{{ t('auth.username') }}</label>
             <input 
-              type="email" 
-              id="email" 
-              v-model="email" 
-              :placeholder="t('auth.email_placeholder')" 
+              type="text" 
+              id="username" 
+              v-model="username" 
+              :placeholder="t('auth.username_placeholder')" 
               required
             />
           </div>
 
           <div class="form-group">
             <label for="password">{{ t('auth.password') }}</label>
-            <input 
-              type="password" 
-              id="password" 
-              v-model="password" 
-              placeholder="••••••••" 
-              required
-            />
+            <div class="password-input-wrapper">
+              <input 
+                :type="showPassword ? 'text' : 'password'" 
+                id="password" 
+                v-model="password" 
+                placeholder="••••••••" 
+                required
+              />
+              <button type="button" class="password-toggle" @click="showPassword = !showPassword">
+                <Eye v-if="showPassword" class="icon" />
+                <EyeOff v-else class="icon" />
+              </button>
+            </div>
           </div>
 
           <div class="form-actions">
-            <label class="remember-me">
+            <!-- <label class="remember-me">
               <input type="checkbox" v-model="rememberMe" />
               <span>{{ t('auth.remember_me') }}</span>
-            </label>
+            </label> -->
             <a href="#" class="forgot-password">{{ t('auth.forgot_password') }}</a>
           </div>
           
-          <button type="submit" class="btn-login">{{ t('auth.login_btn') }}</button>
+          <button type="submit" class="btn-login" :disabled="loading">
+            <span v-if="loading" class="btn-loading">
+              <span class="spinner"></span>
+              {{ t('auth.logging_in') }}
+            </span>
+            <span v-else>{{ t('auth.login_btn') }}</span>
+          </button>
         </form>
 
         <div class="form-footer">
@@ -220,6 +276,41 @@ const handleLogin = () => {
   box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.1);
 }
 
+/* Password Toggle */
+.password-input-wrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.password-input-wrapper input {
+  width: 100%;
+  padding-right: 2.5rem;
+}
+
+.password-toggle {
+  position: absolute;
+  right: 0.75rem;
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: #64748B;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  transition: color 0.2s ease;
+}
+
+.password-toggle:hover {
+  color: #0F172A;
+}
+
+.password-toggle .icon {
+  width: 20px;
+  height: 20px;
+}
+
 .form-actions {
   display: flex;
   justify-content: space-between;
@@ -254,8 +345,33 @@ const handleLogin = () => {
   margin-top: 0.5rem;
 }
 
-.btn-login:hover {
+.btn-login:hover:not(:disabled) {
   background-color: #0056b3;
+}
+
+.btn-login:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+}
+
+.btn-loading {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+}
+
+.spinner {
+  width: 18px;
+  height: 18px;
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  border-top-color: white;
+  border-radius: 50%;
+  animation: spin 0.6s linear infinite;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
 }
 
 .form-footer {

@@ -17,6 +17,7 @@ const currentFlag = (code) => {
 
 const isScrolled = ref(false)
 const isMenuOpen = ref(false)
+const isAuthenticated = ref(false)
 
 const handleScroll = () => {
   isScrolled.value = window.scrollY > 50
@@ -32,6 +33,7 @@ const closeMenu = () => {
 
 onMounted(() => {
   window.addEventListener('scroll', handleScroll)
+  isAuthenticated.value = !!localStorage.getItem('refreshToken')
 })
 
 onUnmounted(() => {
@@ -68,8 +70,13 @@ onUnmounted(() => {
           </select>
         </div>
 
-        <router-link to="/login" class="login-link">{{ t('nav.login') }}</router-link>
-        <router-link to="/register" class="btn btn-primary" tag="button">{{ t('nav.register') }}</router-link>
+        <template v-if="!isAuthenticated">
+          <router-link to="/login" class="login-link">{{ t('nav.login') }}</router-link>
+          <router-link to="/register" class="btn btn-primary" tag="button">{{ t('nav.register') }}</router-link>
+        </template>
+        <template v-else>
+          <router-link to="/dashboard" class="btn btn-primary" tag="button">{{ t('nav.dashboard') || 'Go to Dashboard' }}</router-link>
+        </template>
       </div>
       
       <!-- Mobile Menu Button -->
@@ -97,8 +104,13 @@ onUnmounted(() => {
           </div>
 
           <div class="mobile-actions">
-             <router-link to="/login" class="login-link" @click="closeMenu">{{ t('nav.login') }}</router-link>
-             <router-link to="/register" class="btn btn-primary" @click="closeMenu">{{ t('nav.start_trial') }}</router-link>
+             <template v-if="!isAuthenticated">
+               <router-link to="/login" class="login-link" @click="closeMenu">{{ t('nav.login') }}</router-link>
+               <router-link to="/register" class="btn btn-primary" @click="closeMenu">{{ t('nav.start_trial') }}</router-link>
+             </template>
+             <template v-else>
+               <router-link to="/dashboard" class="btn btn-primary" @click="closeMenu">{{ t('nav.dashboard') || 'Go to Dashboard' }}</router-link>
+             </template>
           </div>
         </div>
       </div>

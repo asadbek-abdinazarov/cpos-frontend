@@ -9,19 +9,24 @@
       <div class="marquee-container">
         <div class="marquee-content">
           <!-- Duplicate logic for seamless infinite scroll -->
-          <div class="testimonial-card" v-for="(item, index) in [...testimonials, ...testimonials]" :key="index">
             <div class="quote-icon-wrapper">
               <Quote class="quote-icon" />
             </div>
-            <p class="quote-text">{{ item.quote }}</p>
-            <div class="client-info">
-              <div class="client-avatar">{{ item.name.charAt(0) }}</div>
-              <div class="client-details">
-                <h4 class="client-name">{{ item.name }}</h4>
-                <p class="client-business">{{ item.business }}</p>
+          <template v-if="!loading && testimonials.length > 0">
+            <div class="testimonial-card" v-for="(item, index) in [...testimonials, ...testimonials]" :key="index">
+              <div class="quote-icon-wrapper">
+                <Quote class="quote-icon" />
+              </div>
+              <p class="quote-text">{{ item.quote }}</p>
+              <div class="client-info">
+                <div class="client-avatar">{{ item.name ? item.name.charAt(0).toUpperCase() : 'U' }}</div>
+                <div class="client-details">
+                  <h4 class="client-name">{{ item.name }}</h4>
+                  <p class="client-business">{{ item.business }}</p>
+                </div>
               </div>
             </div>
-          </div>
+          </template>
         </div>
       </div>
     </div>
@@ -29,35 +34,43 @@
 </template>
 
 <script setup>
-import { computed } from 'vue'
+import { ref, onMounted } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { Quote } from 'lucide-vue-next'
+import api from '@/services/api'
 
 const { t } = useI18n()
 
-const testimonials = computed(() => [
-  {
-    quote: t('testimonials.list[0].quote'),
-    name: t('testimonials.list[0].name'),
-    business: t('testimonials.list[0].business')
-  },
-  {
-    quote: t('testimonials.list[1].quote'),
-    name: t('testimonials.list[1].name'),
-    business: t('testimonials.list[1].business')
-  },
-  {
-    quote: t('testimonials.list[2].quote'),
-    name: t('testimonials.list[2].name'),
-    business: t('testimonials.list[2].business')
-  },
-  // Add more items to make the marquee longer if needed
-  {
-    quote: t('testimonials.list[0].quote'),
-    name: t('testimonials.list[0].name'),
-    business: t('testimonials.list[0].business')
+const testimonials = ref([])
+const loading = ref(true)
+
+const fetchComments = async () => {
+  try {
+    const response = await api.get('public/comments')
+    if (response.data && response.data.success) {
+      testimonials.value = response.data.data.map(item => {
+        const d = new Date(item.createdAt)
+        const dd = String(d.getDate()).padStart(2, '0')
+        const mm = String(d.getMonth() + 1).padStart(2, '0')
+        const yyyy = d.getFullYear()
+        
+        return {
+          quote: item.comment,
+          name: item.commenter,
+          business: `${dd}.${mm}.${yyyy}`
+        }
+      })
+    }
+  } catch (error) {
+    console.error('Failed to fetch comments', error)
+  } finally {
+    loading.value = false
   }
-])
+}
+
+onMounted(() => {
+  fetchComments()
+})
 </script>
 
 <style scoped>

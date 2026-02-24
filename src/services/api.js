@@ -1,0 +1,149 @@
+import axios from 'axios'
+import { useNotification } from '@/composables/useNotification'
+import i18n from '@/i18n'
+import router from '@/router'
+
+const { showNotification } = useNotification()
+const t = i18n.global.t
+
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080/api/v1/'
+
+const api = axios.create({
+  baseURL: API_BASE_URL,
+  withCredentials: true,
+  headers: {
+    'Content-Type': 'application/json',
+  },
+})
+
+let isRefreshing = false
+let failedQueue = []
+
+const processQueue = (error, token = null) => {
+  failedQueue.forEach(prom => {
+    if (error) {
+      prom.reject(error)
+    } else {
+      prom.resolve(token)
+    }
+  })
+  failedQueue = []
+}
+
+api.interceptors.response.use(
+  (response) => {
+    return response
+  },
+  async (error) => {
+    const originalRequest = error.config
+
+    // Check if error response matches exactly the target condition
+    if (
+      error.response &&
+      error.response.data &&
+      error.response.data.status === 401 &&
+      error.response.data.message === "Access token expired" &&
+      !originalRequest._retry
+    ) {
+      if (isRefreshing) {
+        return new Promise(function(resolve, reject) {
+          failedQueue.push({ resolve, reject })
+        }).then(() => {
+          return api(originalRequest)
+        }).catch(err => {
+          return Promise.reject(err)
+        })
+      }
+
+      originalRequest._retry = true
+      isRefreshing = true
+
+      const refreshToken = localStorage.getItem('refreshToken')
+
+      if (!refreshToken) {
+        forceLogout()
+        return Promise.reject(error)
+      }
+
+      try {
+        const { data } = await axios.post(`${API_BASE_URL}web/auth/refresh`, {
+          refreshToken: refreshToken
+        }, {
+          withCredentials: true // needed if backend sets new cookies
+        })
+
+        // Depending on what your refresh API returns, you might need to update localStorage again
+        if (data.success) {
+          if (data.data && data.data.refreshToken) {
+            localStorage.setItem('refreshToken', data.data.refreshToken)
+          }
+          showNotification({ type: 'success', message: t('auth.session_restored') })
+        }
+
+        processQueue(null)
+        
+        // Retry original request (the cookie will automatically be sent by browser)
+        return api(originalRequest)
+        
+      } catch (refreshError) {
+        processQueue(refreshError, null)
+        forceLogout()
+        return Promise.reject(refreshError)
+      } finally {
+        isRefreshing = false
+      }
+    }
+
+    return Promise.reject(error)
+  }
+)
+
+function forceLogout() {
+  // Show notification
+  showNotification({ type: 'error', message: t('auth.session_expired') })
+
+  // Call the logout endpoint on best-effort basis
+  axios.post(`${API_BASE_URL}web/auth/logout`, {}, { withCredentials: true }).catch(() => {})
+  
+  // Clear frontend state
+  localStorage.removeItem('refreshToken')
+  localStorage.removeItem('accessToken')
+  localStorage.removeItem('username')
+  localStorage.removeItem('userId')
+  
+  // Redirect to login page using Vue Router to preserve notification
+  router.push('/login')
+}
+
+export function register(data) {
+  return api.post('web/auth/register', {
+    firstName: data.firstName,
+    lastName: data.lastName,
+    username: data.username,
+    password: data.password,
+    email: data.email,
+    phone: data.phone,
+    organizationName: data.organizationName,
+    organizationStir: data.organizationStir,
+    organizationAddress: data.organizationAddress,
+    organizationPhone: data.organizationPhone,
+  })
+}
+
+export function login(data) {
+  return api.post('web/auth/login', {
+    username: data.username,
+    password: data.password,
+    deviceMac: data.deviceMac,
+  })
+}
+
+export function logout() {
+  return api.post('web/auth/logout')
+}
+
+export function getUserProfile() {
+  return api.get('web/users/me')
+}
+
+export default api

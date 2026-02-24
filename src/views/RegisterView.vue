@@ -3,17 +3,30 @@ import { ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { useI18n } from 'vue-i18n'
 import terminalImg from '@/assets/images/terminal.png'
+import { register } from '@/services/api'
+import { useNotification } from '@/composables/useNotification'
+import { Eye, EyeOff } from 'lucide-vue-next'
 
 const { t } = useI18n()
 
 const router = useRouter()
+const { showNotification } = useNotification()
+const loading = ref(false)
+const errorMessage = ref('')
+const showPassword = ref(false)
+const showConfirmPassword = ref(false)
+
 const form = ref({
   firstname: '',
   lastname: '',
+  username: '',
+  email: '',
   phone: '',
-  orgType: 'legal', // 'legal' or 'individual'
+  orgType: 'legal',
   orgName: '',
   stir: '',
+  orgAddress: '',
+  orgPhone: '',
   password: '',
   confirmPassword: ''
 })
@@ -22,14 +35,53 @@ onMounted(() => {
   document.title = `CPOS - ${t('nav.register')}`
 })
 
-const handleRegister = () => {
+const handleRegister = async () => {
+  errorMessage.value = ''
+
   if (form.value.password !== form.value.confirmPassword) {
-    alert(t('auth.passwords_mismatch'))
+    errorMessage.value = t('auth.passwords_mismatch')
+    showNotification({ type: 'error', message: errorMessage.value })
     return
   }
-  console.log('Registering:', form.value)
-  // Add registration logic here
-  router.push('/login')
+
+  loading.value = true
+
+  try {
+    const response = await register({
+      firstName: form.value.firstname,
+      lastName: form.value.lastname,
+      username: form.value.username,
+      password: form.value.password,
+      email: form.value.email,
+      phone: form.value.phone,
+      organizationName: form.value.orgName,
+      organizationStir: form.value.stir,
+      organizationAddress: form.value.orgAddress,
+      organizationPhone: form.value.orgPhone,
+    })
+
+    const data = response.data
+
+    if (data.success && data.data) {
+      localStorage.setItem('accessToken', data.data.accessToken)
+      localStorage.setItem('refreshToken', data.data.refreshToken)
+      localStorage.setItem('username', data.data.username)
+      showNotification({ type: 'success', message: t('auth.register_success') })
+      router.push('/dashboard')
+    } else {
+      errorMessage.value = data.message || t('auth.register_error')
+      showNotification({ type: 'error', message: errorMessage.value })
+    }
+  } catch (error) {
+    if (error.response && error.response.data && error.response.data.message) {
+      errorMessage.value = error.response.data.message
+    } else {
+      errorMessage.value = t('auth.register_error')
+    }
+    showNotification({ type: 'error', message: errorMessage.value })
+  } finally {
+    loading.value = false
+  }
 }
 </script>
 
@@ -62,6 +114,17 @@ const handleRegister = () => {
             <div class="form-group">
               <label for="lastname">{{ t('auth.lastname') }}</label>
               <input type="text" id="lastname" v-model="form.lastname" required placeholder="Doe" />
+            </div>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label for="username">{{ t('auth.username') }}</label>
+              <input type="text" id="username" v-model="form.username" required placeholder="johndoe" />
+            </div>
+            <div class="form-group">
+              <label for="email">{{ t('auth.email_register') }}</label>
+              <input type="email" id="email" v-model="form.email" required placeholder="john@example.com" />
             </div>
           </div>
 
@@ -100,18 +163,45 @@ const handleRegister = () => {
 
           <div class="form-row">
             <div class="form-group">
-              <label for="password">{{ t('auth.password') }}</label>
-              <!-- Fixed: Using type="password" to mask input -->
-              <input type="password" id="password" v-model="form.password" required placeholder="••••••••" />
+              <label for="orgAddress">{{ t('auth.org_address') }}</label>
+              <input type="text" id="orgAddress" v-model="form.orgAddress" placeholder="Tashkent, Amir Temur 1" />
             </div>
             <div class="form-group">
-              <label for="confirmPassword">{{ t('auth.confirm_password') }}</label>
-               <!-- Fixed: Using type="password" to mask input -->
-              <input type="password" id="confirmPassword" v-model="form.confirmPassword" required placeholder="••••••••" />
+              <label for="orgPhone">{{ t('auth.org_phone') }}</label>
+              <input type="tel" id="orgPhone" v-model="form.orgPhone" placeholder="+998 71 123 45 67" />
             </div>
           </div>
 
-          <button type="submit" class="btn-primary-auth">{{ t('auth.register_btn') }}</button>
+          <div class="form-row">
+            <div class="form-group">
+              <label for="password">{{ t('auth.password') }}</label>
+              <div class="password-input-wrapper">
+                <input :type="showPassword ? 'text' : 'password'" id="password" v-model="form.password" required placeholder="••••••••" />
+                <button type="button" class="password-toggle" @click="showPassword = !showPassword">
+                  <Eye v-if="showPassword" class="icon" />
+                  <EyeOff v-else class="icon" />
+                </button>
+              </div>
+            </div>
+            <div class="form-group">
+              <label for="confirmPassword">{{ t('auth.confirm_password') }}</label>
+              <div class="password-input-wrapper">
+                <input :type="showConfirmPassword ? 'text' : 'password'" id="confirmPassword" v-model="form.confirmPassword" required placeholder="••••••••" />
+                <button type="button" class="password-toggle" @click="showConfirmPassword = !showConfirmPassword">
+                  <Eye v-if="showConfirmPassword" class="icon" />
+                  <EyeOff v-else class="icon" />
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <button type="submit" class="btn-primary-auth" :disabled="loading">
+            <span v-if="loading" class="btn-loading">
+              <span class="spinner"></span>
+              {{ t('auth.registering') }}
+            </span>
+            <span v-else>{{ t('auth.register_btn') }}</span>
+          </button>
         </form>
 
         <div class="form-footer">
@@ -272,6 +362,41 @@ const handleRegister = () => {
   box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.1);
 }
 
+/* Password Toggle */
+.password-input-wrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.password-input-wrapper input {
+  width: 100%;
+  padding-right: 2.5rem;
+}
+
+.password-toggle {
+  position: absolute;
+  right: 0.75rem;
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: #64748B;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  transition: color 0.2s ease;
+}
+
+.password-toggle:hover {
+  color: #0F172A;
+}
+
+.password-toggle .icon {
+  width: 20px;
+  height: 20px;
+}
+
 /* Radio Group */
 .radio-group {
   display: flex;
@@ -329,8 +454,33 @@ const handleRegister = () => {
   margin-top: 1rem;
 }
 
-.btn-primary-auth:hover {
+.btn-primary-auth:hover:not(:disabled) {
   background-color: #0056b3;
+}
+
+.btn-primary-auth:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+}
+
+.btn-loading {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+}
+
+.spinner {
+  width: 18px;
+  height: 18px;
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  border-top-color: white;
+  border-radius: 50%;
+  animation: spin 0.6s linear infinite;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
 }
 
 .form-footer {

@@ -21,15 +21,18 @@ const router = createRouter({
       path: '/login',
       name: 'login',
       component: () => import('../views/LoginView.vue'),
+      meta: { requiresGuest: true }
     },
     {
       path: '/register',
       name: 'register',
       component: () => import('../views/RegisterView.vue'),
+      meta: { requiresGuest: true }
     },
     {
       path: '/dashboard',
       component: () => import('../layouts/DashboardLayout.vue'),
+      meta: { requiresAuth: true },
       children: [
         {
           path: '',
@@ -54,6 +57,29 @@ const router = createRouter({
       ]
     },
   ],
+})
+
+router.beforeEach((to, from, next) => {
+  const isAuthenticated = !!localStorage.getItem('refreshToken')
+
+  if (to.matched.some(record => record.meta.requiresAuth)) {
+    // this route requires auth, check if logged in
+    // if not, redirect to login page.
+    if (!isAuthenticated) {
+      next({ name: 'login' })
+      return
+    }
+  } else if (to.matched.some(record => record.meta.requiresGuest)) {
+    // this route requires guest (no auth), check if logged in
+    // if logged in, redirect to dashboard.
+    if (isAuthenticated) {
+      next({ name: 'dashboard' })
+      return
+    }
+  }
+
+  // otherwise proceed
+  next()
 })
 
 export default router
