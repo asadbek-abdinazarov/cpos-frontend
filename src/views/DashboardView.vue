@@ -1,60 +1,56 @@
 <script setup>
-import { ref } from 'vue'
+import { ref, onMounted } from 'vue'
 import { 
-  DollarSign, 
-  ShoppingBag, 
-  Users, 
-  Activity, 
-  TrendingUp, 
+  DollarSign,
+  ShoppingBag,
+  Activity,
+  TrendingUp,
   TrendingDown,
+  BarChart2,
+  Sigma,
+  Percent,
+  CreditCard,
   ChevronRight
 } from 'lucide-vue-next'
+import { getStatistics } from '@/services/api'
+
+const statsLoading = ref(true)
 
 const stats = ref([
-  { 
-    title: 'Total Revenue', 
-    value: '$45,231.89', 
-    change: '+20.1%', 
-    trend: 'up',
-    icon: DollarSign,
-    iconColor: 'text-blue-600',
-    bg: 'bg-blue-100'
-  },
-  { 
-    title: 'Active Orders', 
-    value: '1,234', 
-    change: '+15.2%', 
-    trend: 'up',
-    icon: ShoppingBag,
-    iconColor: 'text-orange-600',
-    bg: 'bg-orange-100'
-  },
-  { 
-    title: 'Total Customers', 
-    value: '3,456', 
-    change: '+5.4%', 
-    trend: 'up',
-    icon: Users,
-    iconColor: 'text-purple-600',
-    bg: 'bg-purple-100'
-  },
-  { 
-    title: 'Avg. Order Value', 
-    value: '$36.80', 
-    change: '-2.1%', 
-    trend: 'down',
-    icon: Activity,
-    iconColor: 'text-emerald-600',
-    bg: 'bg-emerald-100'
-  },
+  { title: 'Total Revenue',    value: null, icon: DollarSign,  iconColor: 'text-blue-600',    bg: 'bg-blue-100' },
+  { title: 'Total Cost',       value: null, icon: BarChart2,   iconColor: 'text-red-600',     bg: 'bg-red-100' },
+  { title: 'Total Sum',        value: null, icon: Sigma,       iconColor: 'text-indigo-600',  bg: 'bg-indigo-100' },
+  { title: 'Conversion Rate',  value: null, icon: Percent,     iconColor: 'text-emerald-600', bg: 'bg-emerald-100' },
 ])
 
+const fmt = (n) => (n ?? 0).toLocaleString('uz-UZ')
+
+const fetchStatistics = async () => {
+  statsLoading.value = true
+  try {
+    const res = await getStatistics()
+    if (res.data?.success) {
+      const d = res.data.data
+      stats.value[0].value = fmt(d.totalRevenue) + ' UZS'
+      stats.value[1].value = fmt(d.totalCost) + ' UZS'
+      stats.value[2].value = fmt(d.totalSum) + ' UZS'
+      stats.value[3].value = (d.conversionRate ?? 0).toFixed(2) + '%'
+    }
+  } catch (e) {
+    console.error('Failed to load statistics', e)
+  } finally {
+    statsLoading.value = false
+  }
+}
+
+onMounted(fetchStatistics)
+
 const recentTransactions = ref([
-  { id: '#ORD-001', customer: 'Alex Thompson', amount: '$120.50', status: 'Completed', date: '2 mins ago' },
-  { id: '#ORD-002', customer: 'Sarah Parker', amount: '$75.20', status: 'Processing', date: '5 mins ago' },
-  { id: '#ORD-003', customer: 'Michael Chen', amount: '$350.00', status: 'Completed', date: '10 mins ago' },
-  { id: '#ORD-004', customer: 'Jessica Evans', amount: '$42.90', status: 'Failed', date: '15 mins ago' },
-  { id: '#ORD-005', customer: 'David Wilson', amount: '$210.30', status: 'Completed', date: '25 mins ago' },
+  { id: '#ORD-001', customer: 'Alex Thompson',  amount: '$120.50', status: 'Completed',  date: '2 mins ago' },
+  { id: '#ORD-002', customer: 'Sarah Parker',   amount: '$75.20',  status: 'Processing', date: '5 mins ago' },
+  { id: '#ORD-003', customer: 'Michael Chen',   amount: '$350.00', status: 'Completed',  date: '10 mins ago' },
+  { id: '#ORD-004', customer: 'Jessica Evans',  amount: '$42.90',  status: 'Failed',     date: '15 mins ago' },
+  { id: '#ORD-005', customer: 'David Wilson',   amount: '$210.30', status: 'Completed',  date: '25 mins ago' },
 ])
 </script>
 
@@ -77,11 +73,10 @@ const recentTransactions = ref([
             <component :is="stat.icon" class="stat-icon" :class="stat.iconColor" />
           </div>
         </div>
-        <div class="stat-value">{{ stat.value }}</div>
-        <div class="stat-change" :class="stat.trend">
-          <component :is="stat.trend === 'up' ? TrendingUp : TrendingDown" class="trend-icon" />
-          {{ stat.change }} <span class="trend-text">from last month</span>
-        </div>
+        <template v-if="statsLoading">
+          <div class="skel skel-val"></div>
+        </template>
+        <div v-else class="stat-value">{{ stat.value ?? '—' }}</div>
       </div>
     </div>
 
@@ -276,6 +271,10 @@ const recentTransactions = ref([
 .text-purple-600 { color: #9333EA; }
 .bg-emerald-100 { background-color: #D1FAE5; }
 .text-emerald-600 { color: #059669; }
+.bg-red-100 { background-color: #FEE2E2; }
+.text-red-600 { color: #DC2626; }
+.bg-indigo-100 { background-color: #E0E7FF; }
+.text-indigo-600 { color: #4F46E5; }
 
 .stat-value {
   font-size: 1.75rem;
@@ -484,4 +483,17 @@ const recentTransactions = ref([
     padding: 0.75rem 1rem;
   }
 }
+
+/* ── Skeleton ── */
+@keyframes shimmer {
+  0%   { background-position: -300px 0; }
+  100% { background-position:  300px 0; }
+}
+.skel {
+  border-radius: 6px;
+  background: linear-gradient(90deg, #E2E8F0 25%, #F1F5F9 50%, #E2E8F0 75%);
+  background-size: 300px 100%;
+  animation: shimmer 1.4s infinite linear;
+}
+.skel-val { height: 32px; width: 65%; border-radius: 8px; margin-bottom: 0.5rem; }
 </style>

@@ -47,8 +47,10 @@ const userData = ref({
   createdAt: '',
   updatedAt: '',
   roles: [],
+  permissions: [],
   organization: null,
-  shop: null
+  shop: null,
+  warehouse: null
 })
 
 const editableUser = ref({})
@@ -68,31 +70,33 @@ const fetchProfile = async () => {
         isActive: !!u.isActive,
         createdAt: u.createdAt || '',
         updatedAt: u.updatedAt || '',
-        roles: u.roles ? u.roles.map(r => ({
-          name: r.name,
-          permissions: r.permissions ? r.permissions.map(p => ({
-            name: p.name
-          })) : []
-        })) : [],
+        roles: u.roles || [],
+        permissions: u.permissions || [],
         organization: u.organization ? {
           name: u.organization.name || '',
           stir: u.organization.stir || '',
           address: u.organization.address || '',
           phone: u.organization.phone || '',
-          isActive: !!u.organization.isActive
+          isActive: !!u.organization.isActive,
+          createdAt: u.organization.createdAt || '',
+          updatedAt: u.organization.updatedAt || ''
         } : null,
         shop: u.shop ? {
           name: u.shop.name || '',
           address: u.shop.address || '',
           phone: u.shop.phone || '',
           isActive: !!u.shop.isActive,
-          warehouse: u.shop.warehouse ? {
-            name: u.shop.warehouse.name || '',
-            address: u.shop.warehouse.address || '',
-            phone: u.shop.warehouse.phone || '',
-            isActive: !!u.shop.warehouse.isActive
-          } : null
+          createdAt: u.shop.createdAt || '',
+          updatedAt: u.shop.updatedAt || ''
         } : null
+        /* warehouse: u.warehouse ? {
+          name: u.warehouse.name || '',
+          address: u.warehouse.address || '',
+          phone: u.warehouse.phone || '',
+          isActive: !!u.warehouse.isActive,
+          createdAt: u.warehouse.createdAt || '',
+          updatedAt: u.warehouse.updatedAt || ''
+        } : null */
       }
 
       // Filter tabs based on available data
@@ -100,7 +104,7 @@ const fetchProfile = async () => {
         { id: 'personal', label: 'Personal Info', icon: User },
         ...(userData.value.organization ? [{ id: 'organization', label: 'Organization', icon: Building2 }] : []),
         ...(userData.value.shop ? [{ id: 'shop', label: 'Shop Details', icon: Store }] : []),
-        ...(userData.value.shop && userData.value.shop.warehouse ? [{ id: 'warehouse', label: 'Warehouse', icon: Package }] : []),
+        /* ...(userData.value.warehouse ? [{ id: 'warehouse', label: 'Warehouse', icon: Package }] : []), */
         { id: 'security', label: 'Security', icon: Lock },
         { id: 'notifications', label: 'Notifications', icon: Bell }
       ]
@@ -198,18 +202,7 @@ const saveOtherSettings = () => {
           </div>
 
           <div class="card-body grid-2">
-            <div class="data-group">
-              <label><User class="label-icon"/> Username</label>
-              <p v-if="!isEditing">{{ userData.username || '—' }}</p>
-              <input v-else v-model="editableUser.username" class="premium-input" />
-            </div>
-            <div class="data-group">
-              <label><Activity class="label-icon"/> Status</label>
-              <span class="status-badge sm" :class="userData.isActive ? 'badge-success' : 'badge-danger'">
-                    {{ userData.isActive ? 'Active' : 'Inactive' }}
-              </span>
-            </div>
-            <div class="data-group">
+              <div class="data-group">
               <label><User class="label-icon"/> First Name</label>
               <p v-if="!isEditing">{{ userData.firstName || '—' }}</p>
               <input v-else v-model="editableUser.firstName" class="premium-input" />
@@ -220,6 +213,11 @@ const saveOtherSettings = () => {
               <input v-else v-model="editableUser.lastName" class="premium-input" />
             </div>
             <div class="data-group">
+              <label><User class="label-icon"/> Username</label>
+              <p v-if="!isEditing">{{ userData.username || '—' }}</p>
+              <input v-else v-model="editableUser.username" class="premium-input" />
+            </div>
+            <div class="data-group">
               <label><Phone class="label-icon"/> Phone Number</label>
               <p v-if="!isEditing">{{ userData.phone || '—' }}</p>
               <input v-else v-model="editableUser.phone" class="premium-input" />
@@ -228,6 +226,12 @@ const saveOtherSettings = () => {
               <label><Mail class="label-icon"/> Email Address</label>
               <p v-if="!isEditing">{{ userData.email || '—' }}</p>
               <input v-else v-model="editableUser.email" class="premium-input" />
+            </div>
+            <div class="data-group">
+              <label><Activity class="label-icon"/> Status</label>
+              <span class="status-badge sm" :class="userData.isActive ? 'badge-success' : 'badge-danger'">
+                    {{ userData.isActive ? 'Active' : 'Inactive' }}
+              </span>
             </div>
              <div class="data-group">
               <label><Calendar class="label-icon"/> Created At</label>
@@ -274,16 +278,20 @@ const saveOtherSettings = () => {
               <p v-if="!isEditing">{{ userData.organization.phone || '—' }}</p>
               <input v-else v-model="editableUser.organization.phone" class="premium-input" />
             </div>
-            <div class="data-group col-span-2">
-              <label><MapPin class="label-icon"/> Address</label>
-              <p v-if="!isEditing">{{ userData.organization.address || '—' }}</p>
-              <input v-else v-model="editableUser.organization.address" class="premium-input" />
-            </div>
             <div class="data-group">
               <label><Activity class="label-icon"/> Status</label>
               <span class="status-badge sm" :class="userData.organization.isActive ? 'badge-success' : 'badge-danger'">
                 {{ userData.organization.isActive ? 'Active' : 'Inactive' }}
               </span>
+            </div>
+            <div class="data-group">
+              <label><Calendar class="label-icon"/> Created At</label>
+              <p class="text-subtle">{{ userData.organization.createdAt ? new Date(userData.organization.createdAt).toLocaleString('uz-UZ') : '—' }}</p>
+            </div>
+            <div class="data-group col-span-2">
+              <label><MapPin class="label-icon"/> Address</label>
+              <p v-if="!isEditing">{{ userData.organization.address || '—' }}</p>
+              <input v-else v-model="editableUser.organization.address" class="premium-input" />
             </div>
           </div>
         </div>
@@ -323,6 +331,10 @@ const saveOtherSettings = () => {
                   {{ userData.shop.isActive ? 'Active' : 'Inactive' }}
                 </span>
               </div>
+              <div class="data-group">
+                <label><Calendar class="label-icon"/> Created At</label>
+                <p class="text-subtle">{{ userData.shop.createdAt ? new Date(userData.shop.createdAt).toLocaleString('uz-UZ') : '—' }}</p>
+              </div>
               <div class="data-group col-span-2">
                 <label><MapPin class="label-icon"/> Address</label>
                 <p v-if="!isEditing">{{ userData.shop.address || '—' }}</p>
@@ -331,8 +343,8 @@ const saveOtherSettings = () => {
           </div>
         </div>
 
-        <!-- Warehouse Tab -->
-        <div v-if="activeTab === 'warehouse' && userData.shop?.warehouse" class="tab-pane">
+        <!-- Warehouse Tab
+        <div v-if="activeTab === 'warehouse' && userData.warehouse" class="tab-pane">
           <div class="pane-header">
              <div class="header-titles">
                 <h2>Warehouse Details</h2>
@@ -352,27 +364,32 @@ const saveOtherSettings = () => {
           <div class="card-body grid-2">
               <div class="data-group col-span-2">
                 <label><Package class="label-icon"/> Warehouse Name</label>
-                <h4 class="highlight-text" v-if="!isEditing">{{ userData.shop.warehouse.name || '—' }}</h4>
-                <input v-else v-model="editableUser.shop.warehouse.name" class="premium-input" />
+                <h4 class="highlight-text" v-if="!isEditing">{{ userData.warehouse.name || '—' }}</h4>
+                <input v-else v-model="editableUser.warehouse.name" class="premium-input" />
               </div>
               <div class="data-group">
                 <label><Phone class="label-icon"/> Phone</label>
-                <p v-if="!isEditing">{{ userData.shop.warehouse.phone || '—' }}</p>
-                <input v-else v-model="editableUser.shop.warehouse.phone" class="premium-input" />
+                <p v-if="!isEditing">{{ userData.warehouse.phone || '—' }}</p>
+                <input v-else v-model="editableUser.warehouse.phone" class="premium-input" />
               </div>
               <div class="data-group">
                 <label><Activity class="label-icon"/> Status</label>
-                 <span class="status-badge sm" :class="userData.shop.warehouse.isActive ? 'badge-success' : 'badge-danger'">
-                  {{ userData.shop.warehouse.isActive ? 'Active' : 'Inactive' }}
+                 <span class="status-badge sm" :class="userData.warehouse.isActive ? 'badge-success' : 'badge-danger'">
+                  {{ userData.warehouse.isActive ? 'Active' : 'Inactive' }}
                 </span>
+              </div>
+              <div class="data-group">
+                <label><Calendar class="label-icon"/> Created At</label>
+                <p class="text-subtle">{{ userData.warehouse.createdAt ? new Date(userData.warehouse.createdAt).toLocaleString('uz-UZ') : '—' }}</p>
               </div>
               <div class="data-group col-span-2">
                 <label><MapPin class="label-icon"/> Address</label>
-                <p v-if="!isEditing">{{ userData.shop.warehouse.address || '—' }}</p>
-                <input v-else v-model="editableUser.shop.warehouse.address" class="premium-input" />
+                <p v-if="!isEditing">{{ userData.warehouse.address || '—' }}</p>
+                <input v-else v-model="editableUser.warehouse.address" class="premium-input" />
               </div>
           </div>
         </div>
+        -->
 
         <!-- Security Tab -->
         <div v-if="activeTab === 'security'" class="tab-pane">

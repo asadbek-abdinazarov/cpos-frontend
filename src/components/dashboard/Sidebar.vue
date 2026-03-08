@@ -7,6 +7,7 @@ import {
   TrendingUp, 
   Package, 
   ShoppingBag, 
+  Scale,
   Users, 
   Settings,
   X,
@@ -36,8 +37,8 @@ const menuItems = [
   { name: 'Overview', path: '/dashboard', icon: LayoutDashboard },
   { name: 'Analytics', path: '/dashboard/analytics', icon: TrendingUp },
   { name: 'Products', path: '/dashboard/products', icon: Package },
-  { name: 'Store', path: '/dashboard/store', icon: ShoppingBag },
-  { name: 'Customers', path: '/dashboard/customers', icon: Users },
+  { name: 'Scales', path: '/dashboard/scales', icon: Scale },
+  { name: 'Sales', path: '/dashboard/sales', icon: ShoppingBag },
   { name: 'Settings', path: '/dashboard/settings', icon: Settings },
 ]
 
@@ -55,8 +56,10 @@ const userData = ref({
   createdAt: '',
   updatedAt: '',
   roles: [],
+  permissions: [],
   organization: null,
-  shop: null
+  shop: null,
+  warehouse: null
 })
 
 const fetchProfile = async () => {
@@ -73,31 +76,33 @@ const fetchProfile = async () => {
         isActive: !!u.isActive,
         createdAt: u.createdAt || '',
         updatedAt: u.updatedAt || '',
-        roles: u.roles ? u.roles.map(r => ({
-          name: r.name,
-          permissions: r.permissions ? r.permissions.map(p => ({
-            name: p.name
-          })) : []
-        })) : [],
+        roles: u.roles || [],
+        permissions: u.permissions || [],
         organization: u.organization ? {
           name: u.organization.name || '',
           stir: u.organization.stir || '',
           address: u.organization.address || '',
           phone: u.organization.phone || '',
-          isActive: !!u.organization.isActive
+          isActive: !!u.organization.isActive,
+          createdAt: u.organization.createdAt || '',
+          updatedAt: u.organization.updatedAt || ''
         } : null,
         shop: u.shop ? {
           name: u.shop.name || '',
           address: u.shop.address || '',
           phone: u.shop.phone || '',
           isActive: !!u.shop.isActive,
-          warehouse: u.shop.warehouse ? {
-            name: u.shop.warehouse.name || '',
-            address: u.shop.warehouse.address || '',
-            phone: u.shop.warehouse.phone || '',
-            isActive: !!u.shop.warehouse.isActive
-          } : null
+          createdAt: u.shop.createdAt || '',
+          updatedAt: u.shop.updatedAt || ''
         } : null
+        /* warehouse: u.warehouse ? {
+          name: u.warehouse.name || '',
+          address: u.warehouse.address || '',
+          phone: u.warehouse.phone || '',
+          isActive: !!u.warehouse.isActive,
+          createdAt: u.warehouse.createdAt || '',
+          updatedAt: u.warehouse.updatedAt || ''
+        } : null */
       }
     }
   } catch (error) {

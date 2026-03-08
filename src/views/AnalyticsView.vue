@@ -1,77 +1,120 @@
 <script setup>
-import { ref } from 'vue'
+import { ref, onMounted } from 'vue'
 import {
   TrendingUp,
-  TrendingDown,
   DollarSign,
   ShoppingBag,
-  Users,
   CreditCard,
+  BarChart2,
+  Sigma,
+  Percent,
   Calendar,
   Download,
   ArrowUpRight,
   ArrowDownRight,
   MoreVertical
 } from 'lucide-vue-next'
+import { getStatistics } from '@/services/api'
 
 // Period Filter
 const selectedPeriod = ref('Last 7 Days')
-const periods = ['Last 7 Days', 'Last 30 Days', 'This Month', 'Last Month', 'This Year']
+const periods = ['Today', 'Last 7 Days', 'Last 30 Days', 'This Month', 'Last Month', 'This Year', 'All Time']
 
-// Key Metrics
+// Loading state
+const statsLoading = ref(true)
+
+// 6 metric cards matching all API fields
 const metrics = ref([
-  {
-    title: 'Total Revenue',
-    value: '$12,450.00',
-    change: '+12.5%',
-    trend: 'up',
-    icon: DollarSign,
-    iconColor: 'text-blue-600',
-    bg: 'bg-blue-100'
-  },
-  {
-    title: 'Total Orders',
-    value: '450',
-    change: '+8.2%',
-    trend: 'up',
-    icon: ShoppingBag,
-    iconColor: 'text-purple-600',
-    bg: 'bg-purple-100'
-  },
-  {
-    title: 'Conversion Rate',
-    value: '3.2%',
-    change: '-1.1%',
-    trend: 'down',
-    icon: TrendingUp,
-    iconColor: 'text-emerald-600',
-    bg: 'bg-emerald-100'
-  },
-  {
-    title: 'Avg. Order Value',
-    value: '$48.50',
-    change: '+4.3%',
-    trend: 'up',
-    icon: CreditCard,
-    iconColor: 'text-orange-600',
-    bg: 'bg-orange-100'
+  { title: 'Total Revenue',     value: null, sub: null, icon: DollarSign,  iconColor: 'text-blue-600',    bg: 'bg-blue-100' },
+  { title: 'Total Cost',        value: null, sub: null, icon: BarChart2,   iconColor: 'text-red-600',     bg: 'bg-red-100' },
+  { title: 'Total Sum',         value: null, sub: null, icon: Sigma,       iconColor: 'text-indigo-600',  bg: 'bg-indigo-100' },
+  { title: 'Conversion Rate',   value: null, sub: null, icon: Percent,     iconColor: 'text-emerald-600', bg: 'bg-emerald-100' },
+])
+
+const fmt = (n) => (n ?? 0).toLocaleString('uz-UZ')
+
+const getDateRange = (period) => {
+  const toDate = new Date()
+  let fromDate = new Date()
+
+  // Reset time for consistent start/end of day boundaries
+  toDate.setHours(23, 59, 59, 999)
+  fromDate.setHours(0, 0, 0, 0)
+
+  switch (period) {
+    case 'Today':
+      break;
+    case 'Last 7 Days':
+      fromDate.setDate(toDate.getDate() - 6)
+      break;
+    case 'Last 30 Days':
+      fromDate.setDate(toDate.getDate() - 29)
+      break;
+    case 'This Month':
+      fromDate.setDate(1) // First day of current month
+      break;
+    case 'Last Month':
+      fromDate.setMonth(toDate.getMonth() - 1)
+      fromDate.setDate(1) // First day of last month
+      
+      toDate.setDate(0) // Last day of last month (0th day of current month)
+      toDate.setHours(23, 59, 59, 999)
+      break;
+    case 'This Year':
+      fromDate.setMonth(0, 1) // Jan 1st
+      break;
+    case 'All Time':
+      return {} // Send no params for all time
   }
-])
 
-// Top Products Data
+  return {
+    fromDate: fromDate.toISOString(),
+    toDate: toDate.toISOString()
+  }
+}
+
+const fetchStatistics = async () => {
+  statsLoading.value = true
+  try {
+    const params = getDateRange(selectedPeriod.value)
+    
+    const res = await getStatistics(params)
+    if (res.data?.success) {
+      const d = res.data.data
+      metrics.value[0].value = fmt(d.totalRevenue) + ' UZS'
+      metrics.value[1].value = fmt(d.totalCost) + ' UZS'
+      metrics.value[2].value = fmt(d.totalSum) + ' UZS'
+      metrics.value[3].value = (d.conversionRate ?? 0).toFixed(2) + '%'
+    }
+  } catch (e) {
+    console.error('Failed to load statistics', e)
+  } finally {
+    statsLoading.value = false
+  }
+}
+
+// Re-fetch when period changes
+import { watch } from 'vue'
+watch(selectedPeriod, () => {
+  fetchStatistics()
+})
+
+onMounted(fetchStatistics)
+
+// Top Products Data (static)
 const topProducts = ref([
-  { id: 1, name: 'Wireless Headphones', category: 'Accessories', sales: 120, revenue: '$12,400', growth: '+15%' },
-  { id: 2, name: 'Smart Watch Series 7', category: 'Electronics', sales: 85, revenue: '$34,000', growth: '+8%' },
-  { id: 3, name: 'Ergonomic Chair', category: 'Furniture', sales: 45, revenue: '$11,250', growth: '+12%' },
-  { id: 4, name: 'Mechanical Keyboard', category: 'Electronics', sales: 30, revenue: '$4,500', growth: '-2%' },
+  { id: 1, name: 'Wireless Headphones',  category: 'Accessories', sales: 120, revenue: '$12,400', growth: '+15%' },
+  { id: 2, name: 'Smart Watch Series 7', category: 'Electronics', sales: 85,  revenue: '$34,000', growth: '+8%' },
+  { id: 3, name: 'Ergonomic Chair',      category: 'Furniture',   sales: 45,  revenue: '$11,250', growth: '+12%' },
+  { id: 4, name: 'Mechanical Keyboard',  category: 'Electronics', sales: 30,  revenue: '$4,500',  growth: '-2%' },
 ])
 
-// Category Sales Data (for visualization)
+// Category Sales Data (static)
 const categorySales = ref([
-  { name: 'Electronics', percentage: 45, color: 'bg-blue-500' },
-  { name: 'Fashion', percentage: 25, color: 'bg-purple-500' },
-  { name: 'Home & Garden', percentage: 20, color: 'bg-emerald-500' },
-  { name: 'Others', percentage: 10, color: 'bg-gray-400' },
+  { name: 'Electronics',  percentage: 45, color: 'bg-blue-500' },
+  { name: 'Fashion',      percentage: 25, color: 'bg-purple-500' },
+  { name: 'Home & Garden',percentage: 20, color: 'bg-emerald-500' },
+  { name: 'Others',       percentage: 10, color: 'bg-gray-400' },
 ])
 </script>
 
@@ -107,12 +150,12 @@ const categorySales = ref([
           </div>
         </div>
         <div class="stat-content">
-          <div class="stat-value">{{ stat.value }}</div>
-          <div class="stat-change" :class="stat.trend">
-            <component :is="stat.trend === 'up' ? ArrowUpRight : ArrowDownRight" class="trend-icon" />
-            {{ stat.change }}
-            <span class="text-muted">vs last period</span>
-          </div>
+          <!-- Skeleton while loading -->
+          <template v-if="statsLoading">
+            <div class="skel skel-val"></div>
+            <div class="skel skel-chg" style="margin-top:0.5rem"></div>
+          </template>
+          <div v-else class="stat-value">{{ stat.value ?? '—' }}</div>
         </div>
       </div>
     </div>
@@ -602,6 +645,10 @@ const categorySales = ref([
 .bg-purple-500 { background-color: #A855F7; }
 .bg-emerald-500 { background-color: #10B981; }
 .bg-gray-400 { background-color: #9CA3AF; }
+.bg-red-100 { background-color: #FEE2E2; }
+.text-red-600 { color: #DC2626; }
+.bg-indigo-100 { background-color: #E0E7FF; }
+.text-indigo-600 { color: #4F46E5; }
 
 /* Responsive */
 @media (max-width: 1024px) {
@@ -625,4 +672,18 @@ const categorySales = ref([
     grid-template-columns: 1fr;
   }
 }
+
+/* ── Skeleton ── */
+@keyframes shimmer {
+  0%   { background-position: -300px 0; }
+  100% { background-position:  300px 0; }
+}
+.skel {
+  border-radius: 6px;
+  background: linear-gradient(90deg, #E2E8F0 25%, #F1F5F9 50%, #E2E8F0 75%);
+  background-size: 300px 100%;
+  animation: shimmer 1.4s infinite linear;
+}
+.skel-val { height: 36px; width: 70%; border-radius: 8px; }
+.skel-chg { height: 14px; width: 50%; border-radius: 4px; }
 </style>

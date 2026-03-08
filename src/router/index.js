@@ -50,6 +50,16 @@ const router = createRouter({
           component: () => import('../views/ProductsView.vue'),
         },
         {
+          path: 'scales',
+          name: 'scales',
+          component: () => import('../views/ScalesView.vue'),
+        },
+        {
+          path: 'sales',
+          name: 'sales',
+          component: () => import('../views/SalesView.vue'),
+        },
+        {
           path: 'settings',
           name: 'settings',
           component: () => import('../views/SettingsView.vue'),

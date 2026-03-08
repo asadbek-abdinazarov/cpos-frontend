@@ -37,14 +37,11 @@ api.interceptors.response.use(
   async (error) => {
     const originalRequest = error.config
 
-    // Check if error response matches exactly the target condition
-    if (
-      error.response &&
-      error.response.data &&
-      error.response.data.status === 401 &&
-      error.response.data.message === "Access token expired" &&
-      !originalRequest._retry
-    ) {
+    // Try token refresh on any 401 Unauthorized (unless it's from the auth/login or auth/refresh themselves)
+    const isAuthUrl = originalRequest.url && (originalRequest.url.includes('web/auth/login') || originalRequest.url.includes('web/auth/refresh'))
+    const isUnauthorized = error.response && (error.response.status === 401 || (error.response.data && error.response.data.status === 401))
+
+    if (isUnauthorized && !isAuthUrl && !originalRequest._retry) {
       if (isRefreshing) {
         return new Promise(function(resolve, reject) {
           failedQueue.push({ resolve, reject })
@@ -72,12 +69,10 @@ api.interceptors.response.use(
           withCredentials: true // needed if backend sets new cookies
         })
 
-        // Depending on what your refresh API returns, you might need to update localStorage again
         if (data.success) {
           if (data.data && data.data.refreshToken) {
             localStorage.setItem('refreshToken', data.data.refreshToken)
           }
-          showNotification({ type: 'success', message: t('auth.session_restored') })
         }
 
         processQueue(null)
@@ -91,6 +86,25 @@ api.interceptors.response.use(
         return Promise.reject(refreshError)
       } finally {
         isRefreshing = false
+      }
+    }
+
+    // Global Error Message Extraction
+    // Avoid showing the error message if it's the 401 we just handled transparently
+    if (!(isUnauthorized && !isAuthUrl)) {
+      if (error.response && error.response.data) {
+        const data = error.response.data
+        if (data.message && data.message !== 'Validation Failed') {
+           showNotification({ type: 'error', message: data.message })
+        }
+        if (data.errors && typeof data.errors === 'object') {
+          Object.values(data.errors).forEach(errText => {
+            showNotification({ type: 'error', message: errText })
+          })
+        }
+      } else {
+        // Fallback generic error
+        showNotification({ type: 'error', message: error.message || 'An unexpected error occurred' })
       }
     }
 
@@ -142,8 +156,57 @@ export function logout() {
   return api.post('web/auth/logout')
 }
 
+let profileRequestPromise = null
+
 export function getUserProfile() {
-  return api.get('web/users/me')
+  if (!profileRequestPromise) {
+    profileRequestPromise = api.get('web/users/me').finally(() => {
+      profileRequestPromise = null
+    })
+  }
+  return profileRequestPromise
+}
+
+export function getProducts(params) {
+  return api.get('web/products', { params })
+}
+
+export function deleteProduct(id) {
+  return api.delete(`web/products/${id}`)
+}
+
+export function deleteProductsBatch(ids) {
+  return api.delete('web/products/batch', {
+    data: ids
+  })
+}
+
+export function getCategories() {
+  return api.get('web/categories')
+}
+
+export function createProduct(data) {
+  return api.post('web/products', data)
+}
+
+export function updateProduct(id, data) {
+  return api.patch(`web/products/${id}`, data)
+}
+
+export function getScales() {
+  return api.get('web/scale/my')
+}
+
+export function getScaleHistories(id, params) {
+  return api.get(`web/scale/my/${id}/histories`, { params })
+}
+
+export function getSalesHistories(params) {
+  return api.get('web/sale/my/histories', { params })
+}
+
+export function getStatistics(params) {
+  return api.get('web/statistics/my', { params })
 }
 
 export default api
