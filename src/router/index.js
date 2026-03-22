@@ -21,13 +21,13 @@ const router = createRouter({
       path: '/login',
       name: 'login',
       component: () => import('../views/LoginView.vue'),
-      meta: { requiresGuest: true }
+      meta: { requiresGuest: true },
     },
     {
       path: '/register',
       name: 'register',
       component: () => import('../views/RegisterView.vue'),
-      meta: { requiresGuest: true }
+      meta: { requiresGuest: true },
     },
     {
       path: '/dashboard',
@@ -37,7 +37,7 @@ const router = createRouter({
         {
           path: '',
           name: 'dashboard',
-          component: () => import('../views/DashboardView.vue'),
+          redirect: '/dashboard/analytics',
         },
         {
           path: 'analytics',
@@ -48,6 +48,21 @@ const router = createRouter({
           path: 'products',
           name: 'products',
           component: () => import('../views/ProductsView.vue'),
+        },
+        {
+          path: 'products/new',
+          name: 'productNew',
+          component: () => import('../views/ProductFormView.vue'),
+        },
+        {
+          path: 'products/:id',
+          name: 'productDetail',
+          component: () => import('../views/ProductDetailView.vue'),
+        },
+        {
+          path: 'products/:id/edit',
+          name: 'productEdit',
+          component: () => import('../views/ProductFormView.vue'),
         },
         {
           path: 'scales',
@@ -63,8 +78,8 @@ const router = createRouter({
           path: 'settings',
           name: 'settings',
           component: () => import('../views/SettingsView.vue'),
-        }
-      ]
+        },
+      ],
     },
   ],
 })
@@ -72,14 +87,14 @@ const router = createRouter({
 router.beforeEach((to, from, next) => {
   const isAuthenticated = !!localStorage.getItem('refreshToken')
 
-  if (to.matched.some(record => record.meta.requiresAuth)) {
+  if (to.matched.some((record) => record.meta.requiresAuth)) {
     // this route requires auth, check if logged in
     // if not, redirect to login page.
     if (!isAuthenticated) {
       next({ name: 'login' })
       return
     }
-  } else if (to.matched.some(record => record.meta.requiresGuest)) {
+  } else if (to.matched.some((record) => record.meta.requiresGuest)) {
     // this route requires guest (no auth), check if logged in
     // if logged in, redirect to dashboard.
     if (isAuthenticated) {

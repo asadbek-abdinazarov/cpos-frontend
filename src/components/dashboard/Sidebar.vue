@@ -1,45 +1,32 @@
 <script setup>
-import { computed } from 'vue'
 import { useRoute } from 'vue-router'
 import { useI18n } from 'vue-i18n'
-import { 
-  LayoutDashboard, 
-  TrendingUp, 
-  Package, 
-  ShoppingBag, 
-  Scale,
-  Users, 
-  Settings,
-  X,
-  LogOut
-} from 'lucide-vue-next'
+import { TrendingUp, Package, ShoppingBag, Scale, Tag, Settings, X, LogOut } from 'lucide-vue-next'
 import { ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { logout, getUserProfile } from '@/services/api'
 import { useNotification } from '@/composables/useNotification'
 
-const props = defineProps({
+defineProps({
   isOpen: {
     type: Boolean,
-    default: false
-  }
+    default: false,
+  },
 })
 
-const emit = defineEmits(['close'])
+defineEmits(['close'])
 
 const route = useRoute()
 const router = useRouter()
 const { t } = useI18n()
 const { showNotification } = useNotification()
 
-// This will eventually come from i18n
 const menuItems = [
-  { name: 'Overview', path: '/dashboard', icon: LayoutDashboard },
-  { name: 'Analytics', path: '/dashboard/analytics', icon: TrendingUp },
-  { name: 'Products', path: '/dashboard/products', icon: Package },
-  { name: 'Scales', path: '/dashboard/scales', icon: Scale },
-  { name: 'Sales', path: '/dashboard/sales', icon: ShoppingBag },
-  { name: 'Settings', path: '/dashboard/settings', icon: Settings },
+  { name: 'dashboard.sidebar.analytics', path: '/dashboard/analytics', icon: TrendingUp },
+  { name: 'dashboard.sidebar.products', path: '/dashboard/products', icon: Package },
+  { name: 'dashboard.sidebar.scales', path: '/dashboard/scales', icon: Scale },
+  { name: 'dashboard.sidebar.sales', path: '/dashboard/sales', icon: ShoppingBag },
+  { name: 'dashboard.sidebar.settings', path: '/dashboard/settings', icon: Settings },
 ]
 
 const isActive = (path) => {
@@ -59,7 +46,7 @@ const userData = ref({
   permissions: [],
   organization: null,
   shop: null,
-  warehouse: null
+  warehouse: null,
 })
 
 const fetchProfile = async () => {
@@ -78,31 +65,27 @@ const fetchProfile = async () => {
         updatedAt: u.updatedAt || '',
         roles: u.roles || [],
         permissions: u.permissions || [],
-        organization: u.organization ? {
-          name: u.organization.name || '',
-          stir: u.organization.stir || '',
-          address: u.organization.address || '',
-          phone: u.organization.phone || '',
-          isActive: !!u.organization.isActive,
-          createdAt: u.organization.createdAt || '',
-          updatedAt: u.organization.updatedAt || ''
-        } : null,
-        shop: u.shop ? {
-          name: u.shop.name || '',
-          address: u.shop.address || '',
-          phone: u.shop.phone || '',
-          isActive: !!u.shop.isActive,
-          createdAt: u.shop.createdAt || '',
-          updatedAt: u.shop.updatedAt || ''
-        } : null
-        /* warehouse: u.warehouse ? {
-          name: u.warehouse.name || '',
-          address: u.warehouse.address || '',
-          phone: u.warehouse.phone || '',
-          isActive: !!u.warehouse.isActive,
-          createdAt: u.warehouse.createdAt || '',
-          updatedAt: u.warehouse.updatedAt || ''
-        } : null */
+        organization: u.organization
+          ? {
+              name: u.organization.name || '',
+              stir: u.organization.stir || '',
+              address: u.organization.address || '',
+              phone: u.organization.phone || '',
+              isActive: !!u.organization.isActive,
+              createdAt: u.organization.createdAt || '',
+              updatedAt: u.organization.updatedAt || '',
+            }
+          : null,
+        shop: u.shop
+          ? {
+              name: u.shop.name || '',
+              address: u.shop.address || '',
+              phone: u.shop.phone || '',
+              isActive: !!u.shop.isActive,
+              createdAt: u.shop.createdAt || '',
+              updatedAt: u.shop.updatedAt || '',
+            }
+          : null,
       }
     }
   } catch (error) {
@@ -126,7 +109,7 @@ const handleLogout = async () => {
     localStorage.removeItem('username')
     localStorage.removeItem('userId')
     router.push('/')
-    showNotification({ type: 'info', message: t('nav.success-logout')})
+    showNotification({ type: 'info', message: t('nav.success-logout') })
   }
 }
 </script>
@@ -135,7 +118,7 @@ const handleLogout = async () => {
   <aside class="sidebar" :class="{ open: isOpen }">
     <div class="sidebar-header">
       <router-link to="/">
-            <img src="/logo-nav.svg" alt="CPOS" class="logo" />
+        <img src="/logo-nav.svg" alt="CPOS" class="logo" />
       </router-link>
       <button class="close-btn" @click="$emit('close')">
         <X class="icon-sm" />
@@ -143,16 +126,16 @@ const handleLogout = async () => {
     </div>
 
     <nav class="sidebar-nav">
-      <router-link 
-        v-for="item in menuItems" 
-        :key="item.path" 
+      <router-link
+        v-for="item in menuItems"
+        :key="item.path"
         :to="item.path"
         class="nav-item"
         :class="{ active: isActive(item.path) }"
         @click="$emit('close')"
       >
         <component :is="item.icon" class="icon" />
-        <span class="label">{{ item.name }}</span>
+        <span class="label">{{ t(item.name) }}</span>
       </router-link>
     </nav>
 
@@ -169,8 +152,8 @@ const handleLogout = async () => {
 .sidebar {
   width: 260px;
   height: 100vh;
-  background-color: #FFFFFF;
-  border-right: 1px solid #E2E8F0;
+  background-color: #ffffff;
+  border-right: 1px solid #e2e8f0;
   display: flex;
   flex-direction: column;
   position: fixed;
@@ -186,7 +169,7 @@ const handleLogout = async () => {
   align-items: center;
   justify-content: space-between;
   padding: 0 1.5rem;
-  border-bottom: 1px solid #F1F5F9;
+  border-bottom: 1px solid #f1f5f9;
 }
 
 .logo {
@@ -200,13 +183,13 @@ const handleLogout = async () => {
   border: none;
   cursor: pointer;
   padding: 0.5rem;
-  color: #64748B;
+  color: #64748b;
   border-radius: 8px;
 }
 
 .close-btn:hover {
-  background-color: #F1F5F9;
-  color: #0F172A;
+  background-color: #f1f5f9;
+  color: #0f172a;
 }
 
 .icon-sm {
@@ -217,7 +200,7 @@ const handleLogout = async () => {
 .brand-name {
   font-weight: 700;
   font-size: 1.25rem;
-  color: #0F172A;
+  color: #0f172a;
 }
 
 .sidebar-nav {
@@ -235,20 +218,20 @@ const handleLogout = async () => {
   gap: 0.75rem;
   padding: 0.75rem 1rem;
   border-radius: 8px;
-  color: #64748B;
+  color: #64748b;
   text-decoration: none;
   font-weight: 500;
   transition: all 0.2s;
 }
 
 .nav-item:hover {
-  background-color: #F8FAFC;
-  color: #0F172A;
+  background-color: #f8fafc;
+  color: #0f172a;
 }
 
 .nav-item.active {
-  background-color: #EFF6FF;
-  color: #2563EB;
+  background-color: #eff6ff;
+  color: #2563eb;
 }
 
 .icon {
@@ -259,7 +242,7 @@ const handleLogout = async () => {
 
 .sidebar-footer {
   padding: 1rem;
-  border-top: 1px solid #F1F5F9;
+  border-top: 1px solid #f1f5f9;
 }
 
 .user-info {
@@ -273,13 +256,13 @@ const handleLogout = async () => {
 }
 
 .user-info:hover {
-  background-color: #F8FAFC;
+  background-color: #f8fafc;
 }
 
 .avatar {
   width: 40px;
   height: 40px;
-  background-color: #2563EB;
+  background-color: #2563eb;
   color: white;
   border-radius: 50%;
   display: flex;
@@ -291,13 +274,13 @@ const handleLogout = async () => {
 
 .details .name {
   font-weight: 600;
-  color: #0F172A;
+  color: #0f172a;
   font-size: 0.9rem;
 }
 
 .details .role {
   font-size: 0.8rem;
-  color: #64748B;
+  color: #64748b;
 }
 
 .logout-btn {
@@ -309,7 +292,7 @@ const handleLogout = async () => {
   margin-top: 0.5rem;
   border: none;
   background: transparent;
-  color: #EF4444; /* red-500 */
+  color: #ef4444; /* red-500 */
   border-radius: 8px;
   cursor: pointer;
   font-family: inherit;
@@ -319,14 +302,14 @@ const handleLogout = async () => {
 }
 
 .logout-btn:hover {
-  background-color: #FEF2F2; /* red-50 */
+  background-color: #fef2f2; /* red-50 */
 }
 
 @media (max-width: 1024px) {
   .sidebar {
     transform: translateX(-100%);
   }
-  
+
   .sidebar.open {
     transform: translateX(0);
     box-shadow: 4px 0 24px rgba(0, 0, 0, 0.1);

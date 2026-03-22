@@ -7,6 +7,7 @@ const { showNotification } = useNotification()
 const t = i18n.global.t
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080/api/v1/'
+//https://cpos-backend-uf77.onrender.com/api/v1/
 
 const api = axios.create({
   baseURL: API_BASE_URL,
@@ -20,7 +21,7 @@ let isRefreshing = false
 let failedQueue = []
 
 const processQueue = (error, token = null) => {
-  failedQueue.forEach(prom => {
+  failedQueue.forEach((prom) => {
     if (error) {
       prom.reject(error)
     } else {
@@ -38,18 +39,25 @@ api.interceptors.response.use(
     const originalRequest = error.config
 
     // Try token refresh on any 401 Unauthorized (unless it's from the auth/login or auth/refresh themselves)
-    const isAuthUrl = originalRequest.url && (originalRequest.url.includes('web/auth/login') || originalRequest.url.includes('web/auth/refresh'))
-    const isUnauthorized = error.response && (error.response.status === 401 || (error.response.data && error.response.data.status === 401))
+    const isAuthUrl =
+      originalRequest.url &&
+      (originalRequest.url.includes('web/auth/login') ||
+        originalRequest.url.includes('web/auth/refresh'))
+    const isUnauthorized =
+      error.response &&
+      (error.response.status === 401 || (error.response.data && error.response.data.status === 401))
 
     if (isUnauthorized && !isAuthUrl && !originalRequest._retry) {
       if (isRefreshing) {
-        return new Promise(function(resolve, reject) {
+        return new Promise(function (resolve, reject) {
           failedQueue.push({ resolve, reject })
-        }).then(() => {
-          return api(originalRequest)
-        }).catch(err => {
-          return Promise.reject(err)
         })
+          .then(() => {
+            return api(originalRequest)
+          })
+          .catch((err) => {
+            return Promise.reject(err)
+          })
       }
 
       originalRequest._retry = true
@@ -63,11 +71,15 @@ api.interceptors.response.use(
       }
 
       try {
-        const { data } = await axios.post(`${API_BASE_URL}web/auth/refresh`, {
-          refreshToken: refreshToken
-        }, {
-          withCredentials: true // needed if backend sets new cookies
-        })
+        const { data } = await axios.post(
+          `${API_BASE_URL}web/auth/refresh`,
+          {
+            refreshToken: refreshToken,
+          },
+          {
+            withCredentials: true, // needed if backend sets new cookies
+          },
+        )
 
         if (data.success) {
           if (data.data && data.data.refreshToken) {
@@ -76,10 +88,9 @@ api.interceptors.response.use(
         }
 
         processQueue(null)
-        
+
         // Retry original request (the cookie will automatically be sent by browser)
         return api(originalRequest)
-        
       } catch (refreshError) {
         processQueue(refreshError, null)
         forceLogout()
@@ -95,21 +106,24 @@ api.interceptors.response.use(
       if (error.response && error.response.data) {
         const data = error.response.data
         if (data.message && data.message !== 'Validation Failed') {
-           showNotification({ type: 'error', message: data.message })
+          showNotification({ type: 'error', message: data.message })
         }
         if (data.errors && typeof data.errors === 'object') {
-          Object.values(data.errors).forEach(errText => {
+          Object.values(data.errors).forEach((errText) => {
             showNotification({ type: 'error', message: errText })
           })
         }
       } else {
         // Fallback generic error
-        showNotification({ type: 'error', message: error.message || 'An unexpected error occurred' })
+        showNotification({
+          type: 'error',
+          message: error.message || 'An unexpected error occurred',
+        })
       }
     }
 
     return Promise.reject(error)
-  }
+  },
 )
 
 function forceLogout() {
@@ -118,13 +132,13 @@ function forceLogout() {
 
   // Call the logout endpoint on best-effort basis
   axios.post(`${API_BASE_URL}web/auth/logout`, {}, { withCredentials: true }).catch(() => {})
-  
+
   // Clear frontend state
   localStorage.removeItem('refreshToken')
   localStorage.removeItem('accessToken')
   localStorage.removeItem('username')
   localStorage.removeItem('userId')
-  
+
   // Redirect to login page using Vue Router to preserve notification
   router.push('/login')
 }
@@ -171,13 +185,17 @@ export function getProducts(params) {
   return api.get('web/products', { params })
 }
 
+export function getProduct(id) {
+  return api.get(`web/products/${id}`)
+}
+
 export function deleteProduct(id) {
   return api.delete(`web/products/${id}`)
 }
 
 export function deleteProductsBatch(ids) {
   return api.delete('web/products/batch', {
-    data: ids
+    data: ids,
   })
 }
 
@@ -207,6 +225,42 @@ export function getSalesHistories(params) {
 
 export function getStatistics(params) {
   return api.get('web/statistics/my', { params })
+}
+
+export function getSalesTrend(params) {
+  return api.get('web/statistics/sales-trend', { params })
+}
+
+export function getSalesByCategory(params) {
+  return api.get('web/statistics/sales-by-category', { params })
+}
+
+export function getTopProductsTrend(params) {
+  return api.get('web/statistics/top-products-trend', { params })
+}
+
+export function updatePassword(data) {
+  return api.put('web/users/password', data)
+}
+
+export function getUnreadNotificationCount() {
+  return api.get('web/notifications/unread-count')
+}
+
+export function getNotifications(params) {
+  return api.get('web/notifications', { params })
+}
+
+export function markNotificationAsRead(id) {
+  return api.post(`web/notifications/${id}/read`)
+}
+
+export function generateBarcode() {
+  return api.get('web/products/generate-barcode')
+}
+
+export function generateSku() {
+  return api.get('web/products/generate-sku')
 }
 
 export default api

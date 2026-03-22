@@ -28,7 +28,7 @@ const form = ref({
   orgAddress: '',
   orgPhone: '',
   password: '',
-  confirmPassword: ''
+  confirmPassword: '',
 })
 
 onMounted(() => {
@@ -109,7 +109,13 @@ const handleRegister = async () => {
           <div class="form-row">
             <div class="form-group">
               <label for="firstname">{{ t('auth.firstname') }}</label>
-              <input type="text" id="firstname" v-model="form.firstname" required placeholder="John" />
+              <input
+                type="text"
+                id="firstname"
+                v-model="form.firstname"
+                required
+                placeholder="John"
+              />
             </div>
             <div class="form-group">
               <label for="lastname">{{ t('auth.lastname') }}</label>
@@ -120,17 +126,35 @@ const handleRegister = async () => {
           <div class="form-row">
             <div class="form-group">
               <label for="username">{{ t('auth.username') }}</label>
-              <input type="text" id="username" v-model="form.username" required placeholder="johndoe" />
+              <input
+                type="text"
+                id="username"
+                v-model="form.username"
+                required
+                placeholder="johndoe"
+              />
             </div>
             <div class="form-group">
               <label for="email">{{ t('auth.email_register') }}</label>
-              <input type="email" id="email" v-model="form.email" required placeholder="john@example.com" />
+              <input
+                type="email"
+                id="email"
+                v-model="form.email"
+                required
+                placeholder="john@example.com"
+              />
             </div>
           </div>
 
           <div class="form-group">
             <label for="phone">{{ t('auth.phone') }}</label>
-            <input type="tel" id="phone" v-model="form.phone" required placeholder="+998 90 123 45 67" />
+            <input
+              type="tel"
+              id="phone"
+              v-model="form.phone"
+              required
+              placeholder="+998 90 123 45 67"
+            />
           </div>
 
           <div class="form-group">
@@ -164,11 +188,21 @@ const handleRegister = async () => {
           <div class="form-row">
             <div class="form-group">
               <label for="orgAddress">{{ t('auth.org_address') }}</label>
-              <input type="text" id="orgAddress" v-model="form.orgAddress" placeholder="Tashkent, Amir Temur 1" />
+              <input
+                type="text"
+                id="orgAddress"
+                v-model="form.orgAddress"
+                placeholder="Tashkent, Amir Temur 1"
+              />
             </div>
             <div class="form-group">
               <label for="orgPhone">{{ t('auth.org_phone') }}</label>
-              <input type="tel" id="orgPhone" v-model="form.orgPhone" placeholder="+998 71 123 45 67" />
+              <input
+                type="tel"
+                id="orgPhone"
+                v-model="form.orgPhone"
+                placeholder="+998 71 123 45 67"
+              />
             </div>
           </div>
 
@@ -176,7 +210,13 @@ const handleRegister = async () => {
             <div class="form-group">
               <label for="password">{{ t('auth.password') }}</label>
               <div class="password-input-wrapper">
-                <input :type="showPassword ? 'text' : 'password'" id="password" v-model="form.password" required placeholder="••••••••" />
+                <input
+                  :type="showPassword ? 'text' : 'password'"
+                  id="password"
+                  v-model="form.password"
+                  required
+                  placeholder="••••••••"
+                />
                 <button type="button" class="password-toggle" @click="showPassword = !showPassword">
                   <Eye v-if="showPassword" class="icon" />
                   <EyeOff v-else class="icon" />
@@ -186,8 +226,18 @@ const handleRegister = async () => {
             <div class="form-group">
               <label for="confirmPassword">{{ t('auth.confirm_password') }}</label>
               <div class="password-input-wrapper">
-                <input :type="showConfirmPassword ? 'text' : 'password'" id="confirmPassword" v-model="form.confirmPassword" required placeholder="••••••••" />
-                <button type="button" class="password-toggle" @click="showConfirmPassword = !showConfirmPassword">
+                <input
+                  :type="showConfirmPassword ? 'text' : 'password'"
+                  id="confirmPassword"
+                  v-model="form.confirmPassword"
+                  required
+                  placeholder="••••••••"
+                />
+                <button
+                  type="button"
+                  class="password-toggle"
+                  @click="showConfirmPassword = !showConfirmPassword"
+                >
                   <Eye v-if="showConfirmPassword" class="icon" />
                   <EyeOff v-else class="icon" />
                 </button>
@@ -205,7 +255,10 @@ const handleRegister = async () => {
         </form>
 
         <div class="form-footer">
-          <p>{{ t('auth.already_account') }} <router-link to="/login" class="link">{{ t('auth.login_link') }}</router-link></p>
+          <p>
+            {{ t('auth.already_account') }}
+            <router-link to="/login" class="link">{{ t('auth.login_link') }}</router-link>
+          </p>
           <router-link to="/" class="back-home-link">
             <span class="arrow-icon">←</span> {{ t('auth.back_to_home') }}
           </router-link>
@@ -220,14 +273,14 @@ const handleRegister = async () => {
   display: flex;
   min-height: 100vh;
   width: 100%;
-  background-color: #FFFFFF;
+  background-color: #ffffff;
 }
 
 /* Left Side - Image */
 .auth-image-section {
   flex: 1;
   position: relative;
-  background-color: #0F172A;
+  background-color: #0f172a;
   display: flex;
   align-items: flex-end;
   justify-content: center;
@@ -285,7 +338,7 @@ const handleRegister = async () => {
   align-items: center; /* Center vertically if content allows, or 'flex-start' with padding */
   justify-content: center;
   padding: 2rem;
-  background-color: #FFFFFF;
+  background-color: #ffffff;
   overflow-y: auto; /* Allow scrolling on right side if form is long */
 }
 
@@ -308,12 +361,12 @@ const handleRegister = async () => {
 .headers h1 {
   font-size: 2rem;
   font-weight: 700;
-  color: #0F172A;
+  color: #0f172a;
   margin-bottom: 0.5rem;
 }
 
 .subtitle {
-  color: #64748B;
+  color: #64748b;
   font-size: 0.95rem;
 }
 
@@ -345,12 +398,12 @@ const handleRegister = async () => {
   color: #334155;
 }
 
-.form-group input[type="text"],
-.form-group input[type="email"],
-.form-group input[type="password"],
-.form-group input[type="tel"] {
+.form-group input[type='text'],
+.form-group input[type='email'],
+.form-group input[type='password'],
+.form-group input[type='tel'] {
   padding: 0.75rem 1rem;
-  border: 1px solid #E2E8F0;
+  border: 1px solid #e2e8f0;
   border-radius: 8px;
   font-size: 0.95rem;
   transition: all 0.2s ease;
@@ -358,7 +411,7 @@ const handleRegister = async () => {
 }
 
 .form-group input:focus {
-  border-color: #007BFF;
+  border-color: #007bff;
   box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.1);
 }
 
@@ -380,7 +433,7 @@ const handleRegister = async () => {
   background: none;
   border: none;
   cursor: pointer;
-  color: #64748B;
+  color: #64748b;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -389,7 +442,7 @@ const handleRegister = async () => {
 }
 
 .password-toggle:hover {
-  color: #0F172A;
+  color: #0f172a;
 }
 
 .password-toggle .icon {
@@ -420,7 +473,7 @@ const handleRegister = async () => {
 .radio-custom {
   width: 18px;
   height: 18px;
-  border: 2px solid #CBD5E1;
+  border: 2px solid #cbd5e1;
   border-radius: 50%;
   position: relative;
   display: flex;
@@ -430,19 +483,19 @@ const handleRegister = async () => {
 }
 
 .radio-label input:checked + .radio-custom {
-  border-color: #007BFF;
+  border-color: #007bff;
 }
 
 .radio-label input:checked + .radio-custom::after {
   content: '';
   width: 10px;
   height: 10px;
-  background-color: #007BFF;
+  background-color: #007bff;
   border-radius: 50%;
 }
 
 .btn-primary-auth {
-  background-color: #007BFF;
+  background-color: #007bff;
   color: white;
   padding: 0.85rem;
   border: none;
@@ -480,14 +533,16 @@ const handleRegister = async () => {
 }
 
 @keyframes spin {
-  to { transform: rotate(360deg); }
+  to {
+    transform: rotate(360deg);
+  }
 }
 
 .form-footer {
   margin-top: 2rem;
   text-align: center;
   font-size: 0.95rem;
-  color: #64748B;
+  color: #64748b;
   display: flex;
   flex-direction: column;
   gap: 1rem;
@@ -495,7 +550,7 @@ const handleRegister = async () => {
 }
 
 .link {
-  color: #007BFF;
+  color: #007bff;
   text-decoration: none;
   font-weight: 600;
 }
@@ -505,7 +560,7 @@ const handleRegister = async () => {
 }
 
 .back-home-link {
-  color: #64748B;
+  color: #64748b;
   text-decoration: none;
   font-size: 0.9rem;
   display: flex;
@@ -515,7 +570,7 @@ const handleRegister = async () => {
 }
 
 .back-home-link:hover {
-  color: #0F172A;
+  color: #0f172a;
 }
 
 .arrow-icon {

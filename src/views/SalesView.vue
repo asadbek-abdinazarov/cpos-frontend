@@ -12,7 +12,7 @@ import {
   User,
   ChevronLeft,
   ChevronRight,
-  Package
+  Package,
 } from 'lucide-vue-next'
 
 const sales = ref([])
@@ -43,7 +43,7 @@ const fetchSales = async () => {
     const params = {
       page: currentPage.value - 1,
       size: itemsPerPage.value,
-      sort: ['status'] // requested default sort behavior
+      sort: 'status', // requested default sort behavior
     }
 
     if (searchQuery.value) {
@@ -116,8 +116,8 @@ const formatCurrency = (amount) => {
     <!-- Header -->
     <div class="page-header">
       <div>
-        <h1 class="page-title">Sales History</h1>
-        <p class="text-subtitle">View and monitor all sale transactions</p>
+        <h1 class="page-title">{{ $t('dashboard.sales.title') }}</h1>
+        <p class="text-subtitle">{{ $t('dashboard.sales.subtitle') }}</p>
       </div>
     </div>
 
@@ -126,14 +126,16 @@ const formatCurrency = (amount) => {
       <form @submit.prevent="onSearchSubmit" class="search-form">
         <div class="search-box">
           <Search class="search-icon" />
-          <input 
-            type="text" 
-            v-model="searchQuery" 
-            placeholder="Search sales..." 
+          <input
+            type="text"
+            v-model="searchQuery"
+            :placeholder="$t('dashboard.sales.search_placeholder')"
             class="search-input"
           />
         </div>
-        <button type="submit" class="btn btn-primary search-btn">Search</button>
+        <button type="submit" class="btn btn-primary search-btn">
+          {{ $t('dashboard.sales.search_btn') }}
+        </button>
       </form>
     </div>
 
@@ -156,36 +158,41 @@ const formatCurrency = (amount) => {
             <template v-if="loading">
               <tr v-for="n in itemsPerPage" :key="n" class="skel-row">
                 <td><div class="skel skel-icon"></div></td>
-                <td><div class="skel" style="width: 140px; height: 14px;"></div></td>
-                <td><div class="skel" style="width: 120px; height: 14px;"></div></td>
+                <td><div class="skel" style="width: 140px; height: 14px"></div></td>
+                <td><div class="skel" style="width: 120px; height: 14px"></div></td>
                 <td><div class="skel skel-badge"></div></td>
-                <td><div class="skel" style="width: 80px; height: 14px;"></div></td>
-                <td><div class="skel ml-auto" style="width: 100px; height: 16px;"></div></td>
-                <td><div class="skel ml-auto" style="width: 100px; height: 14px;"></div></td>
+                <td><div class="skel" style="width: 80px; height: 14px"></div></td>
+                <td><div class="skel ml-auto" style="width: 100px; height: 16px"></div></td>
+                <td><div class="skel ml-auto" style="width: 100px; height: 14px"></div></td>
               </tr>
             </template>
-            
+
             <template v-else-if="sales.length === 0">
               <tr>
                 <td colspan="7" class="empty-state">
-                  <ShoppingBag class="icon-xl text-subtle mx-auto mb-2" style="display: block; margin: 0 auto; width: 48px; height: 48px;" />
+                  <ShoppingBag
+                    class="icon-xl text-subtle mx-auto mb-2"
+                    style="display: block; margin: 0 auto; width: 48px; height: 48px"
+                  />
                   No sales found matching your criteria.
                 </td>
               </tr>
             </template>
-            
+
             <template v-else v-for="sale in sales" :key="sale.uuid">
               <!-- Main Row -->
-              <tr class="main-row" @click="toggleRow(sale.uuid)" :class="{ 'expanded': isExpanded(sale.uuid) }">
+              <tr
+                class="main-row"
+                @click="toggleRow(sale.uuid)"
+                :class="{ expanded: isExpanded(sale.uuid) }"
+              >
                 <td class="w-10 text-center">
                   <div class="expand-icon-wrapper">
                     <ChevronUp v-if="isExpanded(sale.uuid)" class="icon-sm text-primary" />
                     <ChevronDown v-else class="icon-sm text-subtle" />
                   </div>
                 </td>
-                <td class="mono-text text-sm">
-                  {{ sale.uuid.split('-')[0] }}...
-                </td>
+                <td class="mono-text text-sm">{{ sale.uuid.split('-')[0] }}...</td>
                 <td>
                   <div class="cashier-info">
                     <User class="icon-xs text-subtle" />
@@ -193,7 +200,10 @@ const formatCurrency = (amount) => {
                   </div>
                 </td>
                 <td>
-                  <span class="status-badge" :class="sale.status === 'COMPLETED' ? 'badge-success' : 'badge-danger'">
+                  <span
+                    class="status-badge"
+                    :class="sale.status === 'COMPLETED' ? 'badge-success' : 'badge-danger'"
+                  >
                     {{ sale.status }}
                   </span>
                 </td>
@@ -214,21 +224,34 @@ const formatCurrency = (amount) => {
                   </div>
                 </td>
               </tr>
-              
+
               <!-- Expanded Sub-Row (Items list) -->
               <tr v-if="isExpanded(sale.uuid)" class="expanded-row">
                 <td colspan="7" class="expanded-cell">
                   <div class="expanded-content p-4">
                     <div class="flex justify-between items-center mb-3">
-                      <h4 class="text-sm font-semibold flex items-center gap-2 mb-2"><Package class="icon-sm" /> Sale Items</h4>
-                      <div class="sale-summary text-sm flex gap-6" style="margin-left: 2rem; margin-bottom: 0.5rem;">
-                        <span v-if="sale.discountAmount > 0" class="text-red-500 font-medium">Discount: {{ formatCurrency(sale.discountAmount) }}</span>
-                        <span class="text-emerald-600 font-medium">Paid: {{ formatCurrency(sale.paidAmount) }}</span>
-                        <span v-if="sale.changeAmount > 0" class="text-orange-500 font-medium">Change: {{ formatCurrency(sale.changeAmount) }}</span>
+                      <h4 class="text-sm font-semibold flex items-center gap-2 mb-2">
+                        <Package class="icon-sm" /> Sale Items
+                      </h4>
+                      <div
+                        class="sale-summary text-sm flex gap-6"
+                        style="margin-left: 2rem; margin-bottom: 0.5rem"
+                      >
+                        <span v-if="sale.discountAmount > 0" class="text-red-500 font-medium"
+                          >Discount: {{ formatCurrency(sale.discountAmount) }}</span
+                        >
+                        <span class="text-emerald-600 font-medium"
+                          >Paid: {{ formatCurrency(sale.paidAmount) }}</span
+                        >
+                        <span v-if="sale.changeAmount > 0" class="text-orange-500 font-medium"
+                          >Change: {{ formatCurrency(sale.changeAmount) }}</span
+                        >
                       </div>
                     </div>
-                    
-                    <div class="items-table-wrapper rounded-lg border border-slate-200 overflow-hidden">
+
+                    <div
+                      class="items-table-wrapper rounded-lg border border-slate-200 overflow-hidden"
+                    >
                       <table class="w-full text-sm text-left">
                         <thead class="bg-slate-50 text-slate-500 uppercase text-xs">
                           <tr>
@@ -240,14 +263,25 @@ const formatCurrency = (amount) => {
                           </tr>
                         </thead>
                         <tbody class="divide-y divide-slate-100">
-                          <tr v-for="item in sale.items" :key="item.uuid" class="bg-white hover:bg-slate-50">
+                          <tr
+                            v-for="item in sale.items"
+                            :key="item.uuid"
+                            class="bg-white hover:bg-slate-50"
+                          >
                             <td class="px-4 py-2 font-medium text-slate-800">{{ item.name }}</td>
-                            <td class="px-4 py-2 font-mono text-slate-500 text-xs">{{ item.code || '—' }}</td>
-                            <td class="px-4 py-2 text-right text-slate-600">
-                              {{ item.quantity }} <span class="text-xs text-slate-400">{{ item.unit }}</span>
+                            <td class="px-4 py-2 font-mono text-slate-500 text-xs">
+                              {{ item.code || '—' }}
                             </td>
-                            <td class="px-4 py-2 text-right text-slate-600">{{ formatCurrency(item.price) }}</td>
-                            <td class="px-4 py-2 text-right font-medium text-slate-800">{{ formatCurrency(item.total) }}</td>
+                            <td class="px-4 py-2 text-right text-slate-600">
+                              {{ item.quantity }}
+                              <span class="text-xs text-slate-400">{{ item.unit }}</span>
+                            </td>
+                            <td class="px-4 py-2 text-right text-slate-600">
+                              {{ formatCurrency(item.price) }}
+                            </td>
+                            <td class="px-4 py-2 text-right font-medium text-slate-800">
+                              {{ formatCurrency(item.total) }}
+                            </td>
                           </tr>
                         </tbody>
                       </table>
@@ -263,7 +297,8 @@ const formatCurrency = (amount) => {
       <!-- Pagination -->
       <div class="pagination-footer" v-if="sales.length > 0">
         <span class="pagination-info">
-          Showing {{ (currentPage - 1) * itemsPerPage + 1 }} to {{ Math.min(currentPage * itemsPerPage, totalElements) }} of {{ totalElements }} entries
+          Showing {{ (currentPage - 1) * itemsPerPage + 1 }} to
+          {{ Math.min(currentPage * itemsPerPage, totalElements) }} of {{ totalElements }} entries
         </span>
         <div class="pagination-controls">
           <button class="page-btn" @click="prevPage" :disabled="currentPage === 1">
@@ -289,8 +324,14 @@ const formatCurrency = (amount) => {
 }
 
 @keyframes fadeIn {
-  from { opacity: 0; transform: translateY(10px); }
-  to { opacity: 1; transform: translateY(0); }
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 /* Header */
@@ -305,12 +346,12 @@ const formatCurrency = (amount) => {
 .page-title {
   font-size: 1.7rem;
   font-weight: 700;
-  color: #0F172A;
+  color: #0f172a;
   margin: 0 0 0.25rem 0;
 }
 
 .text-subtitle {
-  color: #64748B;
+  color: #64748b;
   font-size: 0.95rem;
   margin: 0;
 }
@@ -324,7 +365,7 @@ const formatCurrency = (amount) => {
   padding: 1rem 1.25rem;
   border-radius: 12px;
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
-  border: 1px solid #F1F5F9;
+  border: 1px solid #f1f5f9;
   gap: 1rem;
   flex-wrap: wrap;
 }
@@ -356,12 +397,12 @@ const formatCurrency = (amount) => {
 }
 
 .btn-primary {
-  background-color: #2563EB;
+  background-color: #2563eb;
   color: white;
 }
 
 .btn-primary:hover {
-  background-color: #1D4ED8;
+  background-color: #1d4ed8;
 }
 
 .search-btn {
@@ -373,7 +414,7 @@ const formatCurrency = (amount) => {
   left: 12px;
   top: 50%;
   transform: translateY(-50%);
-  color: #94A3B8;
+  color: #94a3b8;
   width: 18px;
   height: 18px;
 }
@@ -381,16 +422,18 @@ const formatCurrency = (amount) => {
 .search-input {
   width: 100%;
   padding: 0.6rem 1rem 0.6rem 2.5rem;
-  border: 1px solid #E2E8F0;
+  border: 1px solid #e2e8f0;
   border-radius: 8px;
   font-size: 0.95rem;
   outline: none;
-  transition: border-color 0.2s, box-shadow 0.2s;
+  transition:
+    border-color 0.2s,
+    box-shadow 0.2s;
   box-sizing: border-box;
 }
 
 .search-input:focus {
-  border-color: #2563EB;
+  border-color: #2563eb;
   box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
 }
 
@@ -398,14 +441,16 @@ const formatCurrency = (amount) => {
 .card {
   background: white;
   border-radius: 12px;
-  border: 1px solid #F1F5F9;
-  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -2px rgba(0, 0, 0, 0.05);
+  border: 1px solid #f1f5f9;
+  box-shadow:
+    0 4px 6px -1px rgba(0, 0, 0, 0.05),
+    0 2px 4px -2px rgba(0, 0, 0, 0.05);
   overflow: hidden;
 }
 
 .table-responsive {
   overflow-x: auto;
-  border-bottom: 1px solid #F1F5F9;
+  border-bottom: 1px solid #f1f5f9;
 }
 
 .data-table {
@@ -414,15 +459,16 @@ const formatCurrency = (amount) => {
   border-spacing: 0;
 }
 
-.data-table th, .data-table td {
+.data-table th,
+.data-table td {
   padding: 1rem 1.25rem;
   text-align: left;
   vertical-align: middle;
 }
 
 .data-table th {
-  background-color: #F8FAFC;
-  color: #64748B;
+  background-color: #f8fafc;
+  color: #64748b;
   font-weight: 600;
   font-size: 0.75rem;
   text-transform: uppercase;
@@ -431,34 +477,77 @@ const formatCurrency = (amount) => {
 }
 
 .data-table td {
-  border-bottom: 1px solid #F1F5F9;
+  border-bottom: 1px solid #f1f5f9;
   color: #334155;
   font-size: 0.95rem;
 }
 
-.w-10 { width: 40px; }
-.text-center { text-align: center; }
-.text-right { text-align: right; }
-.justify-end { justify-content: flex-end; }
-.font-medium { font-weight: 500; }
-.font-semibold { font-weight: 600; }
-.text-sm { font-size: 0.875rem; }
-.text-xs { font-size: 0.75rem; }
+.w-10 {
+  width: 40px;
+}
+.text-center {
+  text-align: center;
+}
+.text-right {
+  text-align: right;
+}
+.justify-end {
+  justify-content: flex-end;
+}
+.font-medium {
+  font-weight: 500;
+}
+.font-semibold {
+  font-weight: 600;
+}
+.text-sm {
+  font-size: 0.875rem;
+}
+.text-xs {
+  font-size: 0.75rem;
+}
 
-.text-subtle { color: #64748B; }
-.text-primary { color: #2563EB; }
-.text-emerald { color: #10B981; }
-.text-blue { color: #3B82F6; }
+.text-subtle {
+  color: #64748b;
+}
+.text-primary {
+  color: #2563eb;
+}
+.text-emerald {
+  color: #10b981;
+}
+.text-blue {
+  color: #3b82f6;
+}
 
-.flex { display: flex; }
-.items-center { align-items: center; }
-.gap-2 { gap: 0.5rem; }
-.gap-4 { gap: 1rem; }
-.mb-3 { margin-bottom: 0.75rem; }
-.p-4 { padding: 1.5rem; }
-.mx-auto { margin-left: auto; margin-right: auto; }
-.mb-2 { margin-bottom: 0.5rem; }
-.bg-slate-50 { background-color: #F8FAFC; }
+.flex {
+  display: flex;
+}
+.items-center {
+  align-items: center;
+}
+.gap-2 {
+  gap: 0.5rem;
+}
+.gap-4 {
+  gap: 1rem;
+}
+.mb-3 {
+  margin-bottom: 0.75rem;
+}
+.p-4 {
+  padding: 1.5rem;
+}
+.mx-auto {
+  margin-left: auto;
+  margin-right: auto;
+}
+.mb-2 {
+  margin-bottom: 0.5rem;
+}
+.bg-slate-50 {
+  background-color: #f8fafc;
+}
 
 .main-row {
   cursor: pointer;
@@ -466,11 +555,11 @@ const formatCurrency = (amount) => {
 }
 
 .main-row:hover {
-  background-color: #F8FAFC;
+  background-color: #f8fafc;
 }
 
 .main-row.expanded {
-  background-color: #EFF6FF;
+  background-color: #eff6ff;
 }
 
 .main-row.expanded td {
@@ -478,17 +567,17 @@ const formatCurrency = (amount) => {
 }
 
 .expanded-row {
-  background-color: #F8FAFC;
+  background-color: #f8fafc;
 }
 
 .expanded-cell {
   padding: 0 !important;
-  border-bottom: 1px solid #E2E8F0 !important;
+  border-bottom: 1px solid #e2e8f0 !important;
 }
 
 .expanded-content {
-  border-left: 3px solid #2563EB;
-  background-color: #FAFAF9;
+  border-left: 3px solid #2563eb;
+  background-color: #fafaf9;
   box-shadow: inset 0 2px 4px 0 rgba(0, 0, 0, 0.02);
 }
 
@@ -504,13 +593,13 @@ const formatCurrency = (amount) => {
 }
 
 .main-row:hover .expand-icon-wrapper {
-  background-color: #FFFFFF;
-  box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+  background-color: #ffffff;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
 }
 
 .mono-text {
   font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
-  background-color: #F1F5F9;
+  background-color: #f1f5f9;
   padding: 0.2rem 0.4rem;
   border-radius: 4px;
   color: #475569;
@@ -525,50 +614,108 @@ const formatCurrency = (amount) => {
   font-weight: 600;
 }
 
-.badge-success { background-color: #DCFCE7; color: #166534; }
-.badge-danger { background-color: #FEE2E2; color: #991B1B; }
+.badge-success {
+  background-color: #dcfce7;
+  color: #166534;
+}
+.badge-danger {
+  background-color: #fee2e2;
+  color: #991b1b;
+}
 
-.cashier-info, .payment-info, .date-info {
+.cashier-info,
+.payment-info,
+.date-info {
   display: flex;
   align-items: center;
   gap: 0.4rem;
 }
 
 .highlight-amount {
-  color: #0F172A;
+  color: #0f172a;
   font-size: 1rem;
 }
 
-.icon-sm { width: 18px; height: 18px; }
-.icon-xs { width: 14px; height: 14px; }
-.icon-xl { width: 48px; height: 48px; }
+.icon-sm {
+  width: 18px;
+  height: 18px;
+}
+.icon-xs {
+  width: 14px;
+  height: 14px;
+}
+.icon-xl {
+  width: 48px;
+  height: 48px;
+}
 
 /* Sub Table within Expanded Row */
 .items-table-wrapper {
   background-color: white;
 }
 
-.w-full { width: 100%; }
-.text-left { text-align: left; }
-.uppercase { text-transform: uppercase; }
-.px-4 { padding-left: 1rem; padding-right: 1rem; }
-.py-2 { padding-top: 0.5rem; padding-bottom: 0.5rem; }
-.border { border: 1px solid #E2E8F0; }
-.border-slate-200 { border-color: #E2E8F0; }
-.rounded-lg { border-radius: 0.5rem; }
-.overflow-hidden { overflow: hidden; }
-.divide-y > * + * { border-top: 1px solid #F1F5F9; }
-.text-slate-500 { color: #64748B; }
-.text-slate-600 { color: #475569; }
-.text-slate-800 { color: #1E293B; }
-.text-slate-400 { color: #94A3B8; }
-.text-emerald-600 { color: #059669; }
-.text-red-500 { color: #EF4444; }
-.text-orange-500 { color: #F97316; }
-.font-mono { font-family: monospace; }
-.hover\:bg-slate-50:hover { background-color: #F8FAFC; }
-.bg-white { background-color: #FFFFFF; }
-
+.w-full {
+  width: 100%;
+}
+.text-left {
+  text-align: left;
+}
+.uppercase {
+  text-transform: uppercase;
+}
+.px-4 {
+  padding-left: 1rem;
+  padding-right: 1rem;
+}
+.py-2 {
+  padding-top: 0.5rem;
+  padding-bottom: 0.5rem;
+}
+.border {
+  border: 1px solid #e2e8f0;
+}
+.border-slate-200 {
+  border-color: #e2e8f0;
+}
+.rounded-lg {
+  border-radius: 0.5rem;
+}
+.overflow-hidden {
+  overflow: hidden;
+}
+.divide-y > * + * {
+  border-top: 1px solid #f1f5f9;
+}
+.text-slate-500 {
+  color: #64748b;
+}
+.text-slate-600 {
+  color: #475569;
+}
+.text-slate-800 {
+  color: #1e293b;
+}
+.text-slate-400 {
+  color: #94a3b8;
+}
+.text-emerald-600 {
+  color: #059669;
+}
+.text-red-500 {
+  color: #ef4444;
+}
+.text-orange-500 {
+  color: #f97316;
+}
+.font-mono {
+  font-family: monospace;
+}
+.hover\:bg-slate-50:hover {
+  background-color: #f8fafc;
+}
+.bg-white {
+  background-color: #ffffff;
+}
 
 /* Pagination */
 .pagination-footer {
@@ -583,7 +730,7 @@ const formatCurrency = (amount) => {
 
 .pagination-info {
   font-size: 0.85rem;
-  color: #64748B;
+  color: #64748b;
 }
 
 .pagination-controls {
@@ -599,7 +746,7 @@ const formatCurrency = (amount) => {
   width: 32px;
   height: 32px;
   border-radius: 6px;
-  border: 1px solid #E2E8F0;
+  border: 1px solid #e2e8f0;
   background: white;
   color: #475569;
   cursor: pointer;
@@ -607,9 +754,9 @@ const formatCurrency = (amount) => {
 }
 
 .page-btn:hover:not(:disabled) {
-  background-color: #F1F5F9;
-  border-color: #CBD5E1;
-  color: #0F172A;
+  background-color: #f1f5f9;
+  border-color: #cbd5e1;
+  color: #0f172a;
 }
 
 .page-btn:disabled {
@@ -620,7 +767,7 @@ const formatCurrency = (amount) => {
 .current-page {
   font-size: 0.85rem;
   font-weight: 500;
-  color: #1E293B;
+  color: #1e293b;
   min-width: 4.5rem;
   text-align: center;
 }
@@ -628,23 +775,37 @@ const formatCurrency = (amount) => {
 .empty-state {
   padding: 3rem;
   text-align: center;
-  color: #64748B;
+  color: #64748b;
 }
 
 /* Skeletons */
 @keyframes shimmer {
-  0%   { background-position: -400px 0; }
-  100% { background-position:  400px 0; }
+  0% {
+    background-position: -400px 0;
+  }
+  100% {
+    background-position: 400px 0;
+  }
 }
 
 .skel {
   border-radius: 4px;
-  background: linear-gradient(90deg, #E2E8F0 25%, #F1F5F9 50%, #E2E8F0 75%);
+  background: linear-gradient(90deg, #e2e8f0 25%, #f1f5f9 50%, #e2e8f0 75%);
   background-size: 400px 100%;
   animation: shimmer 1.4s infinite linear;
 }
 
-.skel-icon { width: 24px; height: 24px; border-radius: 4px; }
-.skel-badge { width: 80px; height: 24px; border-radius: 9999px; }
-.ml-auto { margin-left: auto; }
+.skel-icon {
+  width: 24px;
+  height: 24px;
+  border-radius: 4px;
+}
+.skel-badge {
+  width: 80px;
+  height: 24px;
+  border-radius: 9999px;
+}
+.ml-auto {
+  margin-left: auto;
+}
 </style>

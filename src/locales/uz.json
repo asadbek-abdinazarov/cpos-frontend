@@ -18,7 +18,6 @@
     "cta": "Bepul sinab ko'rish",
     "watch_demo": "Videoni ko'rish"
   },
-
   "stats": {
     "active_businesses": "Faol bizneslar",
     "transactions": "Tranzaksiyalar",
@@ -84,17 +83,29 @@
     "analytics": {
       "title": "Real vaqt rejimida biznes tahlili",
       "desc": "Bizning keng qamrovli hisobot vositalarimiz bilan ma'lumotlarga asoslangan qarorlar qabul qiling.",
-      "list": ["Savdo samaradorligi hisobotlari", "Foyda marjasi tahlili", "Excel/PDF ga eksport qilish"]
+      "list": [
+        "Savdo samaradorligi hisobotlari",
+        "Foyda marjasi tahlili",
+        "Excel/PDF ga eksport qilish"
+      ]
     },
     "inventory": {
       "title": "Aqlli Ombor Boshqaruvi",
       "desc": "Hech qachon zaxirangiz tugab qolmasin. Tizimimiz zaxiralarni avtomatik kuzatib boradi va ogohlantiradi.",
-      "list": ["Real vaqtda zaxiralarni kuzatish", "Shtrix-kodni qo'llab-quvvatlash", "Ta'minotchilar boshqaruvi"]
+      "list": [
+        "Real vaqtda zaxiralarni kuzatish",
+        "Shtrix-kodni qo'llab-quvvatlash",
+        "Ta'minotchilar boshqaruvi"
+      ]
     },
     "payments": {
       "title": "Qulay Mahalliy To'lovlar",
       "desc": "Mijozlaringiz istagan usulda to'lovlarni qabul qiling. O'zbekiston to'lov tizimlari bilan integratsiyalashgan.",
-      "list": ["Payme & Click integratsiyasi", "Avtomatik fiskal cheklar", "QR kod orqali to'lovlar"]
+      "list": [
+        "Payme & Click integratsiyasi",
+        "Avtomatik fiskal cheklar",
+        "QR kod orqali to'lovlar"
+      ]
     }
   },
   "hardware": {
@@ -103,9 +114,18 @@
     "view_catalog": "To'liq katalogni ko'rish",
     "request_quote": "Narxni so'rash",
     "products": {
-      "terminal": { "title": "CPOS Dual Terminal", "desc": "Mijozlar uchun displeyga ega sensorli terminal." },
-      "printer": { "title": "Yuqori tezlikdagi printer", "desc": "Avto-kesgichli ishonchli termal chek printeri." },
-      "scanner": { "title": "Simsiz Skaner", "desc": "Uzoq batareya quvvatiga ega ergonomik 2D shtrix-kod skaneri." }
+      "terminal": {
+        "title": "CPOS Dual Terminal",
+        "desc": "Mijozlar uchun displeyga ega sensorli terminal."
+      },
+      "printer": {
+        "title": "Yuqori tezlikdagi printer",
+        "desc": "Avto-kesgichli ishonchli termal chek printeri."
+      },
+      "scanner": {
+        "title": "Simsiz Skaner",
+        "desc": "Uzoq batareya quvvatiga ega ergonomik 2D shtrix-kod skaneri."
+      }
     }
   },
   "pricing": {
@@ -125,14 +145,24 @@
         "name": "O'sish",
         "desc": "Xodimlarga ega o'sib borayotgan bizneslar uchun.",
         "btn": "Bepul sinab ko'rish",
-        "features": ["2 Kassa", "Kengaytirilgan tahlil", "Cheksiz mahsulotlar", "Xodimlarni boshqarish"]
+        "features": [
+          "2 Kassa",
+          "Kengaytirilgan tahlil",
+          "Cheksiz mahsulotlar",
+          "Xodimlarni boshqarish"
+        ]
       },
       "enterprise": {
         "name": "Korporativ",
         "desc": "Tarmoqlar va franshizalar uchun.",
         "price": "Kelishilgan",
         "btn": "Sotuv bo'limi bilan bog'lanish",
-        "features": ["Cheksiz kassalar", "Ko'p joylashuvli sinxronizatsiya", "API kirish", "Shaxsiy yordam menejeri"]
+        "features": [
+          "Cheksiz kassalar",
+          "Ko'p joylashuvli sinxronizatsiya",
+          "API kirish",
+          "Shaxsiy yordam menejeri"
+        ]
       }
     }
   },
@@ -223,5 +253,192 @@
     "privacy": "Maxfiylik siyosati",
     "terms": "Foydalanish shartlari",
     "rights": "Barcha huquqlar himoyalangan."
+  },
+  "dashboard": {
+    "sidebar": {
+      "analytics": "Analitika",
+      "products": "Mahsulotlar",
+      "scales": "Tarozilar",
+      "sales": "Sotuvlar",
+      "settings": "Sozlamalar"
+    },
+    "header": {
+      "search": "Qidirish...",
+      "notifications": "Bildirishnomalar",
+      "mark_all_read": "Barchasini o'qilgan deb belgilash",
+      "no_notifications": "Bildirishnomalar yo'q",
+      "profile": "Profil"
+    },
+    "analytics": {
+      "title": "Analitika",
+      "overview": "Umumiy ko'rinish",
+      "total_revenue": "Umumiy tushum",
+      "total_cost": "Umumiy xarajat",
+      "total_sum": "Umumiy summa",
+      "conversion_rate": "Konversiya darajasi",
+      "download_report": "Hisobotni yuklab olish",
+      "sales_trend": "Sotuvlar o'sishi",
+      "sales_by_category": "Kategoriya bo'yicha sotuv",
+      "total": "Jami",
+      "top_products": "Top mahsulotlar (Sotuv o'sishi)",
+      "view_details": "Batafsil ko'rish",
+      "orders": "buyurtma",
+      "sales": "sotuv",
+      "number_of_sales": "Sotishlar soni"
+    },
+    "products": {
+      "title": "Mahsulotlar",
+      "subtitle": "Mahsulotlar katalogingizni boshqaring",
+      "delete_selected": "Tanlanganlarni o'chirish",
+      "add_product": "Mahsulot qo'shish",
+      "edit_product": "Mahsulotni tahrirlash",
+      "update_product": "O'zgarishlarni saqlash",
+      "back_to_list": "Mahsulotlar ro'yxatiga",
+      "not_found": "Mahsulot topilmadi.",
+      "delete_product": "O'chirish",
+      "delete_confirm_title": "Mahsulotni o'chirish",
+      "delete_confirm_text": "{name} mahsulotini o'chirishni xohlaysizmi? Bu amalni qaytarib bo'lmaydi.",
+      "deleted_success": "Mahsulot muvaffaqiyatli o'chirildi.",
+      "deleting": "O'chirilmoqda...",
+      "load_failed": "Mahsulotni yuklash mumkin emas.",
+      "delete_failed": "O'chirish amalga oshmadi.",
+      "no_changes": "O'zgarishlar aniqlanmadi.",
+      "updated_success": "Mahsulot yangilandi.",
+      "created_success": "Mahsulot qo'shildi.",
+      "search_placeholder": "Mahsulotlarni qidirish...",
+      "search_btn": "Qidirish",
+      "status": {
+        "all": "Barchasi",
+        "active": "Faol",
+        "inactive": "Nofaol"
+      },
+      "units": {
+        "piece": "DONA",
+        "kg": "KG",
+        "liter": "LITR",
+        "meter": "METR",
+        "box": "QUTI"
+      },
+      "detail": {
+        "section_basic": "Asosiy ma'lumotlar",
+        "section_pricing": "Narx va xarajat",
+        "section_inventory": "Zaxira va identifikatorlar",
+        "section_system": "Tizim",
+        "description": "Tavsif",
+        "no_description": "Tavsif kiritilmagan.",
+        "price": "Narx",
+        "cost": "Xarajat",
+        "barcode": "Shtrix-kod",
+        "sku": "SKU",
+        "quantity": "Miqdor",
+        "unit": "Birlik",
+        "weighable": "Tarozlanishi",
+        "yes": "Ha",
+        "no": "Yo'q",
+        "created_at": "Yaratilgan sana",
+        "updated_at": "Yangilangan sana",
+        "close": "Yopish",
+        "edit": "Tahrirlash"
+      },
+      "form": {
+        "section_basic": "Asosiy ma'lumot",
+        "section_pricing": "Birlik va narxlar",
+        "section_identifiers": "Identifikatorlar",
+        "section_settings": "Sozlamalar",
+        "name": "Mahsulot nomi",
+        "name_placeholder": "Masalan: Qora zira",
+        "category": "Kategoriya",
+        "description": "Tavsif (ixtiyoriy)",
+        "description_placeholder": "Mahsulot haqida qisqacha",
+        "unit": "Birlik",
+        "cost": "Xarajat (UZS)",
+        "price": "Sotuv narxi (UZS)",
+        "barcode": "Shtrix-kod",
+        "barcode_placeholder": "Skaner yoki qo'lda kiriting",
+        "sku": "SKU",
+        "sku_placeholder": "Ichki ID",
+        "quantity": "Miqdor",
+        "quantity_placeholder": "Zaxira",
+        "weighable": "Tarozlanishi",
+        "active": "Faol",
+        "cancel": "Bekor qilish",
+        "save": "Saqlash",
+        "saving": "Saqlanmoqda...",
+        "updating": "Yangilanmoqda..."
+      }
+    },
+    "scales": {
+      "title": "Tarozilarni boshqarish",
+      "subtitle": "Ulangan tarozilarni boshqarish va kuzatish",
+      "back_to_scales": "Tarozilarga qaytish",
+      "histories": "Tarixi",
+      "scale_sn": "Tarozi S/N:",
+      "search_placeholder": "Tarozilarni nomi yoki S/N bo'yicha qidirish...",
+      "search_btn": "Qidirish",
+      "history_search": "Mahsulot nomi bo'yicha tarixni qidirish..."
+    },
+    "sales": {
+      "title": "Sotuvlar tarixi",
+      "subtitle": "Barcha sotuv tranzaksiyalarini ko'rish va kuzatish",
+      "search_placeholder": "Sotuvlarni qidirish...",
+      "search_btn": "Qidirish"
+    },
+    "settings": {
+      "title": "Sozlamalar",
+      "subtitle": "Hisob va do'kon sozlamalarini boshqarish",
+      "tabs": {
+        "personal": "Shaxsiy Ma'lumotlar",
+        "organization": "Tashkilot",
+        "shop": "Do'kon",
+        "warehouse": "Ombor",
+        "security": "Xavfsizlik",
+        "notifications": "Bildirishnomalar"
+      },
+      "personal": {
+        "title": "Shaxsiy Ma'lumotlar",
+        "desc": "Shaxsiy ma'lumotlaringiz va aloqa tafsilotlarini yangilang.",
+        "first_name": "Ism",
+        "last_name": "Familiya",
+        "username": "Foydalanuvchi nomi",
+        "phone": "Telefon raqam",
+        "email": "Email Manzil",
+        "status": "Holat",
+        "created_at": "Yaratilgan vaqt",
+        "updated_at": "Yangilangan vaqt"
+      },
+      "organization": {
+        "title": "Tashkilot Tafsilotlari",
+        "desc": "Kompaniyangiz profil ma'lumotlarini boshqaring.",
+        "name": "Tashkilot nomi",
+        "stir": "STIR",
+        "phone": "Tashkilot telefoni",
+        "status": "Holati",
+        "created_at": "Yaratilgan vaqt",
+        "updated_at": "Yangilangan vaqt"
+      },
+      "shop": {
+        "title": "Do'kon Tafsilotlari",
+        "desc": "Asosiy do'koningiz sozlamalarini boshqaring.",
+        "name": "Do'kon nomi",
+        "phone": "Do'kon telefoni",
+        "address": "Manzil",
+        "status": "Holat",
+        "created_at": "Yaratilgan vaqt"
+      },
+      "security": {
+        "title": "Xavfsizlik Sozlamalari",
+        "desc": "Parolingizni yangilash va hisobingizni himoya qilish.",
+        "current_password": "Joriy Parol",
+        "new_password": "Yangi Parol",
+        "confirm_password": "Yangi Parolni Tasdiqlang",
+        "update_password_btn": "Parolni Yangilash",
+        "updating": "Yangilanmoqda..."
+      },
+      "buttons": {
+        "edit": "Tahrirlash",
+        "save": "Saqlash",
+        "cancel": "Bekor qilish"
+      }
+    }
   }
 }

@@ -3,11 +3,8 @@ import { ref, onMounted } from 'vue'
 import {
   User,
   Lock,
-  Bell,
-  CreditCard,
   Building2,
   Store,
-  Package,
   Pencil,
   Check,
   X as XIcon,
@@ -18,9 +15,11 @@ import {
   MapPin,
   Hash,
   Activity,
-  Save
+  Save,
+  Eye,
+  EyeOff,
 } from 'lucide-vue-next'
-import { getUserProfile } from '@/services/api'
+import { getUserProfile, updatePassword } from '@/services/api'
 import { useNotification } from '@/composables/useNotification'
 
 const { showNotification } = useNotification()
@@ -32,9 +31,7 @@ const availableTabs = ref([
   { id: 'personal', label: 'Personal Info', icon: User },
   { id: 'organization', label: 'Organization', icon: Building2 },
   { id: 'shop', label: 'Shop', icon: Store },
-  { id: 'warehouse', label: 'Warehouse', icon: Package },
   { id: 'security', label: 'Security', icon: Lock },
-  { id: 'notifications', label: 'Notifications', icon: Bell }
 ])
 
 const userData = ref({
@@ -50,11 +47,15 @@ const userData = ref({
   permissions: [],
   organization: null,
   shop: null,
-  warehouse: null
 })
 
 const editableUser = ref({})
 const isEditing = ref(false)
+
+const setActiveTab = (tabId) => {
+  activeTab.value = tabId
+  isEditing.value = false
+}
 
 const fetchProfile = async () => {
   try {
@@ -72,41 +73,37 @@ const fetchProfile = async () => {
         updatedAt: u.updatedAt || '',
         roles: u.roles || [],
         permissions: u.permissions || [],
-        organization: u.organization ? {
-          name: u.organization.name || '',
-          stir: u.organization.stir || '',
-          address: u.organization.address || '',
-          phone: u.organization.phone || '',
-          isActive: !!u.organization.isActive,
-          createdAt: u.organization.createdAt || '',
-          updatedAt: u.organization.updatedAt || ''
-        } : null,
-        shop: u.shop ? {
-          name: u.shop.name || '',
-          address: u.shop.address || '',
-          phone: u.shop.phone || '',
-          isActive: !!u.shop.isActive,
-          createdAt: u.shop.createdAt || '',
-          updatedAt: u.shop.updatedAt || ''
-        } : null
-        /* warehouse: u.warehouse ? {
-          name: u.warehouse.name || '',
-          address: u.warehouse.address || '',
-          phone: u.warehouse.phone || '',
-          isActive: !!u.warehouse.isActive,
-          createdAt: u.warehouse.createdAt || '',
-          updatedAt: u.warehouse.updatedAt || ''
-        } : null */
+        organization: u.organization
+          ? {
+              name: u.organization.name || '',
+              stir: u.organization.stir || '',
+              address: u.organization.address || '',
+              phone: u.organization.phone || '',
+              isActive: !!u.organization.isActive,
+              createdAt: u.organization.createdAt || '',
+              updatedAt: u.organization.updatedAt || '',
+            }
+          : null,
+        shop: u.shop
+          ? {
+              name: u.shop.name || '',
+              address: u.shop.address || '',
+              phone: u.shop.phone || '',
+              isActive: !!u.shop.isActive,
+              createdAt: u.shop.createdAt || '',
+              updatedAt: u.shop.updatedAt || '',
+            }
+          : null,
       }
 
       // Filter tabs based on available data
       availableTabs.value = [
         { id: 'personal', label: 'Personal Info', icon: User },
-        ...(userData.value.organization ? [{ id: 'organization', label: 'Organization', icon: Building2 }] : []),
+        ...(userData.value.organization
+          ? [{ id: 'organization', label: 'Organization', icon: Building2 }]
+          : []),
         ...(userData.value.shop ? [{ id: 'shop', label: 'Shop Details', icon: Store }] : []),
-        /* ...(userData.value.warehouse ? [{ id: 'warehouse', label: 'Warehouse', icon: Package }] : []), */
         { id: 'security', label: 'Security', icon: Lock },
-        { id: 'notifications', label: 'Notifications', icon: Bell }
       ]
     }
   } catch (error) {
@@ -140,30 +137,52 @@ const securitySettings = ref({
   currentPassword: '',
   newPassword: '',
   confirmPassword: '',
-  twoFactor: false
+  twoFactor: false,
 })
+const showCurrentPassword = ref(false)
+const showNewPassword = ref(false)
+const showConfirmPassword = ref(false)
+const SecurityLoading = ref(false)
 
-const notificationSettings = ref({
-  emailOrder: true,
-  emailStock: true,
-  emailMarketing: false,
-  smsOrder: false,
-  pushNotifications: true
-})
+const updateSecuritySettings = async () => {
+  if (securitySettings.value.newPassword !== securitySettings.value.confirmPassword) {
+    showNotification({ type: 'warning', message: 'New passwords do not match' })
+    return
+  }
 
-const saveOtherSettings = () => {
-  showNotification({ type: 'success', message: 'Settings saved successfully!' })
+  if (!securitySettings.value.currentPassword || !securitySettings.value.newPassword) {
+    showNotification({ type: 'warning', message: 'Please fill out missing password fields' })
+    return
+  }
+
+  SecurityLoading.value = true
+  try {
+    const res = await updatePassword({
+      currentPassword: securitySettings.value.currentPassword,
+      newPassword: securitySettings.value.newPassword,
+      confirmNewPassword: securitySettings.value.confirmPassword,
+    })
+
+    if (res.data && res.data.success) {
+      showNotification({ type: 'success', message: 'Password updated successfully!' })
+      securitySettings.value.currentPassword = ''
+      securitySettings.value.newPassword = ''
+      securitySettings.value.confirmPassword = ''
+    }
+  } catch (error) {
+    console.error('Failed to update password:', error)
+  } finally {
+    SecurityLoading.value = false
+  }
 }
 </script>
 
 <template>
   <div class="settings-page">
     <div class="page-header">
-      <h1 class="page-title">Settings</h1>
-      <p class="text-subtitle">Manage your account and store preferences</p>
+      <h1 class="page-title">{{ $t('dashboard.settings.title') }}</h1>
+      <p class="text-subtitle">{{ $t('dashboard.settings.subtitle') }}</p>
     </div>
-
-  
 
     <div class="settings-container">
       <!-- Sidebar / Tabs -->
@@ -173,73 +192,112 @@ const saveOtherSettings = () => {
           :key="tab.id"
           class="tab-btn"
           :class="{ active: activeTab === tab.id }"
-          @click="activeTab = tab.id; isEditing = false"
+          @click="setActiveTab(tab.id)"
         >
           <component :is="tab.icon" class="tab-icon" />
-          {{ tab.label }}
+          {{ $t('dashboard.settings.tabs.' + tab.id) }}
         </button>
       </div>
 
       <!-- Content Area -->
       <div class="settings-content card">
-        
         <!-- Personal Info Tab -->
         <div v-if="activeTab === 'personal'" class="tab-pane">
           <div class="pane-header">
             <div class="header-titles">
-               <h2>Personal Information</h2>
-               <p>Update your personal details and contact info.</p>
+              <h2>{{ $t('dashboard.settings.personal.title') }}</h2>
+              <p>{{ $t('dashboard.settings.personal.desc') }}</p>
             </div>
             <div class="card-actions">
-               <button v-if="!isEditing" class="action-btn edit" @click="startEditing">
-                 <Pencil class="icon-sm" /> Edit
-               </button>
-               <div v-else class="action-group">
-                 <button class="action-btn cancel" @click="cancelEditing"><XIcon class="icon-sm" /> Cancel</button>
-                 <button class="action-btn save" @click="saveChanges"><Check class="icon-sm" /> Save</button>
-               </div>
+              <button v-if="!isEditing" class="action-btn edit" @click="startEditing">
+                <Pencil class="icon-sm" /> {{ $t('dashboard.settings.buttons.edit') }}
+              </button>
+              <div v-else class="action-group">
+                <button class="action-btn cancel" @click="cancelEditing">
+                  <XIcon class="icon-sm" /> {{ $t('dashboard.settings.buttons.cancel') }}
+                </button>
+                <button class="action-btn save" @click="saveChanges">
+                  <Check class="icon-sm" /> {{ $t('dashboard.settings.buttons.save') }}
+                </button>
+              </div>
             </div>
           </div>
 
           <div class="card-body grid-2">
-              <div class="data-group">
-              <label><User class="label-icon"/> First Name</label>
+            <div class="data-group">
+              <label
+                ><User class="label-icon" />
+                {{ $t('dashboard.settings.personal.first_name') }}</label
+              >
               <p v-if="!isEditing">{{ userData.firstName || '—' }}</p>
               <input v-else v-model="editableUser.firstName" class="premium-input" />
             </div>
             <div class="data-group">
-              <label><User class="label-icon"/> Last Name</label>
+              <label
+                ><User class="label-icon" />
+                {{ $t('dashboard.settings.personal.last_name') }}</label
+              >
               <p v-if="!isEditing">{{ userData.lastName || '—' }}</p>
               <input v-else v-model="editableUser.lastName" class="premium-input" />
             </div>
             <div class="data-group">
-              <label><User class="label-icon"/> Username</label>
+              <label
+                ><User class="label-icon" /> {{ $t('dashboard.settings.personal.username') }}</label
+              >
               <p v-if="!isEditing">{{ userData.username || '—' }}</p>
               <input v-else v-model="editableUser.username" class="premium-input" />
             </div>
             <div class="data-group">
-              <label><Phone class="label-icon"/> Phone Number</label>
+              <label
+                ><Phone class="label-icon" /> {{ $t('dashboard.settings.personal.phone') }}</label
+              >
               <p v-if="!isEditing">{{ userData.phone || '—' }}</p>
               <input v-else v-model="editableUser.phone" class="premium-input" />
             </div>
             <div class="data-group">
-              <label><Mail class="label-icon"/> Email Address</label>
+              <label
+                ><Mail class="label-icon" /> {{ $t('dashboard.settings.personal.email') }}</label
+              >
               <p v-if="!isEditing">{{ userData.email || '—' }}</p>
               <input v-else v-model="editableUser.email" class="premium-input" />
             </div>
             <div class="data-group">
-              <label><Activity class="label-icon"/> Status</label>
-              <span class="status-badge sm" :class="userData.isActive ? 'badge-success' : 'badge-danger'">
-                    {{ userData.isActive ? 'Active' : 'Inactive' }}
+              <label
+                ><Activity class="label-icon" />
+                {{ $t('dashboard.settings.personal.status') }}</label
+              >
+              <span
+                class="status-badge sm"
+                :class="userData.isActive ? 'badge-success' : 'badge-danger'"
+              >
+                {{
+                  userData.isActive
+                    ? $t('dashboard.products.status.active')
+                    : $t('dashboard.products.status.inactive')
+                }}
               </span>
             </div>
-             <div class="data-group">
-              <label><Calendar class="label-icon"/> Created At</label>
-              <p class="text-subtle">{{ userData.createdAt ? new Date(userData.createdAt).toLocaleString('uz-UZ') : '—' }}</p>
+            <div class="data-group">
+              <label
+                ><Calendar class="label-icon" />
+                {{ $t('dashboard.settings.personal.created_at') }}</label
+              >
+              <p class="text-subtle">
+                {{
+                  userData.createdAt ? new Date(userData.createdAt).toLocaleString('uz-UZ') : '—'
+                }}
+              </p>
             </div>
             <div class="data-group">
-              <label><Clock class="label-icon"/> Updated At</label>
-              <p class="text-subtle">{{ userData.updatedAt ? new Date(userData.updatedAt).toLocaleString('uz-UZ') : '—' }}</p>
+              <label
+                ><Clock class="label-icon" />
+                {{ $t('dashboard.settings.personal.updated_at') }}</label
+              >
+              <p class="text-subtle">
+                {{
+                  userData.updatedAt ? new Date(userData.updatedAt).toLocaleString('uz-UZ') : '—'
+                }}
+              </p>
             </div>
           </div>
         </div>
@@ -247,49 +305,88 @@ const saveOtherSettings = () => {
         <!-- Organization Tab -->
         <div v-if="activeTab === 'organization' && userData.organization" class="tab-pane">
           <div class="pane-header">
-             <div class="header-titles">
-                <h2>Organization Details</h2>
-                <p>Manage your company's profile information.</p>
-             </div>
-             <div class="card-actions">
-               <button v-if="!isEditing" class="action-btn edit" @click="startEditing">
-                 <Pencil class="icon-sm" /> Edit
-               </button>
-               <div v-else class="action-group">
-                 <button class="action-btn cancel" @click="cancelEditing"><XIcon class="icon-sm" /> Cancel</button>
-                 <button class="action-btn save" @click="saveChanges"><Check class="icon-sm" /> Save</button>
-               </div>
+            <div class="header-titles">
+              <h2>{{ $t('dashboard.settings.organization.title') }}</h2>
+              <p>{{ $t('dashboard.settings.organization.desc') }}</p>
+            </div>
+            <div class="card-actions">
+              <button v-if="!isEditing" class="action-btn edit" @click="startEditing">
+                <Pencil class="icon-sm" /> {{ $t('dashboard.settings.buttons.edit') }}
+              </button>
+              <div v-else class="action-group">
+                <button class="action-btn cancel" @click="cancelEditing">
+                  <XIcon class="icon-sm" /> {{ $t('dashboard.settings.buttons.cancel') }}
+                </button>
+                <button class="action-btn save" @click="saveChanges">
+                  <Check class="icon-sm" /> {{ $t('dashboard.settings.buttons.save') }}
+                </button>
+              </div>
             </div>
           </div>
 
           <div class="card-body grid-2">
             <div class="data-group col-span-2">
-              <label><Building2 class="label-icon"/> Organization Name</label>
-              <h4 class="highlight-text" v-if="!isEditing">{{ userData.organization.name || '—' }}</h4>
+              <label
+                ><Building2 class="label-icon" />
+                {{ $t('dashboard.settings.organization.name') }}</label
+              >
+              <h4 class="highlight-text" v-if="!isEditing">
+                {{ userData.organization.name || '—' }}
+              </h4>
               <input v-else v-model="editableUser.organization.name" class="premium-input" />
             </div>
             <div class="data-group">
-              <label><Hash class="label-icon"/> STIR</label>
+              <label
+                ><Hash class="label-icon" /> {{ $t('dashboard.settings.organization.stir') }}</label
+              >
               <p class="mono-text" v-if="!isEditing">{{ userData.organization.stir || '—' }}</p>
-              <input v-else v-model="editableUser.organization.stir" class="premium-input mono-text" />
+              <input
+                v-else
+                v-model="editableUser.organization.stir"
+                class="premium-input mono-text"
+              />
             </div>
             <div class="data-group">
-              <label><Phone class="label-icon"/> Org Phone</label>
+              <label
+                ><Phone class="label-icon" />
+                {{ $t('dashboard.settings.organization.phone') }}</label
+              >
               <p v-if="!isEditing">{{ userData.organization.phone || '—' }}</p>
               <input v-else v-model="editableUser.organization.phone" class="premium-input" />
             </div>
             <div class="data-group">
-              <label><Activity class="label-icon"/> Status</label>
-              <span class="status-badge sm" :class="userData.organization.isActive ? 'badge-success' : 'badge-danger'">
-                {{ userData.organization.isActive ? 'Active' : 'Inactive' }}
+              <label
+                ><Activity class="label-icon" />
+                {{ $t('dashboard.settings.organization.status') }}</label
+              >
+              <span
+                class="status-badge sm"
+                :class="userData.organization.isActive ? 'badge-success' : 'badge-danger'"
+              >
+                {{
+                  userData.organization.isActive
+                    ? $t('dashboard.products.status.active')
+                    : $t('dashboard.products.status.inactive')
+                }}
               </span>
             </div>
             <div class="data-group">
-              <label><Calendar class="label-icon"/> Created At</label>
-              <p class="text-subtle">{{ userData.organization.createdAt ? new Date(userData.organization.createdAt).toLocaleString('uz-UZ') : '—' }}</p>
+              <label
+                ><Calendar class="label-icon" />
+                {{ $t('dashboard.settings.organization.created_at') }}</label
+              >
+              <p class="text-subtle">
+                {{
+                  userData.organization.createdAt
+                    ? new Date(userData.organization.createdAt).toLocaleString('uz-UZ')
+                    : '—'
+                }}
+              </p>
             </div>
             <div class="data-group col-span-2">
-              <label><MapPin class="label-icon"/> Address</label>
+              <label
+                ><MapPin class="label-icon" /> {{ $t('dashboard.settings.shop.address') }}</label
+              >
               <p v-if="!isEditing">{{ userData.organization.address || '—' }}</p>
               <input v-else v-model="editableUser.organization.address" class="premium-input" />
             </div>
@@ -299,127 +396,151 @@ const saveOtherSettings = () => {
         <!-- Shop Tab -->
         <div v-if="activeTab === 'shop' && userData.shop" class="tab-pane">
           <div class="pane-header">
-             <div class="header-titles">
-                <h2>Shop Details</h2>
-                <p>Information about your primary store branch.</p>
-             </div>
-             <div class="card-actions">
-               <button v-if="!isEditing" class="action-btn edit" @click="startEditing">
-                 <Pencil class="icon-sm" /> Edit
-               </button>
-               <div v-else class="action-group">
-                 <button class="action-btn cancel" @click="cancelEditing"><XIcon class="icon-sm" /> Cancel</button>
-                 <button class="action-btn save" @click="saveChanges"><Check class="icon-sm" /> Save</button>
-               </div>
+            <div class="header-titles">
+              <h2>Shop Details</h2>
+              <p>Information about your primary store branch.</p>
+            </div>
+            <div class="card-actions">
+              <button v-if="!isEditing" class="action-btn edit" @click="startEditing">
+                <Pencil class="icon-sm" /> Edit
+              </button>
+              <div v-else class="action-group">
+                <button class="action-btn cancel" @click="cancelEditing">
+                  <XIcon class="icon-sm" /> Cancel
+                </button>
+                <button class="action-btn save" @click="saveChanges">
+                  <Check class="icon-sm" /> Save
+                </button>
+              </div>
             </div>
           </div>
 
           <div class="card-body grid-2">
-             <div class="data-group col-span-2">
-                <label><Store class="label-icon"/> Shop Name</label>
-                <h4 class="highlight-text" v-if="!isEditing">{{ userData.shop.name || '—' }}</h4>
-                <input v-else v-model="editableUser.shop.name" class="premium-input" />
-              </div>
-              <div class="data-group">
-                <label><Phone class="label-icon"/> Phone</label>
-                <p v-if="!isEditing">{{ userData.shop.phone || '—' }}</p>
-                <input v-else v-model="editableUser.shop.phone" class="premium-input" />
-              </div>
-              <div class="data-group">
-                <label><Activity class="label-icon"/> Status</label>
-                <span class="status-badge sm" :class="userData.shop.isActive ? 'badge-success' : 'badge-danger'">
-                  {{ userData.shop.isActive ? 'Active' : 'Inactive' }}
-                </span>
-              </div>
-              <div class="data-group">
-                <label><Calendar class="label-icon"/> Created At</label>
-                <p class="text-subtle">{{ userData.shop.createdAt ? new Date(userData.shop.createdAt).toLocaleString('uz-UZ') : '—' }}</p>
-              </div>
-              <div class="data-group col-span-2">
-                <label><MapPin class="label-icon"/> Address</label>
-                <p v-if="!isEditing">{{ userData.shop.address || '—' }}</p>
-                <input v-else v-model="editableUser.shop.address" class="premium-input" />
-              </div>
-          </div>
-        </div>
-
-        <!-- Warehouse Tab
-        <div v-if="activeTab === 'warehouse' && userData.warehouse" class="tab-pane">
-          <div class="pane-header">
-             <div class="header-titles">
-                <h2>Warehouse Details</h2>
-                <p>Information about your associated warehouse storage.</p>
-             </div>
-             <div class="card-actions">
-               <button v-if="!isEditing" class="action-btn edit" @click="startEditing">
-                 <Pencil class="icon-sm" /> Edit
-               </button>
-               <div v-else class="action-group">
-                 <button class="action-btn cancel" @click="cancelEditing"><XIcon class="icon-sm" /> Cancel</button>
-                 <button class="action-btn save" @click="saveChanges"><Check class="icon-sm" /> Save</button>
-               </div>
+            <div class="data-group col-span-2">
+              <label><Store class="label-icon" /> {{ $t('dashboard.settings.shop.name') }}</label>
+              <h4 class="highlight-text" v-if="!isEditing">{{ userData.shop.name || '—' }}</h4>
+              <input v-else v-model="editableUser.shop.name" class="premium-input" />
+            </div>
+            <div class="data-group">
+              <label><Phone class="label-icon" /> {{ $t('dashboard.settings.shop.phone') }}</label>
+              <p v-if="!isEditing">{{ userData.shop.phone || '—' }}</p>
+              <input v-else v-model="editableUser.shop.phone" class="premium-input" />
+            </div>
+            <div class="data-group">
+              <label
+                ><Activity class="label-icon" /> {{ $t('dashboard.settings.shop.status') }}</label
+              >
+              <span
+                class="status-badge sm"
+                :class="userData.shop.isActive ? 'badge-success' : 'badge-danger'"
+              >
+                {{
+                  userData.shop.isActive
+                    ? $t('dashboard.products.status.active')
+                    : $t('dashboard.products.status.inactive')
+                }}
+              </span>
+            </div>
+            <div class="data-group">
+              <label
+                ><Calendar class="label-icon" />
+                {{ $t('dashboard.settings.shop.created_at') }}</label
+              >
+              <p class="text-subtle">
+                {{
+                  userData.shop.createdAt
+                    ? new Date(userData.shop.createdAt).toLocaleString('uz-UZ')
+                    : '—'
+                }}
+              </p>
+            </div>
+            <div class="data-group col-span-2">
+              <label
+                ><MapPin class="label-icon" /> {{ $t('dashboard.settings.shop.address') }}</label
+              >
+              <p v-if="!isEditing">{{ userData.shop.address || '—' }}</p>
+              <input v-else v-model="editableUser.shop.address" class="premium-input" />
             </div>
           </div>
-
-          <div class="card-body grid-2">
-              <div class="data-group col-span-2">
-                <label><Package class="label-icon"/> Warehouse Name</label>
-                <h4 class="highlight-text" v-if="!isEditing">{{ userData.warehouse.name || '—' }}</h4>
-                <input v-else v-model="editableUser.warehouse.name" class="premium-input" />
-              </div>
-              <div class="data-group">
-                <label><Phone class="label-icon"/> Phone</label>
-                <p v-if="!isEditing">{{ userData.warehouse.phone || '—' }}</p>
-                <input v-else v-model="editableUser.warehouse.phone" class="premium-input" />
-              </div>
-              <div class="data-group">
-                <label><Activity class="label-icon"/> Status</label>
-                 <span class="status-badge sm" :class="userData.warehouse.isActive ? 'badge-success' : 'badge-danger'">
-                  {{ userData.warehouse.isActive ? 'Active' : 'Inactive' }}
-                </span>
-              </div>
-              <div class="data-group">
-                <label><Calendar class="label-icon"/> Created At</label>
-                <p class="text-subtle">{{ userData.warehouse.createdAt ? new Date(userData.warehouse.createdAt).toLocaleString('uz-UZ') : '—' }}</p>
-              </div>
-              <div class="data-group col-span-2">
-                <label><MapPin class="label-icon"/> Address</label>
-                <p v-if="!isEditing">{{ userData.warehouse.address || '—' }}</p>
-                <input v-else v-model="editableUser.warehouse.address" class="premium-input" />
-              </div>
-          </div>
         </div>
-        -->
 
         <!-- Security Tab -->
         <div v-if="activeTab === 'security'" class="tab-pane">
           <div class="pane-header">
             <div class="header-titles">
-               <h2>Security Settings</h2>
-               <p>Manage your password and authentication methods.</p>
+              <h2>{{ $t('dashboard.settings.security.title') }}</h2>
+              <p>{{ $t('dashboard.settings.security.desc') }}</p>
             </div>
           </div>
 
-          <form @submit.prevent="saveOtherSettings" class="settings-form">
+          <form @submit.prevent="updateSecuritySettings" class="settings-form">
             <div class="form-group">
-              <label>Current Password</label>
-              <input v-model="securitySettings.currentPassword" type="password" class="premium-input" placeholder="••••••••" />
+              <label>{{ $t('dashboard.settings.security.current_password') }}</label>
+              <div class="password-input-wrapper">
+                <input
+                  v-model="securitySettings.currentPassword"
+                  :type="showCurrentPassword ? 'text' : 'password'"
+                  class="premium-input"
+                  placeholder="••••••••"
+                  required
+                />
+                <button
+                  type="button"
+                  class="password-toggle"
+                  @click="showCurrentPassword = !showCurrentPassword"
+                >
+                  <Eye v-if="showCurrentPassword" class="icon" />
+                  <EyeOff v-else class="icon" />
+                </button>
+              </div>
             </div>
 
             <div class="form-row">
               <div class="form-group">
-                <label>New Password</label>
-                <input v-model="securitySettings.newPassword" type="password" class="premium-input" placeholder="••••••••" />
+                <label>{{ $t('dashboard.settings.security.new_password') }}</label>
+                <div class="password-input-wrapper">
+                  <input
+                    v-model="securitySettings.newPassword"
+                    :type="showNewPassword ? 'text' : 'password'"
+                    class="premium-input"
+                    placeholder="••••••••"
+                    required
+                  />
+                  <button
+                    type="button"
+                    class="password-toggle"
+                    @click="showNewPassword = !showNewPassword"
+                  >
+                    <Eye v-if="showNewPassword" class="icon" />
+                    <EyeOff v-else class="icon" />
+                  </button>
+                </div>
               </div>
               <div class="form-group">
-                <label>Confirm New Password</label>
-                <input v-model="securitySettings.confirmPassword" type="password" class="premium-input" placeholder="••••••••" />
+                <label>{{ $t('dashboard.settings.security.confirm_password') }}</label>
+                <div class="password-input-wrapper">
+                  <input
+                    v-model="securitySettings.confirmPassword"
+                    :type="showConfirmPassword ? 'text' : 'password'"
+                    class="premium-input"
+                    placeholder="••••••••"
+                    required
+                  />
+                  <button
+                    type="button"
+                    class="password-toggle"
+                    @click="showConfirmPassword = !showConfirmPassword"
+                  >
+                    <Eye v-if="showConfirmPassword" class="icon" />
+                    <EyeOff v-else class="icon" />
+                  </button>
+                </div>
               </div>
             </div>
 
             <hr class="separator" />
 
-            <div class="toggle-section">
+            <!-- <div class="toggle-section">
               <div class="toggle-info">
                 <div class="toggle-header">
                   <Lock class="icon-md text-primary" />
@@ -431,70 +552,21 @@ const saveOtherSettings = () => {
                 <input type="checkbox" id="2fa" v-model="securitySettings.twoFactor" />
                 <label for="2fa"></label>
               </div>
-            </div>
+            </div> -->
 
             <div class="form-actions">
-              <button type="submit" class="btn btn-primary">
-                <Save class="icon-sm" /> Update Security
+              <button type="submit" class="btn btn-primary" :disabled="SecurityLoading">
+                <Save class="icon-sm" v-if="!SecurityLoading" />
+                <span v-if="SecurityLoading" class="spinner-small"></span>
+                {{
+                  SecurityLoading
+                    ? $t('dashboard.settings.security.updating')
+                    : $t('dashboard.settings.security.update_password_btn')
+                }}
               </button>
             </div>
           </form>
         </div>
-
-        <!-- Notifications Tab -->
-         <div v-if="activeTab === 'notifications'" class="tab-pane">
-          <div class="pane-header">
-            <div class="header-titles">
-               <h2>Notifications</h2>
-               <p>Choose what you want to be notified about.</p>
-            </div>
-          </div>
-
-          <div class="notification-group">
-            <h3>Email Alerts</h3>
-            <div class="checkbox-row">
-              <input type="checkbox" id="emailOrder" v-model="notificationSettings.emailOrder" />
-              <label for="emailOrder">
-                <strong>New Orders</strong>
-                <span>Get notified when a new order is placed.</span>
-              </label>
-            </div>
-            <div class="checkbox-row">
-              <input type="checkbox" id="emailStock" v-model="notificationSettings.emailStock" />
-              <label for="emailStock">
-                <strong>Low Stock Warning</strong>
-                <span>Get notified when product stock is low.</span>
-              </label>
-            </div>
-             <div class="checkbox-row">
-              <input type="checkbox" id="emailMarketing" v-model="notificationSettings.emailMarketing" />
-              <label for="emailMarketing">
-                <strong>Marketing Emails</strong>
-                <span>Receive updates about new features and promotions.</span>
-              </label>
-            </div>
-          </div>
-
-          <hr class="separator" />
-
-           <div class="notification-group">
-            <h3>Push Notifications</h3>
-             <div class="checkbox-row">
-              <input type="checkbox" id="pushNotif" v-model="notificationSettings.pushNotifications" />
-              <label for="pushNotif">
-                <strong>Browser Notifications</strong>
-                <span>Receive real-time alerts in your browser.</span>
-              </label>
-            </div>
-          </div>
-
-          <div class="form-actions">
-             <button @click="saveOtherSettings" class="btn btn-primary">
-                <Save class="icon-sm" /> Save Preferences
-              </button>
-          </div>
-        </div>
-
       </div>
     </div>
   </div>
@@ -516,15 +588,14 @@ const saveOtherSettings = () => {
 .page-title {
   font-size: 1.8rem;
   font-weight: 700;
-  color: #0F172A;
+  color: #0f172a;
   margin-bottom: 0.25rem;
 }
 
 .text-subtitle {
-  color: #64748B;
+  color: #64748b;
   font-size: 0.95rem;
 }
-
 
 .status-indicator {
   position: absolute;
@@ -533,11 +604,15 @@ const saveOtherSettings = () => {
   width: 18px;
   height: 18px;
   border-radius: 50%;
-  border: 4px solid #2563EB;
+  border: 4px solid #2563eb;
 }
 
-.status-indicator.active { background-color: #10B981; }
-.status-indicator.inactive { background-color: #EF4444; }
+.status-indicator.active {
+  background-color: #10b981;
+}
+.status-indicator.inactive {
+  background-color: #ef4444;
+}
 
 .hero-text {
   color: white;
@@ -576,8 +651,14 @@ const saveOtherSettings = () => {
   font-weight: 600;
 }
 
-.badge-success { background: #DCFCE7; color: #166534; }
-.badge-danger { background: #FEE2E2; color: #991B1B; }
+.badge-success {
+  background: #dcfce7;
+  color: #166534;
+}
+.badge-danger {
+  background: #fee2e2;
+  color: #991b1b;
+}
 
 /* Main Settings Layout */
 .settings-container {
@@ -589,7 +670,7 @@ const saveOtherSettings = () => {
 .card {
   background: white;
   border-radius: 16px;
-  border: 1px solid #F1F5F9;
+  border: 1px solid #f1f5f9;
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
 }
 
@@ -611,7 +692,7 @@ const saveOtherSettings = () => {
   background: transparent;
   border: none;
   border-radius: 10px;
-  color: #64748B;
+  color: #64748b;
   font-weight: 500;
   cursor: pointer;
   text-align: left;
@@ -619,13 +700,13 @@ const saveOtherSettings = () => {
 }
 
 .tab-btn:hover {
-  background-color: #F8FAFC;
-  color: #0F172A;
+  background-color: #f8fafc;
+  color: #0f172a;
 }
 
 .tab-btn.active {
-  background-color: #EFF6FF;
-  color: #2563EB;
+  background-color: #eff6ff;
+  color: #2563eb;
   font-weight: 600;
 }
 
@@ -646,8 +727,14 @@ const saveOtherSettings = () => {
 }
 
 @keyframes fadeIn {
-  from { opacity: 0; transform: translateY(5px); }
-  to { opacity: 1; transform: translateY(0); }
+  from {
+    opacity: 0;
+    transform: translateY(5px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 .pane-header {
@@ -655,19 +742,19 @@ const saveOtherSettings = () => {
   justify-content: space-between;
   align-items: flex-start;
   margin-bottom: 2rem;
-  border-bottom: 2px solid #F8FAFC;
+  border-bottom: 2px solid #f8fafc;
   padding-bottom: 1.5rem;
 }
 
 .header-titles h2 {
   font-size: 1.4rem;
   font-weight: 700;
-  color: #0F172A;
+  color: #0f172a;
   margin: 0 0 0.25rem 0;
 }
 
 .header-titles p {
-  color: #64748B;
+  color: #64748b;
   font-size: 0.95rem;
   margin: 0;
 }
@@ -692,15 +779,29 @@ const saveOtherSettings = () => {
   font-size: 0.9rem;
   cursor: pointer;
   transition: all 0.2s;
-  border: 1px solid #E2E8F0;
+  border: 1px solid #e2e8f0;
   background: white;
-  color: #64748B;
+  color: #64748b;
 }
 
-.action-btn.edit:hover { background: #F8FAFC; color: #2563EB; border-color: #CBD5E1; }
-.action-btn.save { background: #2563EB; color: white; border-color: #2563EB; }
-.action-btn.save:hover { background: #1D4ED8; }
-.action-btn.cancel:hover { background: #FEF2F2; color: #EF4444; border-color: #FCA5A5; }
+.action-btn.edit:hover {
+  background: #f8fafc;
+  color: #2563eb;
+  border-color: #cbd5e1;
+}
+.action-btn.save {
+  background: #2563eb;
+  color: white;
+  border-color: #2563eb;
+}
+.action-btn.save:hover {
+  background: #1d4ed8;
+}
+.action-btn.cancel:hover {
+  background: #fef2f2;
+  color: #ef4444;
+  border-color: #fca5a5;
+}
 
 /* Data Grid */
 .grid-2 {
@@ -709,7 +810,9 @@ const saveOtherSettings = () => {
   gap: 2rem;
 }
 
-.col-span-2 { grid-column: span 2; }
+.col-span-2 {
+  grid-column: span 2;
+}
 
 .data-group {
   display: flex;
@@ -723,18 +826,22 @@ const saveOtherSettings = () => {
   gap: 0.4rem;
   font-size: 0.85rem;
   font-weight: 600;
-  color: #94A3B8;
+  color: #94a3b8;
   text-transform: uppercase;
   letter-spacing: 0.5px;
 }
 
-.label-icon { width: 14px; height: 14px; stroke-width: 2.5; }
+.label-icon {
+  width: 14px;
+  height: 14px;
+  stroke-width: 2.5;
+}
 
 .data-group p {
   margin: 0;
   font-size: 1.05rem;
   font-weight: 500;
-  color: #1E293B;
+  color: #1e293b;
   word-break: break-word;
 }
 
@@ -742,21 +849,27 @@ const saveOtherSettings = () => {
   margin: 0;
   font-size: 1.25rem;
   font-weight: 700;
-  color: #0F172A;
+  color: #0f172a;
 }
 
-.data-group .text-subtle { color: #64748B; }
-.data-group .mono-text { font-family: 'Courier New', Courier, monospace; letter-spacing: 1px; font-weight: 600;}
+.data-group .text-subtle {
+  color: #64748b;
+}
+.data-group .mono-text {
+  font-family: 'Courier New', Courier, monospace;
+  letter-spacing: 1px;
+  font-weight: 600;
+}
 
 /* Input edit mode */
 .premium-input {
   width: 100%;
   padding: 0.75rem 1rem;
-  background: #F8FAFC;
-  border: 1px solid #CBD5E1;
+  background: #f8fafc;
+  border: 1px solid #cbd5e1;
   border-radius: 8px;
   font-size: 1rem;
-  color: #0F172A;
+  color: #0f172a;
   font-weight: 500;
   transition: all 0.2s ease;
   font-family: inherit;
@@ -765,7 +878,7 @@ const saveOtherSettings = () => {
 .premium-input:focus {
   outline: none;
   background: white;
-  border-color: #3B82F6;
+  border-color: #3b82f6;
   box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.15);
 }
 
@@ -794,8 +907,58 @@ const saveOtherSettings = () => {
 
 .separator {
   border: none;
-  border-top: 1px solid #F1F5F9;
+  border-top: 1px solid #f1f5f9;
   margin: 1rem 0;
+}
+
+/* Password Toggle Styles */
+.password-input-wrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.password-input-wrapper input {
+  padding-right: 2.5rem;
+}
+
+.password-toggle {
+  position: absolute;
+  right: 0.75rem;
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: #64748b;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  transition: color 0.2s ease;
+}
+
+.password-toggle:hover {
+  color: #0f172a;
+}
+
+.password-toggle .icon {
+  width: 20px;
+  height: 20px;
+}
+
+.spinner-small {
+  width: 14px;
+  height: 14px;
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  border-top-color: white;
+  border-radius: 50%;
+  animation: spin 0.6s linear infinite;
+  display: inline-block;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
 }
 
 .form-actions {
@@ -817,8 +980,13 @@ const saveOtherSettings = () => {
   transition: all 0.2s;
 }
 
-.btn-primary { background-color: #2563EB; color: white; }
-.btn-primary:hover { background-color: #1D4ED8; }
+.btn-primary {
+  background-color: #2563eb;
+  color: white;
+}
+.btn-primary:hover {
+  background-color: #1d4ed8;
+}
 
 .toggle-section {
   display: flex;
@@ -834,48 +1002,54 @@ const saveOtherSettings = () => {
 .toggle-header h3 {
   font-size: 1rem;
   font-weight: 600;
-  color: #0F172A;
+  color: #0f172a;
 }
 .toggle-info p {
-  color: #64748B;
+  color: #64748b;
   font-size: 0.9rem;
 }
-.text-primary { color: #2563EB; }
-.icon-md { width: 20px; height: 20px; }
+.text-primary {
+  color: #2563eb;
+}
+.icon-md {
+  width: 20px;
+  height: 20px;
+}
 
 .toggle-switch {
   position: relative;
   width: 44px;
   height: 24px;
 }
-.toggle-switch input { opacity: 0; width: 0; height: 0; }
+.toggle-switch input {
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
 .toggle-switch label {
   position: absolute;
   cursor: pointer;
   inset: 0;
-  background-color: #CBD5E1;
-  transition: .4s;
+  background-color: #cbd5e1;
+  transition: 0.4s;
   border-radius: 24px;
 }
 .toggle-switch label:before {
   position: absolute;
-  content: "";
+  content: '';
   height: 18px;
   width: 18px;
   left: 3px;
   bottom: 3px;
   background-color: white;
-  transition: .4s;
+  transition: 0.4s;
   border-radius: 50%;
 }
-.toggle-switch input:checked + label { background-color: #2563EB; }
-.toggle-switch input:checked + label:before { transform: translateX(20px); }
-
-/* Notifications Checkbox */
-.notification-group h3 {
-  font-size: 1.1rem;
-  font-weight: 600;
-  margin-bottom: 1.25rem;
+.toggle-switch input:checked + label {
+  background-color: #2563eb;
+}
+.toggle-switch input:checked + label:before {
+  transform: translateX(20px);
 }
 
 .checkbox-row {
@@ -884,11 +1058,11 @@ const saveOtherSettings = () => {
   gap: 1rem;
   margin-bottom: 1.5rem;
 }
-.checkbox-row input[type="checkbox"] {
+.checkbox-row input[type='checkbox'] {
   width: 18px;
   height: 18px;
   margin-top: 2px;
-  accent-color: #2563EB;
+  accent-color: #2563eb;
   cursor: pointer;
 }
 .checkbox-row label {
@@ -897,12 +1071,12 @@ const saveOtherSettings = () => {
   cursor: pointer;
 }
 .checkbox-row label strong {
-  color: #0F172A;
+  color: #0f172a;
   font-weight: 600;
   margin-bottom: 2px;
 }
 .checkbox-row label span {
-  color: #64748B;
+  color: #64748b;
   font-size: 0.9rem;
 }
 
@@ -923,9 +1097,18 @@ const saveOtherSettings = () => {
 }
 
 @media (max-width: 640px) {
-  .grid-2 { grid-template-columns: 1fr; }
-  .col-span-2 { grid-column: span 1; }
-  .form-row { flex-direction: column; }
-  .pane-header { flex-direction: column; gap: 1rem; }
+  .grid-2 {
+    grid-template-columns: 1fr;
+  }
+  .col-span-2 {
+    grid-column: span 1;
+  }
+  .form-row {
+    flex-direction: column;
+  }
+  .pane-header {
+    flex-direction: column;
+    gap: 1rem;
+  }
 }
 </style>

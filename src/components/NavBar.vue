@@ -5,9 +5,9 @@ import { useI18n } from 'vue-i18n'
 const { t, locale } = useI18n()
 
 const languages = [
-  { code: 'uz', name: 'O\'zbek' },
+  { code: 'uz', name: "O'zbek" },
   { code: 'oz', name: 'Ўзбек' },
-  { code: 'ru', name: 'Русский' }
+  { code: 'ru', name: 'Русский' },
 ]
 
 const currentFlag = (code) => {
@@ -72,13 +72,17 @@ onUnmounted(() => {
 
         <template v-if="!isAuthenticated">
           <router-link to="/login" class="login-link">{{ t('nav.login') }}</router-link>
-          <router-link to="/register" class="btn btn-primary" tag="button">{{ t('nav.register') }}</router-link>
+          <router-link to="/register" class="btn btn-primary" tag="button">{{
+            t('nav.register')
+          }}</router-link>
         </template>
         <template v-else>
-          <router-link to="/dashboard" class="btn btn-primary" tag="button">{{ t('nav.dashboard') || 'Go to Dashboard' }}</router-link>
+          <router-link to="/dashboard" class="btn btn-primary" tag="button">{{
+            t('nav.dashboard') || 'Go to Dashboard'
+          }}</router-link>
         </template>
       </div>
-      
+
       <!-- Mobile Menu Button -->
       <button class="menu-toggle" @click="toggleMenu" aria-label="Toggle navigation">
         <span class="hamburger" :class="{ 'is-active': isMenuOpen }"></span>
@@ -91,26 +95,32 @@ onUnmounted(() => {
           <a href="#hardware" class="nav-link" @click="closeMenu">{{ t('nav.hardware') }}</a>
           <a href="#pricing" class="nav-link" @click="closeMenu">{{ t('nav.pricing') }}</a>
           <a href="#contact" class="nav-link" @click="closeMenu">{{ t('nav.support') }}</a>
-          
+
           <div class="mobile-lang-switcher">
-             <button 
-               v-for="lang in languages" 
-               :key="lang.code" 
-               @click="locale = lang.code" 
-               :class="{ active: locale === lang.code }"
-             >
-               {{ lang.name }}
-             </button>
+            <button
+              v-for="lang in languages"
+              :key="lang.code"
+              @click="locale = lang.code"
+              :class="{ active: locale === lang.code }"
+            >
+              {{ lang.name }}
+            </button>
           </div>
 
           <div class="mobile-actions">
-             <template v-if="!isAuthenticated">
-               <router-link to="/login" class="login-link" @click="closeMenu">{{ t('nav.login') }}</router-link>
-               <router-link to="/register" class="btn btn-primary" @click="closeMenu">{{ t('nav.start_trial') }}</router-link>
-             </template>
-             <template v-else>
-               <router-link to="/dashboard" class="btn btn-primary" @click="closeMenu">{{ t('nav.dashboard') || 'Go to Dashboard' }}</router-link>
-             </template>
+            <template v-if="!isAuthenticated">
+              <router-link to="/login" class="login-link" @click="closeMenu">{{
+                t('nav.login')
+              }}</router-link>
+              <router-link to="/register" class="btn btn-primary" @click="closeMenu">{{
+                t('nav.start_trial')
+              }}</router-link>
+            </template>
+            <template v-else>
+              <router-link to="/dashboard" class="btn btn-primary" @click="closeMenu">{{
+                t('nav.dashboard') || 'Go to Dashboard'
+              }}</router-link>
+            </template>
           </div>
         </div>
       </div>
@@ -135,7 +145,7 @@ onUnmounted(() => {
   background-color: rgba(255, 255, 255, 0.95);
   backdrop-filter: blur(10px);
   box-shadow: var(--shadow-sm);
-  border-bottom: 1px solid rgba(0,0,0,0.05);
+  border-bottom: 1px solid rgba(0, 0, 0, 0.05);
 }
 
 .container {
@@ -192,7 +202,7 @@ onUnmounted(() => {
 .lang-select {
   padding: 0.5rem;
   border-radius: 8px;
-  border: 1px solid #E2E8F0;
+  border: 1px solid #e2e8f0;
   background-color: transparent;
   font-family: inherit;
   font-size: 0.9rem;
@@ -267,8 +277,12 @@ onUnmounted(() => {
   left: 0;
 }
 
-.hamburger::before { top: -8px; }
-.hamburger::after { bottom: -8px; }
+.hamburger::before {
+  top: -8px;
+}
+.hamburger::after {
+  bottom: -8px;
+}
 
 .hamburger.is-active {
   background-color: transparent;
@@ -330,10 +344,10 @@ onUnmounted(() => {
 
 .mobile-lang-switcher button {
   padding: 0.5rem 1rem;
-  border: 1px solid #E2E8F0;
+  border: 1px solid #e2e8f0;
   border-radius: 8px;
   background: transparent;
-  color: #64748B;
+  color: #64748b;
   font-size: 0.9rem;
 }
 
@@ -344,7 +358,8 @@ onUnmounted(() => {
 }
 
 @media (max-width: 900px) {
-  .desktop-nav, .desktop-actions {
+  .desktop-nav,
+  .desktop-actions {
     display: none;
   }
 

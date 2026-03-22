@@ -12,7 +12,7 @@ const router = useRouter()
 const { showNotification } = useNotification()
 const username = ref('')
 const password = ref('')
-const rememberMe = ref(false)
+// const rememberMe = ref(false)
 const loading = ref(false)
 const errorMessage = ref('')
 const showPassword = ref(false)
@@ -69,7 +69,7 @@ const handleLogin = async () => {
 <template>
   <div class="login-container">
     <!-- Left Side: Image -->
-    <div class="login-image-section"  data-aos="fade-right" data-aos-duration="1000">
+    <div class="login-image-section" data-aos="fade-right" data-aos-duration="1000">
       <div class="image-overlay"></div>
       <img :src="terminalImg" alt="CPOS System" class="bg-image" />
       <div class="image-content">
@@ -79,7 +79,7 @@ const handleLogin = async () => {
     </div>
 
     <!-- Right Side: Login Form -->
-    <div class="login-form-section"  data-aos="fade-left" data-aos-duration="1000">
+    <div class="login-form-section" data-aos="fade-left" data-aos-duration="1000">
       <div class="form-wrapper">
         <div class="headers">
           <h1>{{ t('auth.welcome_back') }}</h1>
@@ -89,11 +89,11 @@ const handleLogin = async () => {
         <form @submit.prevent="handleLogin" class="login-form">
           <div class="form-group">
             <label for="username">{{ t('auth.username') }}</label>
-            <input 
-              type="text" 
-              id="username" 
-              v-model="username" 
-              :placeholder="t('auth.username_placeholder')" 
+            <input
+              type="text"
+              id="username"
+              v-model="username"
+              :placeholder="t('auth.username_placeholder')"
               required
             />
           </div>
@@ -101,11 +101,11 @@ const handleLogin = async () => {
           <div class="form-group">
             <label for="password">{{ t('auth.password') }}</label>
             <div class="password-input-wrapper">
-              <input 
-                :type="showPassword ? 'text' : 'password'" 
-                id="password" 
-                v-model="password" 
-                placeholder="••••••••" 
+              <input
+                :type="showPassword ? 'text' : 'password'"
+                id="password"
+                v-model="password"
+                placeholder="••••••••"
                 required
               />
               <button type="button" class="password-toggle" @click="showPassword = !showPassword">
@@ -122,7 +122,7 @@ const handleLogin = async () => {
             </label> -->
             <a href="#" class="forgot-password">{{ t('auth.forgot_password') }}</a>
           </div>
-          
+
           <button type="submit" class="btn-login" :disabled="loading">
             <span v-if="loading" class="btn-loading">
               <span class="spinner"></span>
@@ -133,7 +133,12 @@ const handleLogin = async () => {
         </form>
 
         <div class="form-footer">
-          <p>{{ t('auth.no_account') }} <router-link to="/register" class="register-link">{{ t('auth.register_link') }}</router-link></p>
+          <p>
+            {{ t('auth.no_account') }}
+            <router-link to="/register" class="register-link">{{
+              t('auth.register_link')
+            }}</router-link>
+          </p>
           <router-link to="/" class="back-home-link">
             <span class="arrow-icon">←</span> {{ t('auth.back_to_home') }}
           </router-link>
@@ -148,14 +153,14 @@ const handleLogin = async () => {
   display: flex;
   min-height: 100vh;
   width: 100%;
-  background-color: #FFFFFF;
+  background-color: #ffffff;
 }
 
 /* Left Side - Image */
 .login-image-section {
   flex: 1;
   position: relative;
-  background-color: #0F172A;
+  background-color: #0f172a;
   display: flex;
   align-items: flex-end;
   justify-content: center;
@@ -213,7 +218,7 @@ const handleLogin = async () => {
   align-items: center;
   justify-content: center;
   padding: 2rem;
-  background-color: #FFFFFF;
+  background-color: #ffffff;
 }
 
 .form-wrapper {
@@ -234,12 +239,12 @@ const handleLogin = async () => {
 .headers h1 {
   font-size: 2rem;
   font-weight: 700;
-  color: #0F172A;
+  color: #0f172a;
   margin-bottom: 0.5rem;
 }
 
 .subtitle {
-  color: #64748B;
+  color: #64748b;
   font-size: 0.95rem;
 }
 
@@ -264,7 +269,7 @@ const handleLogin = async () => {
 
 .form-group input {
   padding: 0.75rem 1rem;
-  border: 1px solid #E2E8F0;
+  border: 1px solid #e2e8f0;
   border-radius: 8px;
   font-size: 1rem;
   transition: all 0.2s ease;
@@ -272,7 +277,7 @@ const handleLogin = async () => {
 }
 
 .form-group input:focus {
-  border-color: #007BFF;
+  border-color: #007bff;
   box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.1);
 }
 
@@ -294,7 +299,7 @@ const handleLogin = async () => {
   background: none;
   border: none;
   cursor: pointer;
-  color: #64748B;
+  color: #64748b;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -303,7 +308,7 @@ const handleLogin = async () => {
 }
 
 .password-toggle:hover {
-  color: #0F172A;
+  color: #0f172a;
 }
 
 .password-toggle .icon {
@@ -327,13 +332,13 @@ const handleLogin = async () => {
 }
 
 .forgot-password {
-  color: #007BFF;
+  color: #007bff;
   text-decoration: none;
   font-weight: 500;
 }
 
 .btn-login {
-  background-color: #007BFF;
+  background-color: #007bff;
   color: white;
   padding: 0.85rem;
   border: none;
@@ -371,14 +376,16 @@ const handleLogin = async () => {
 }
 
 @keyframes spin {
-  to { transform: rotate(360deg); }
+  to {
+    transform: rotate(360deg);
+  }
 }
 
 .form-footer {
   margin-top: 2rem;
   text-align: center;
   font-size: 0.95rem;
-  color: #64748B;
+  color: #64748b;
   display: flex;
   flex-direction: column;
   gap: 1rem;
@@ -386,7 +393,7 @@ const handleLogin = async () => {
 }
 
 .register-link {
-  color: #007BFF;
+  color: #007bff;
   text-decoration: none;
   font-weight: 600;
 }
@@ -396,7 +403,7 @@ const handleLogin = async () => {
 }
 
 .back-home-link {
-  color: #64748B;
+  color: #64748b;
   text-decoration: none;
   font-size: 0.9rem;
   display: flex;
@@ -406,7 +413,7 @@ const handleLogin = async () => {
 }
 
 .back-home-link:hover {
-  color: #0F172A;
+  color: #0f172a;
 }
 
 .arrow-icon {

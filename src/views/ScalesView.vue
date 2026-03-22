@@ -1,10 +1,20 @@
 <script setup>
 import { ref, computed, onMounted, watch } from 'vue'
-import { Plus, Search, Filter, Monitor, Hash, ShieldCheck, ShieldAlert, Store, Clock, ChevronLeft, ChevronRight, ArrowLeft } from 'lucide-vue-next'
+import {
+  Search,
+  Filter,
+  Monitor,
+  Hash,
+  ShieldCheck,
+  ShieldAlert,
+  Clock,
+  ChevronLeft,
+  ChevronRight,
+  ArrowLeft,
+} from 'lucide-vue-next'
 import { getScales, getScaleHistories } from '@/services/api'
-import { useNotification } from '@/composables/useNotification'
-
-const { showNotification } = useNotification()
+// Notification composable imported but not used yet
+// const { showNotification } = useNotification()
 
 const scales = ref([])
 const loading = ref(false)
@@ -51,15 +61,15 @@ watch(historySearchQuery, (newVal) => {
 
 const fetchScaleHistoryPage = async () => {
   if (!selectedScale.value) return
-  
+
   historiesLoading.value = true
   try {
     const params = {
       page: historyPage.value - 1,
       size: historyItemsPerPage.value,
-      sort: ['id'] // Assuming ID sort, adjust if backend expects 'createdAt' instead
+      sort: 'id,desc', // Assuming ID sort, adjust if backend expects 'createdAt' instead
     }
-    
+
     if (historySearchQuery.value) {
       params.value = historySearchQuery.value
     }
@@ -68,7 +78,8 @@ const fetchScaleHistoryPage = async () => {
     if (res.data && res.data.success) {
       scaleHistories.value = res.data.data.content
       historyTotalElements.value = res.data.data.page.totalElements
-      historyTotalPages.value = res.data.data.page.totalPages === 0 ? 1 : res.data.data.page.totalPages
+      historyTotalPages.value =
+        res.data.data.page.totalPages === 0 ? 1 : res.data.data.page.totalPages
     }
   } catch (error) {
     console.error('Failed to fetch scale histories:', error)
@@ -127,7 +138,11 @@ watch(searchQuery, (newVal) => {
 
 const filteredScales = computed(() => {
   if (!searchQuery.value) return scales.value
-  return scales.value.filter(s => s.name.toLowerCase().includes(searchQuery.value.toLowerCase()) || (s.serialNumber && s.serialNumber.toLowerCase().includes(searchQuery.value.toLowerCase())))
+  return scales.value.filter(
+    (s) =>
+      s.name.toLowerCase().includes(searchQuery.value.toLowerCase()) ||
+      (s.serialNumber && s.serialNumber.toLowerCase().includes(searchQuery.value.toLowerCase())),
+  )
 })
 </script>
 
@@ -136,16 +151,23 @@ const filteredScales = computed(() => {
     <!-- Header -->
     <div class="page-header">
       <div v-if="currentView === 'list'">
-        <h1 class="page-title">Scales Management</h1>
-        <p class="text-subtitle">Manage and monitor connected weighing scales</p>
+        <h1 class="page-title">{{ $t('dashboard.scales.title') }}</h1>
+        <p class="text-subtitle">{{ $t('dashboard.scales.subtitle') }}</p>
       </div>
       <div v-else class="flex flex-col gap-2">
-        <button class="btn btn-secondary back-btn mb-2" @click="closeHistoryView" style="width: fit-content; padding: 0.4rem 0.8rem;">
+        <button
+          class="btn btn-secondary back-btn mb-2"
+          @click="closeHistoryView"
+          style="width: fit-content; padding: 0.4rem 0.8rem"
+        >
           <ArrowLeft class="icon-sm" />
-          Back to Scales
+          {{ $t('dashboard.scales.back_to_scales') }}
         </button>
-        <h1 class="page-title">{{ selectedScale?.name }} Histories</h1>
-        <p class="text-subtitle">Scale S/N: <span class="mono-text">{{ selectedScale?.serialNumber || 'N/A' }}</span></p>
+        <h1 class="page-title">{{ selectedScale?.name }} {{ $t('dashboard.scales.histories') }}</h1>
+        <p class="text-subtitle">
+          {{ $t('dashboard.scales.scale_sn') }}
+          <span class="mono-text">{{ selectedScale?.serialNumber || 'N/A' }}</span>
+        </p>
       </div>
     </div>
 
@@ -155,16 +177,18 @@ const filteredScales = computed(() => {
         <form @submit.prevent="performSearch" class="search-form">
           <div class="search-box">
             <Search class="search-icon" />
-            <input 
-              type="text" 
-              v-model="searchQuery" 
-              placeholder="Search scales by name or S/N..." 
+            <input
+              type="text"
+              v-model="searchQuery"
+              :placeholder="$t('dashboard.scales.search_placeholder')"
               class="search-input"
             />
           </div>
-          <button type="submit" class="btn btn-primary search-btn">Search</button>
+          <button type="submit" class="btn btn-primary search-btn">
+            {{ $t('dashboard.scales.search_btn') }}
+          </button>
         </form>
-        
+
         <div class="filters">
           <button class="btn btn-icon-only filter-btn-mobile">
             <Filter class="icon-sm" />
@@ -183,68 +207,86 @@ const filteredScales = computed(() => {
             <div class="skel skel-badge"></div>
           </div>
           <div class="card-body">
-            <div class="detail-row"><div class="skel skel-label"></div><div class="skel skel-value"></div></div>
-            <div class="detail-row"><div class="skel skel-label"></div><div class="skel skel-value"></div></div>
-            <div class="detail-row"><div class="skel skel-label"></div><div class="skel skel-value-wide"></div></div>
+            <div class="detail-row">
+              <div class="skel skel-label"></div>
+              <div class="skel skel-value"></div>
+            </div>
+            <div class="detail-row">
+              <div class="skel skel-label"></div>
+              <div class="skel skel-value"></div>
+            </div>
+            <div class="detail-row">
+              <div class="skel skel-label"></div>
+              <div class="skel skel-value-wide"></div>
+            </div>
           </div>
           <div class="card-footer"><div class="skel skel-btn"></div></div>
         </div>
       </div>
-    <div v-else class="scales-grid">
-      <div v-for="scale in filteredScales" :key="scale.id" class="scale-card card" @click="openHistoryView(scale)">
-        <div class="card-header">
-          <div class="scale-title">
-            <Monitor class="icon-md text-primary" />
-            <h3>{{ scale.name }}</h3>
+      <div v-else class="scales-grid">
+        <div
+          v-for="scale in filteredScales"
+          :key="scale.id"
+          class="scale-card card"
+          @click="openHistoryView(scale)"
+        >
+          <div class="card-header">
+            <div class="scale-title">
+              <Monitor class="icon-md text-primary" />
+              <h3>{{ scale.name }}</h3>
+            </div>
+            <span class="status-badge" :class="scale.isActive ? 'badge-success' : 'badge-danger'">
+              <ShieldCheck v-if="scale.isActive" class="icon-xs" />
+              <ShieldAlert v-else class="icon-xs" />
+              {{ scale.isActive ? 'Active' : 'Offline' }}
+            </span>
           </div>
-          <span class="status-badge" :class="scale.isActive ? 'badge-success' : 'badge-danger'">
-            <ShieldCheck v-if="scale.isActive" class="icon-xs" />
-            <ShieldAlert v-else class="icon-xs" />
-            {{ scale.isActive ? 'Active' : 'Offline' }}
-          </span>
+
+          <div class="card-body">
+            <div class="detail-row">
+              <span class="label"><Hash class="icon-xs text-subtle" /> ID</span>
+              <span class="value">#{{ scale.id }}</span>
+            </div>
+            <div class="detail-row">
+              <span class="label">Model</span>
+              <span class="value">{{ scale.model }}</span>
+            </div>
+            <div class="detail-row">
+              <span class="label">S/N</span>
+              <span class="value mono-text" v-if="scale.serialNumber">{{
+                scale.serialNumber
+              }}</span>
+              <span class="value" v-else>—</span>
+            </div>
+          </div>
+
+          <div class="card-footer">
+            <button class="btn-action" @click.stop="">Test Connection</button>
+          </div>
         </div>
-        
-        <div class="card-body">
-          <div class="detail-row">
-            <span class="label"><Hash class="icon-xs text-subtle" /> ID</span>
-            <span class="value">#{{ scale.id }}</span>
-          </div>
-          <div class="detail-row">
-            <span class="label">Model</span>
-            <span class="value">{{ scale.model }}</span>
-          </div>
-          <div class="detail-row">
-            <span class="label">S/N</span>
-            <span class="value mono-text" v-if="scale.serialNumber">{{ scale.serialNumber }}</span>
-            <span class="value" v-else>—</span>
-          </div>
-        </div>
-        
-        <div class="card-footer">
-          <button class="btn-action" @click.stop="">Test Connection</button>
+
+        <div v-if="filteredScales.length === 0" class="empty-state card">
+          No scales found matching your criteria.
         </div>
       </div>
-      
-      <div v-if="filteredScales.length === 0" class="empty-state card">
-        No scales found matching your criteria.
-      </div>
-    </div>
     </div>
 
     <div v-else-if="currentView === 'history'" class="history-view">
       <!-- Toolbar for History -->
-      <div class="toolbar-card" style="margin-bottom: 1.5rem;">
+      <div class="toolbar-card" style="margin-bottom: 1.5rem">
         <form @submit.prevent="onHistorySearchSubmit" class="search-form">
           <div class="search-box">
             <Search class="search-icon" />
-            <input 
-              type="text" 
-              v-model="historySearchQuery" 
-              placeholder="Search history by product name..." 
+            <input
+              type="text"
+              v-model="historySearchQuery"
+              :placeholder="$t('dashboard.scales.history_search')"
               class="search-input"
             />
           </div>
-          <button type="submit" class="btn btn-primary search-btn">Search</button>
+          <button type="submit" class="btn btn-primary search-btn">
+            {{ $t('dashboard.scales.search_btn') }}
+          </button>
         </form>
       </div>
 
@@ -278,12 +320,12 @@ const filteredScales = computed(() => {
             </tbody>
           </table>
         </div>
-        
+
         <div v-else-if="scaleHistories.length === 0" class="empty-state p-8">
-          <Clock class="icon-md text-subtle mb-2" style="margin: 0 auto; display: block;" />
+          <Clock class="icon-md text-subtle mb-2" style="margin: 0 auto; display: block" />
           No history found for this scale.
         </div>
-        
+
         <div v-else class="table-responsive">
           <table class="data-table">
             <thead>
@@ -310,30 +352,41 @@ const filteredScales = computed(() => {
                 <td class="text-right">{{ hf.productUnit || '—' }}</td>
                 <td class="text-right">{{ hf.weight }}</td>
                 <td class="text-right">{{ (hf.price || 0).toLocaleString('uz-UZ') }} UZS</td>
-                <td class="text-right highlight font-medium">{{ (hf.total || 0).toLocaleString('uz-UZ') }} UZS</td>
-                <td class="text-right">{{ hf.createdAt ? new Date(hf.createdAt).toLocaleDateString('uz-UZ') : '—' }}</td>
+                <td class="text-right highlight font-medium">
+                  {{ (hf.total || 0).toLocaleString('uz-UZ') }} UZS
+                </td>
+                <td class="text-right">
+                  {{ hf.createdAt ? new Date(hf.createdAt).toLocaleDateString('uz-UZ') : '—' }}
+                </td>
               </tr>
             </tbody>
           </table>
         </div>
-        
+
         <!-- Pagination -->
         <div class="pagination-footer" v-if="!historiesLoading && scaleHistories.length > 0">
           <span class="pagination-info">
-            Showing {{ (historyPage - 1) * historyItemsPerPage + 1 }} to {{ Math.min(historyPage * historyItemsPerPage, historyTotalElements) }} of {{ historyTotalElements }} entries
+            Showing {{ (historyPage - 1) * historyItemsPerPage + 1 }} to
+            {{ Math.min(historyPage * historyItemsPerPage, historyTotalElements) }} of
+            {{ historyTotalElements }} entries
           </span>
           <div class="pagination-controls">
             <button class="page-btn" @click="prevHistoryPage" :disabled="historyPage === 1">
               <ChevronLeft class="icon-xs" />
             </button>
             <span class="current-page">Page {{ historyPage }}</span>
-            <button class="page-btn" @click="nextHistoryPage" :disabled="historyPage === historyTotalPages">
+            <button
+              class="page-btn"
+              @click="nextHistoryPage"
+              :disabled="historyPage === historyTotalPages"
+            >
               <ChevronRight class="icon-xs" />
             </button>
           </div>
         </div>
       </div>
-    </div>  </div>
+    </div>
+  </div>
 </template>
 
 <style scoped>
@@ -356,12 +409,12 @@ const filteredScales = computed(() => {
 .page-title {
   font-size: 1.7rem;
   font-weight: 700;
-  color: #0F172A;
+  color: #0f172a;
   margin: 0 0 0.25rem 0;
 }
 
 .text-subtitle {
-  color: #64748B;
+  color: #64748b;
   font-size: 0.95rem;
   margin: 0;
 }
@@ -387,20 +440,20 @@ const filteredScales = computed(() => {
 }
 
 .btn-primary {
-  background-color: #2563EB;
+  background-color: #2563eb;
   color: white;
   box-shadow: 0 4px 6px -1px rgba(37, 99, 235, 0.2);
 }
 
 .btn-secondary {
   background-color: white;
-  border: 1px solid #E2E8F0;
+  border: 1px solid #e2e8f0;
   color: #475569;
 }
 
 .btn-secondary:hover {
-  background-color: #F8FAFC;
-  color: #0F172A;
+  background-color: #f8fafc;
+  color: #0f172a;
 }
 
 .icon-sm {
@@ -419,11 +472,11 @@ const filteredScales = computed(() => {
 }
 
 .text-primary {
-  color: #2563EB;
+  color: #2563eb;
 }
 
 .text-subtle {
-  color: #94A3B8;
+  color: #94a3b8;
 }
 
 /* Toolbar */
@@ -461,7 +514,7 @@ const filteredScales = computed(() => {
   left: 12px;
   top: 50%;
   transform: translateY(-50%);
-  color: #94A3B8;
+  color: #94a3b8;
   width: 18px;
   height: 18px;
 }
@@ -469,16 +522,18 @@ const filteredScales = computed(() => {
 .search-input {
   width: 100%;
   padding: 0.6rem 1rem 0.6rem 2.5rem;
-  border: 1px solid #E2E8F0;
+  border: 1px solid #e2e8f0;
   border-radius: 8px;
   font-size: 0.95rem;
   outline: none;
-  transition: border-color 0.2s, box-shadow 0.2s;
+  transition:
+    border-color 0.2s,
+    box-shadow 0.2s;
   box-sizing: border-box;
 }
 
 .search-input:focus {
-  border-color: #2563EB;
+  border-color: #2563eb;
   box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
 }
 
@@ -490,13 +545,13 @@ const filteredScales = computed(() => {
 .btn-icon-only {
   padding: 0.6rem;
   background-color: white;
-  border: 1px solid #E2E8F0;
+  border: 1px solid #e2e8f0;
   color: #475569;
 }
 
 .btn-icon-only:hover {
-  background-color: #F8FAFC;
-  color: #0F172A;
+  background-color: #f8fafc;
+  color: #0f172a;
 }
 
 /* Scales Grid */
@@ -509,18 +564,24 @@ const filteredScales = computed(() => {
 .card {
   background: white;
   border-radius: 12px;
-  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -2px rgba(0, 0, 0, 0.05);
-  border: 1px solid #F1F5F9;
+  box-shadow:
+    0 4px 6px -1px rgba(0, 0, 0, 0.05),
+    0 2px 4px -2px rgba(0, 0, 0, 0.05);
+  border: 1px solid #f1f5f9;
   overflow: hidden;
   display: flex;
   flex-direction: column;
-  transition: transform 0.2s, box-shadow 0.2s;
+  transition:
+    transform 0.2s,
+    box-shadow 0.2s;
 }
 
 .card:hover {
   transform: translateY(-2px);
-  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -4px rgba(0, 0, 0, 0.1);
-  border-color: #CBD5E1;
+  box-shadow:
+    0 10px 15px -3px rgba(0, 0, 0, 0.1),
+    0 4px 6px -4px rgba(0, 0, 0, 0.1);
+  border-color: #cbd5e1;
 }
 
 .scale-card {
@@ -529,7 +590,7 @@ const filteredScales = computed(() => {
 
 .card-header {
   padding: 1.25rem 1.5rem;
-  border-bottom: 1px solid #F1F5F9;
+  border-bottom: 1px solid #f1f5f9;
   display: flex;
   justify-content: space-between;
   align-items: flex-start;
@@ -546,7 +607,7 @@ const filteredScales = computed(() => {
   margin: 0;
   font-size: 1.1rem;
   font-weight: 600;
-  color: #1E293B;
+  color: #1e293b;
   line-height: 1.2;
 }
 
@@ -562,13 +623,13 @@ const filteredScales = computed(() => {
 }
 
 .badge-success {
-  background-color: #DCFCE7;
+  background-color: #dcfce7;
   color: #166534;
 }
 
 .badge-danger {
-  background-color: #FEE2E2;
-  color: #991B1B;
+  background-color: #fee2e2;
+  color: #991b1b;
 }
 
 .card-body {
@@ -587,14 +648,14 @@ const filteredScales = computed(() => {
 }
 
 .detail-row .label {
-  color: #64748B;
+  color: #64748b;
   display: flex;
   align-items: center;
   gap: 0.4rem;
 }
 
 .detail-row .value {
-  color: #0F172A;
+  color: #0f172a;
   font-weight: 500;
   text-align: right;
 }
@@ -602,14 +663,14 @@ const filteredScales = computed(() => {
 .mono-text {
   font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
   font-size: 0.85rem;
-  background-color: #F8FAFC;
+  background-color: #f8fafc;
   padding: 0.1rem 0.4rem;
   border-radius: 4px;
-  border: 1px solid #E2E8F0;
+  border: 1px solid #e2e8f0;
 }
 
 .highlight-ip {
-  color: #2563EB !important;
+  color: #2563eb !important;
   font-weight: 600 !important;
 }
 
@@ -620,13 +681,13 @@ const filteredScales = computed(() => {
 .mt-2 {
   margin-top: 0.5rem;
   padding-top: 0.5rem;
-  border-top: 1px dashed #E2E8F0;
+  border-top: 1px dashed #e2e8f0;
 }
 
 .card-footer {
   padding: 1rem 1.5rem;
-  background-color: #F8FAFC;
-  border-top: 1px solid #F1F5F9;
+  background-color: #f8fafc;
+  border-top: 1px solid #f1f5f9;
   display: flex;
   gap: 0.75rem;
 }
@@ -635,7 +696,7 @@ const filteredScales = computed(() => {
   flex: 1;
   padding: 0.5rem;
   border-radius: 6px;
-  border: 1px solid #E2E8F0;
+  border: 1px solid #e2e8f0;
   background: white;
   color: #475569;
   font-weight: 500;
@@ -645,16 +706,16 @@ const filteredScales = computed(() => {
 }
 
 .btn-action:hover {
-  background-color: #F1F5F9;
-  color: #0F172A;
-  border-color: #CBD5E1;
+  background-color: #f1f5f9;
+  color: #0f172a;
+  border-color: #cbd5e1;
 }
 
 .empty-state {
   grid-column: 1 / -1;
   padding: 3rem;
   text-align: center;
-  color: #64748B;
+  color: #64748b;
   font-size: 1.1rem;
   display: flex;
   justify-content: center;
@@ -667,14 +728,20 @@ const filteredScales = computed(() => {
 }
 
 @keyframes fadeIn {
-  from { opacity: 0; transform: translateY(10px); }
-  to { opacity: 1; transform: translateY(0); }
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 /* Pagination */
 .pagination-footer {
   padding: 1rem 1.5rem;
-  border-top: 1px solid #E2E8F0;
+  border-top: 1px solid #e2e8f0;
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -685,7 +752,7 @@ const filteredScales = computed(() => {
 
 .pagination-info {
   font-size: 0.85rem;
-  color: #64748B;
+  color: #64748b;
 }
 
 .pagination-controls {
@@ -701,7 +768,7 @@ const filteredScales = computed(() => {
   width: 32px;
   height: 32px;
   border-radius: 6px;
-  border: 1px solid #E2E8F0;
+  border: 1px solid #e2e8f0;
   background: white;
   color: #475569;
   cursor: pointer;
@@ -709,9 +776,9 @@ const filteredScales = computed(() => {
 }
 
 .page-btn:hover:not(:disabled) {
-  background-color: #F1F5F9;
-  border-color: #CBD5E1;
-  color: #0F172A;
+  background-color: #f1f5f9;
+  border-color: #cbd5e1;
+  color: #0f172a;
 }
 
 .page-btn:disabled {
@@ -722,7 +789,7 @@ const filteredScales = computed(() => {
 .current-page {
   font-size: 0.85rem;
   font-weight: 500;
-  color: #1E293B;
+  color: #1e293b;
   min-width: 4.5rem;
   text-align: center;
 }
@@ -738,13 +805,13 @@ const filteredScales = computed(() => {
 .data-table th,
 .data-table td {
   padding: 1rem 1.25rem;
-  border-bottom: 1px solid #F1F5F9;
+  border-bottom: 1px solid #f1f5f9;
   text-align: left;
 }
 
 .data-table th {
-  background-color: #F8FAFC;
-  color: #64748B;
+  background-color: #f8fafc;
+  color: #64748b;
   font-size: 0.85rem;
   font-weight: 600;
   text-transform: uppercase;
@@ -755,13 +822,13 @@ const filteredScales = computed(() => {
 }
 
 .data-table td {
-  color: #1E293B;
+  color: #1e293b;
   font-size: 0.95rem;
   vertical-align: middle;
 }
 
 .data-table tbody tr:hover {
-  background-color: #F8FAFC;
+  background-color: #f8fafc;
 }
 
 .text-right {
@@ -773,7 +840,7 @@ const filteredScales = computed(() => {
 }
 
 .highlight {
-  color: #2563EB;
+  color: #2563eb;
 }
 
 .product-info {
@@ -794,8 +861,8 @@ const filteredScales = computed(() => {
 }
 
 .spinner {
-  border: 3px solid #E2E8F0;
-  border-top: 3px solid #2563EB;
+  border: 3px solid #e2e8f0;
+  border-top: 3px solid #2563eb;
   border-radius: 50%;
   width: 24px;
   height: 24px;
@@ -804,8 +871,12 @@ const filteredScales = computed(() => {
 }
 
 @keyframes spin {
-  0% { transform: rotate(0deg); }
-  100% { transform: rotate(360deg); }
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
 }
 
 @media (max-width: 640px) {
@@ -816,31 +887,80 @@ const filteredScales = computed(() => {
 
 /* ── Skeleton loaders ── */
 @keyframes shimmer {
-  0%   { background-position: -400px 0; }
-  100% { background-position:  400px 0; }
+  0% {
+    background-position: -400px 0;
+  }
+  100% {
+    background-position: 400px 0;
+  }
 }
 
 .skel {
   border-radius: 6px;
-  background: linear-gradient(90deg, #E2E8F0 25%, #F1F5F9 50%, #E2E8F0 75%);
+  background: linear-gradient(90deg, #e2e8f0 25%, #f1f5f9 50%, #e2e8f0 75%);
   background-size: 400px 100%;
   animation: shimmer 1.4s infinite linear;
 }
 
-.skel-icon        { width: 24px; height: 24px; border-radius: 6px; flex-shrink: 0; }
-.skel-title       { width: 120px; height: 16px; }
-.skel-badge       { width: 60px; height: 22px; border-radius: 9999px; }
-.skel-label       { width: 60px; height: 13px; }
-.skel-value       { width: 50px; height: 13px; }
-.skel-value-wide  { width: 110px; height: 13px; border-radius: 4px; }
-.skel-btn         { width: 100%; height: 32px; border-radius: 6px; }
+.skel-icon {
+  width: 24px;
+  height: 24px;
+  border-radius: 6px;
+  flex-shrink: 0;
+}
+.skel-title {
+  width: 120px;
+  height: 16px;
+}
+.skel-badge {
+  width: 60px;
+  height: 22px;
+  border-radius: 9999px;
+}
+.skel-label {
+  width: 60px;
+  height: 13px;
+}
+.skel-value {
+  width: 50px;
+  height: 13px;
+}
+.skel-value-wide {
+  width: 110px;
+  height: 13px;
+  border-radius: 4px;
+}
+.skel-btn {
+  width: 100%;
+  height: 32px;
+  border-radius: 6px;
+}
 
 /* Table row skeletons */
-.skel-row td { padding: 1rem 1.25rem; border-bottom: 1px solid #F1F5F9; }
-.skel-text-sm  { height: 12px; width: 70px;  border-radius: 4px; }
-.skel-text-md  { height: 12px; width: 90px;  border-radius: 4px; }
-.skel-text-lg  { height: 14px; width: 130px; border-radius: 4px; }
-.ml-auto { margin-left: auto; }
+.skel-row td {
+  padding: 1rem 1.25rem;
+  border-bottom: 1px solid #f1f5f9;
+}
+.skel-text-sm {
+  height: 12px;
+  width: 70px;
+  border-radius: 4px;
+}
+.skel-text-md {
+  height: 12px;
+  width: 90px;
+  border-radius: 4px;
+}
+.skel-text-lg {
+  height: 14px;
+  width: 130px;
+  border-radius: 4px;
+}
+.ml-auto {
+  margin-left: auto;
+}
 
-.skeleton-card { pointer-events: none; }
+.skeleton-card {
+  pointer-events: none;
+}
 </style>

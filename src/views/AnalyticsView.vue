@@ -1,121 +1,429 @@
 <script setup>
 import { ref, onMounted } from 'vue'
+import { DollarSign, BarChart2, Sigma, Percent, Download, MoreVertical } from 'lucide-vue-next'
 import {
-  TrendingUp,
-  DollarSign,
-  ShoppingBag,
-  CreditCard,
-  BarChart2,
-  Sigma,
-  Percent,
-  Calendar,
-  Download,
-  ArrowUpRight,
-  ArrowDownRight,
-  MoreVertical
-} from 'lucide-vue-next'
-import { getStatistics } from '@/services/api'
+  getStatistics,
+  getSalesTrend,
+  getSalesByCategory,
+  getTopProductsTrend,
+} from '@/services/api'
+import {
+  Chart as ChartJS,
+  Title,
+  Tooltip,
+  Legend,
+  BarElement,
+  CategoryScale,
+  LinearScale,
+  ArcElement,
+  PointElement,
+  LineElement,
+} from 'chart.js'
+import { Bar, Doughnut, Line } from 'vue-chartjs'
 
-// Period Filter
-const selectedPeriod = ref('Last 7 Days')
-const periods = ['Today', 'Last 7 Days', 'Last 30 Days', 'This Month', 'Last Month', 'This Year', 'All Time']
+ChartJS.register(
+  Title,
+  Tooltip,
+  Legend,
+  BarElement,
+  CategoryScale,
+  LinearScale,
+  ArcElement,
+  PointElement,
+  LineElement,
+)
+import { VueDatePicker } from '@vuepic/vue-datepicker'
+import '@vuepic/vue-datepicker/dist/main.css'
+import { useI18n } from 'vue-i18n'
+
+const { t } = useI18n()
+const dateRange = ref(null)
+
+const initDateRange = () => {
+  const end = new Date()
+  const start = new Date(new Date().setDate(end.getDate() - 6))
+  start.setHours(0, 0, 0, 0)
+  end.setHours(23, 59, 59, 999)
+  dateRange.value = [start, end]
+}
 
 // Loading state
 const statsLoading = ref(true)
+const salesTrendLoading = ref(true)
+const categorySalesLoading = ref(true)
+const topProductsLoading = ref(true)
+
+// Central total revenue for the Doughnut chart
+const totalCategoryRevenue = ref(0)
 
 // 6 metric cards matching all API fields
 const metrics = ref([
-  { title: 'Total Revenue',     value: null, sub: null, icon: DollarSign,  iconColor: 'text-blue-600',    bg: 'bg-blue-100' },
-  { title: 'Total Cost',        value: null, sub: null, icon: BarChart2,   iconColor: 'text-red-600',     bg: 'bg-red-100' },
-  { title: 'Total Sum',         value: null, sub: null, icon: Sigma,       iconColor: 'text-indigo-600',  bg: 'bg-indigo-100' },
-  { title: 'Conversion Rate',   value: null, sub: null, icon: Percent,     iconColor: 'text-emerald-600', bg: 'bg-emerald-100' },
+  {
+    title: 'dashboard.analytics.total_revenue',
+    value: null,
+    sub: null,
+    icon: DollarSign,
+    iconColor: 'text-blue-600',
+    bg: 'bg-blue-100',
+  },
+  {
+    title: 'dashboard.analytics.total_cost',
+    value: null,
+    sub: null,
+    icon: BarChart2,
+    iconColor: 'text-red-600',
+    bg: 'bg-red-100',
+  },
+  {
+    title: 'dashboard.analytics.total_sum',
+    value: null,
+    sub: null,
+    icon: Sigma,
+    iconColor: 'text-indigo-600',
+    bg: 'bg-indigo-100',
+  },
+  {
+    title: 'dashboard.analytics.conversion_rate',
+    value: null,
+    sub: null,
+    icon: Percent,
+    iconColor: 'text-emerald-600',
+    bg: 'bg-emerald-100',
+  },
 ])
 
 const fmt = (n) => (n ?? 0).toLocaleString('uz-UZ')
 
-const getDateRange = (period) => {
-  const toDate = new Date()
-  let fromDate = new Date()
-
-  // Reset time for consistent start/end of day boundaries
-  toDate.setHours(23, 59, 59, 999)
-  fromDate.setHours(0, 0, 0, 0)
-
-  switch (period) {
-    case 'Today':
-      break;
-    case 'Last 7 Days':
-      fromDate.setDate(toDate.getDate() - 6)
-      break;
-    case 'Last 30 Days':
-      fromDate.setDate(toDate.getDate() - 29)
-      break;
-    case 'This Month':
-      fromDate.setDate(1) // First day of current month
-      break;
-    case 'Last Month':
-      fromDate.setMonth(toDate.getMonth() - 1)
-      fromDate.setDate(1) // First day of last month
-      
-      toDate.setDate(0) // Last day of last month (0th day of current month)
-      toDate.setHours(23, 59, 59, 999)
-      break;
-    case 'This Year':
-      fromDate.setMonth(0, 1) // Jan 1st
-      break;
-    case 'All Time':
-      return {} // Send no params for all time
+const getApiParams = () => {
+  if (dateRange.value && dateRange.value.length === 2 && dateRange.value[0] && dateRange.value[1]) {
+    return {
+      fromDate: dateRange.value[0].toISOString(),
+      toDate: dateRange.value[1].toISOString(),
+    }
   }
-
-  return {
-    fromDate: fromDate.toISOString(),
-    toDate: toDate.toISOString()
-  }
+  return {}
 }
 
 const fetchStatistics = async () => {
   statsLoading.value = true
+  salesTrendLoading.value = true
+  categorySalesLoading.value = true
+  topProductsLoading.value = true
+
+  const params = getApiParams()
+
   try {
-    const params = getDateRange(selectedPeriod.value)
-    
-    const res = await getStatistics(params)
-    if (res.data?.success) {
-      const d = res.data.data
+    const resStats = await getStatistics(params)
+    if (resStats.data?.success) {
+      const d = resStats.data.data
       metrics.value[0].value = fmt(d.totalRevenue) + ' UZS'
       metrics.value[1].value = fmt(d.totalCost) + ' UZS'
       metrics.value[2].value = fmt(d.totalSum) + ' UZS'
       metrics.value[3].value = (d.conversionRate ?? 0).toFixed(2) + '%'
     }
   } catch (e) {
-    console.error('Failed to load statistics', e)
+    console.error('Failed to load main statistics', e)
   } finally {
     statsLoading.value = false
   }
+
+  // Fetch Sales Trend
+  try {
+    const resTrend = await getSalesTrend(params)
+    if (resTrend.data?.success && resTrend.data.data) {
+      const data = resTrend.data.data
+      barChartData.value.labels = data.labels || []
+      barChartData.value.datasets[0].data = data.salesCount || []
+    }
+  } catch (e) {
+    console.error('Failed to load sales trend', e)
+  } finally {
+    salesTrendLoading.value = false
+  }
+
+  // Fetch Category Sales
+  try {
+    const resCat = await getSalesByCategory(params)
+    if (resCat.data?.success && resCat.data.data) {
+      const data = resCat.data.data
+      totalCategoryRevenue.value = data.totalRevenue || 0
+
+      const categories = data.categories || []
+
+      // Update the reactive array preserving colors if possible, or assigning new ones
+      const defaultColors = ['#3b82f6', '#a855f7', '#10b981', '#f59e0b', '#ef4444', '#6b7280']
+      categorySales.value = categories.map((cat, index) => ({
+        name: cat.name,
+        percentage: cat.percentage,
+        color: defaultColors[index % defaultColors.length],
+      }))
+
+      donutChartData.value.labels = categorySales.value.map((c) => c.name)
+      donutChartData.value.datasets[0].data = categorySales.value.map((c) => c.percentage)
+      donutChartData.value.datasets[0].backgroundColor = categorySales.value.map((c) => c.color)
+    }
+  } catch (e) {
+    console.error('Failed to load category sales', e)
+  } finally {
+    categorySalesLoading.value = false
+  }
+
+  // Fetch Top Products Trend
+  try {
+    const resTop = await getTopProductsTrend({ ...params, limit: 5 })
+    if (resTop.data?.success && resTop.data.data) {
+      const data = resTop.data.data
+      lineChartData.value.labels = data.labels || []
+
+      const defaultColors = ['#3b82f6', '#a855f7', '#10b981', '#f59e0b', '#ef4444']
+      lineChartData.value.datasets = (data.datasets || []).map((ds, index) => {
+        const color = defaultColors[index % defaultColors.length]
+        return {
+          label: ds.label,
+          data: ds.data,
+          fill: false,
+          borderColor: color,
+          tension: 0.4,
+          pointBackgroundColor: color,
+        }
+      })
+    }
+  } catch (e) {
+    console.error('Failed to load top products trend', e)
+  } finally {
+    topProductsLoading.value = false
+  }
 }
 
-// Re-fetch when period changes
+// Re-fetch when date changes
 import { watch } from 'vue'
-watch(selectedPeriod, () => {
+watch(dateRange, () => {
   fetchStatistics()
 })
 
-onMounted(fetchStatistics)
+onMounted(() => {
+  initDateRange()
+})
 
-// Top Products Data (static)
-const topProducts = ref([
-  { id: 1, name: 'Wireless Headphones',  category: 'Accessories', sales: 120, revenue: '$12,400', growth: '+15%' },
-  { id: 2, name: 'Smart Watch Series 7', category: 'Electronics', sales: 85,  revenue: '$34,000', growth: '+8%' },
-  { id: 3, name: 'Ergonomic Chair',      category: 'Furniture',   sales: 45,  revenue: '$11,250', growth: '+12%' },
-  { id: 4, name: 'Mechanical Keyboard',  category: 'Electronics', sales: 30,  revenue: '$4,500',  growth: '-2%' },
-])
+// Top Products Data (Line Chart over 6 months)
+const lineChartData = ref({
+  labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'],
+  datasets: [
+    {
+      label: 'Wireless Headphones',
+      data: [65, 59, 80, 81, 56, 120],
+      fill: false,
+      borderColor: '#3b82f6',
+      tension: 0.4,
+      pointBackgroundColor: '#3b82f6',
+    },
+    {
+      label: 'Smart Watch Series 7',
+      data: [28, 48, 40, 19, 86, 85],
+      fill: false,
+      borderColor: '#a855f7',
+      tension: 0.4,
+      pointBackgroundColor: '#a855f7',
+    },
+    {
+      label: 'Ergonomic Chair',
+      data: [15, 25, 30, 45, 35, 45],
+      fill: false,
+      borderColor: '#10b981',
+      tension: 0.4,
+      pointBackgroundColor: '#10b981',
+    },
+  ],
+})
+
+const lineChartOptions = ref({
+  responsive: true,
+  maintainAspectRatio: false,
+  interaction: {
+    mode: 'index',
+    intersect: false,
+  },
+  plugins: {
+    legend: {
+      position: 'top',
+      labels: {
+        usePointStyle: true,
+        boxWidth: 8,
+        font: {
+          family: 'Inter, sans-serif',
+          size: 12,
+        },
+      },
+    },
+    tooltip: {
+      backgroundColor: '#0f172a',
+      padding: 12,
+      cornerRadius: 8,
+      callbacks: {
+        label: function (context) {
+          let label = context.dataset.label || ''
+          if (label) {
+            label += ': '
+          }
+          if (context.parsed.y !== null) {
+            label += context.parsed.y + ' ' + t('dashboard.analytics.sales')
+          }
+          return label
+        },
+      },
+    },
+  },
+  scales: {
+    y: {
+      beginAtZero: true,
+      grid: {
+        color: '#f1f5f9',
+        drawBorder: false,
+      },
+      ticks: {
+        color: '#64748b',
+        font: {
+          family: 'Inter, sans-serif',
+          size: 11,
+        },
+      },
+      title: {
+        display: true,
+        text: 'Number of Sales',
+        color: '#64748b',
+        font: {
+          family: 'Inter, sans-serif',
+          size: 12,
+        },
+      },
+    },
+    x: {
+      grid: {
+        display: false,
+        drawBorder: false,
+      },
+      ticks: {
+        color: '#64748b',
+        font: {
+          family: 'Inter, sans-serif',
+          size: 12,
+        },
+      },
+    },
+  },
+})
 
 // Category Sales Data (static)
 const categorySales = ref([
-  { name: 'Electronics',  percentage: 45, color: 'bg-blue-500' },
-  { name: 'Fashion',      percentage: 25, color: 'bg-purple-500' },
-  { name: 'Home & Garden',percentage: 20, color: 'bg-emerald-500' },
-  { name: 'Others',       percentage: 10, color: 'bg-gray-400' },
+  { name: 'Electronics', percentage: 45, color: '#3b82f6' },
+  { name: 'Fashion', percentage: 25, color: '#a855f7' },
+  { name: 'Home & Garden', percentage: 20, color: '#10b981' },
+  { name: 'Others', percentage: 10, color: '#9ca3af' },
 ])
+
+// Chart Config
+const barChartData = ref({
+  labels: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
+  datasets: [
+    {
+      label: 'Sales',
+      data: [120, 190, 150, 250, 220, 300, 280],
+      backgroundColor: 'rgba(59, 130, 246, 0.8)',
+      hoverBackgroundColor: 'rgba(59, 130, 246, 1)',
+      borderRadius: 6,
+      barThickness: 32,
+    },
+  ],
+})
+
+const barChartOptions = ref({
+  responsive: true,
+  maintainAspectRatio: false,
+  plugins: {
+    legend: {
+      display: false,
+    },
+    tooltip: {
+      backgroundColor: '#0f172a',
+      padding: 12,
+      cornerRadius: 8,
+      callbacks: {
+        label: function (context) {
+          let label = context.dataset.label || ''
+          if (label) {
+            label += ': '
+          }
+          if (context.parsed.y !== null) {
+            label += context.parsed.y + ' ' + t('dashboard.analytics.orders')
+          }
+          return label
+        },
+      },
+    },
+  },
+  scales: {
+    y: {
+      beginAtZero: true,
+      grid: {
+        color: '#f1f5f9',
+        drawBorder: false,
+      },
+      ticks: {
+        color: '#64748b',
+        font: {
+          family: 'Inter, sans-serif',
+          size: 11,
+        },
+      },
+    },
+    x: {
+      grid: {
+        display: false,
+        drawBorder: false,
+      },
+      ticks: {
+        color: '#64748b',
+        font: {
+          family: 'Inter, sans-serif',
+          size: 12,
+        },
+      },
+    },
+  },
+})
+
+const donutChartData = ref({
+  labels: categorySales.value.map((c) => c.name),
+  datasets: [
+    {
+      data: categorySales.value.map((c) => c.percentage),
+      backgroundColor: categorySales.value.map((c) => c.color),
+      hoverOffset: 4,
+      borderWidth: 0,
+      cutout: '75%',
+    },
+  ],
+})
+
+const donutChartOptions = ref({
+  responsive: true,
+  maintainAspectRatio: false,
+  plugins: {
+    legend: {
+      display: false,
+    },
+    tooltip: {
+      backgroundColor: '#0f172a',
+      padding: 12,
+      cornerRadius: 8,
+      callbacks: {
+        label: function (context) {
+          return `${context.label}: ${context.parsed}%`
+        },
+      },
+    },
+  },
+})
 </script>
 
 <template>
@@ -123,19 +431,22 @@ const categorySales = ref([
     <!-- Header -->
     <div class="page-header">
       <div>
-        <h1 class="page-title">Analytics Dashboard</h1>
-        <p class="text-subtitle">Overview of your store's performance</p>
+        <h1 class="page-title">{{ $t('dashboard.analytics.title') }}</h1>
+        <p class="text-subtitle">{{ $t('dashboard.analytics.overview') }}</p>
       </div>
       <div class="actions">
-        <div class="select-wrapper">
-          <Calendar class="select-icon" />
-          <select v-model="selectedPeriod" class="period-select">
-            <option v-for="period in periods" :key="period">{{ period }}</option>
-          </select>
+        <div class="date-picker-wrapper">
+          <VueDatePicker
+            v-model="dateRange"
+            range
+            :enable-time-picker="true"
+            format="dd.MM.yyyy HH:mm"
+            placeholder="Select date and time"
+          />
         </div>
         <button class="btn btn-outline">
           <Download class="icon-sm" />
-          Export
+          {{ $t('dashboard.analytics.download_report') }}
         </button>
       </div>
     </div>
@@ -144,7 +455,7 @@ const categorySales = ref([
     <div class="stats-grid">
       <div v-for="(stat, index) in metrics" :key="index" class="stat-card">
         <div class="stat-header">
-          <span class="stat-title">{{ stat.title }}</span>
+          <span class="stat-title">{{ $t(stat.title) }}</span>
           <div class="stat-icon-wrapper" :class="stat.bg">
             <component :is="stat.icon" class="stat-icon" :class="stat.iconColor" />
           </div>
@@ -153,7 +464,7 @@ const categorySales = ref([
           <!-- Skeleton while loading -->
           <template v-if="statsLoading">
             <div class="skel skel-val"></div>
-            <div class="skel skel-chg" style="margin-top:0.5rem"></div>
+            <div class="skel skel-chg" style="margin-top: 0.5rem"></div>
           </template>
           <div v-else class="stat-value">{{ stat.value ?? '—' }}</div>
         </div>
@@ -164,80 +475,68 @@ const categorySales = ref([
       <!-- Revenue Trend Chart (Placeholder) -->
       <div class="card revenue-chart">
         <div class="card-header">
-          <h3>Revenue Trend</h3>
+          <h3>{{ $t('dashboard.analytics.sales_trend') }}</h3>
           <button class="btn-icon">
             <MoreVertical class="icon-sm" />
           </button>
         </div>
-        <div class="chart-container">
-          <!-- Simplified CSS Bar Chart for visualization -->
-           <div class="bar-chart">
-             <div class="bar-group" v-for="i in 7" :key="i">
-               <div class="bar" :style="{ height: `${Math.random() * 60 + 20}%` }"></div>
-               <span class="bar-label">Day {{ i }}</span>
-             </div>
-           </div>
+        <div class="chart-container" style="height: 300px; width: 100%">
+          <template v-if="salesTrendLoading">
+            <div class="skel" style="width: 100%; height: 100%; border-radius: 8px"></div>
+          </template>
+          <Bar v-else :data="barChartData" :options="barChartOptions" />
         </div>
       </div>
 
       <!-- Sales by Category -->
       <div class="card category-chart">
         <div class="card-header">
-          <h3>Sales by Category</h3>
+          <h3>{{ $t('dashboard.analytics.sales_by_category') }}</h3>
         </div>
         <div class="chart-body">
-          <div class="donut-chart-placeholder">
-            <div class="donut-ring">
-              <span class="donut-text">Total<br><strong>$48.5k</strong></span>
+          <template v-if="categorySalesLoading">
+            <div
+              class="skel"
+              style="width: 180px; height: 180px; border-radius: 50%; margin: 0 auto 1.5rem auto"
+            ></div>
+            <div class="skel" style="width: 100%; height: 40px; border-radius: 8px"></div>
+          </template>
+          <template v-else>
+            <div class="donut-chart-placeholder" style="background: none">
+              <div class="donut-ring" style="z-index: 1">
+                <span class="donut-text"
+                  >{{ $t('dashboard.analytics.total') }}<br /><strong
+                    >{{ fmt(totalCategoryRevenue) || 0 }}<br />UZS</strong
+                  ></span
+                >
+              </div>
+              <div style="position: relative; z-index: 10; width: 100%; height: 100%">
+                <Doughnut :data="donutChartData" :options="donutChartOptions" />
+              </div>
             </div>
-          </div>
-          <div class="legend">
-            <div v-for="cat in categorySales" :key="cat.name" class="legend-item">
-              <div class="indicator" :class="cat.color"></div>
-              <span class="legend-name">{{ cat.name }}</span>
-              <span class="legend-value">{{ cat.percentage }}%</span>
+            <div class="legend">
+              <div v-for="cat in categorySales" :key="cat.name" class="legend-item">
+                <div class="indicator" :style="{ backgroundColor: cat.color }"></div>
+                <span class="legend-name">{{ cat.name }}</span>
+                <span class="legend-value">{{ cat.percentage }}%</span>
+              </div>
             </div>
-          </div>
+          </template>
         </div>
       </div>
     </div>
 
-    <!-- Top Products Table -->
+    <!-- Top Products Line Chart -->
     <div class="card top-products">
       <div class="card-header">
-        <h3>Top Performing Products</h3>
-        <button class="btn-link">View All</button>
+        <h3>{{ $t('dashboard.analytics.top_products') }}</h3>
+        <button class="btn-link">{{ $t('dashboard.analytics.view_details') }}</button>
       </div>
-      <div class="table-responsive">
-        <table class="data-table">
-          <thead>
-            <tr>
-              <th>Product Name</th>
-              <th>Category</th>
-              <th>Sales</th>
-              <th>Revenue</th>
-              <th>Growth</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr v-for="product in topProducts" :key="product.id">
-              <td>
-                <div class="product-info">
-                  <div class="product-thumb"></div>
-                  <span class="product-name">{{ product.name }}</span>
-                </div>
-              </td>
-              <td>{{ product.category }}</td>
-              <td>{{ product.sales }}</td>
-              <td>{{ product.revenue }}</td>
-              <td>
-                <span class="growth-badge" :class="product.growth.startsWith('+') ? 'positive' : 'negative'">
-                  {{ product.growth }}
-                </span>
-              </td>
-            </tr>
-          </tbody>
-        </table>
+      <div class="chart-container" style="height: 350px; width: 100%; padding-top: 5px">
+        <template v-if="topProductsLoading">
+          <div class="skel" style="width: 100%; height: 100%; border-radius: 8px"></div>
+        </template>
+        <Line v-else :data="lineChartData" :options="lineChartOptions" />
       </div>
     </div>
   </div>
@@ -262,12 +561,12 @@ const categorySales = ref([
 .page-title {
   font-size: 1.8rem;
   font-weight: 700;
-  color: #0F172A;
+  color: #0f172a;
   margin-bottom: 0.25rem;
 }
 
 .text-subtitle {
-  color: #64748B;
+  color: #64748b;
   font-size: 0.95rem;
 }
 
@@ -290,41 +589,44 @@ const categorySales = ref([
 
 .btn-outline {
   background: white;
-  border: 1px solid #E2E8F0;
+  border: 1px solid #e2e8f0;
   color: #475569;
 }
 
 .btn-outline:hover {
-  background: #F8FAFC;
-  border-color: #CBD5E1;
+  background: #f8fafc;
+  border-color: #cbd5e1;
 }
 
-.select-wrapper {
-  position: relative;
-  display: flex;
-  align-items: center;
+/* VueDatePicker Custom Theme overrides */
+.date-picker-wrapper {
+  width: 320px;
+  /* Override default VueDatePicker variables to match our app */
+  --dp-font-family: inherit;
+  --dp-border-radius: 8px;
+  --dp-border-color: #e2e8f0;
+  --dp-border-color-hover: #cbd5e1;
+  --dp-background-color: white;
+  --dp-text-color: #475569;
+  --dp-icon-color: #64748b;
+  --dp-primary-color: #3b82f6; /* Same as bg-blue-500 */
+  --dp-primary-disabled-color: #93c5fd;
+  --dp-primary-text-color: #fff;
+  --dp-secondary-color: #f1f5f9;
 }
 
-.select-icon {
-  position: absolute;
-  left: 10px;
-  width: 16px;
-  height: 16px;
-  color: #64748B;
-  pointer-events: none;
-}
-
-.period-select {
+.date-picker-wrapper :deep(.dp__input) {
   padding: 0.6rem 1rem 0.6rem 2.2rem;
-  border-radius: 8px;
-  border: 1px solid #E2E8F0;
-  background: white;
-  color: #475569;
   font-weight: 500;
   font-size: 0.9rem;
-  cursor: pointer;
-  outline: none;
-  appearance: none; /* Remove default arrow in some browsers if needed, or keep standard */
+  box-shadow: none; /* Remove default box shadow if any */
+}
+
+.date-picker-wrapper :deep(.dp__input_icon) {
+  left: 10px;
+  padding: 0;
+  height: 16px;
+  width: 16px;
 }
 
 /* Stats Grid */
@@ -338,7 +640,7 @@ const categorySales = ref([
   background: white;
   padding: 1.5rem;
   border-radius: 16px;
-  border: 1px solid #F1F5F9;
+  border: 1px solid #f1f5f9;
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
   transition: transform 0.2s;
 }
@@ -355,7 +657,7 @@ const categorySales = ref([
 }
 
 .stat-title {
-  color: #64748B;
+  color: #64748b;
   font-size: 0.85rem;
   font-weight: 600;
 }
@@ -376,7 +678,7 @@ const categorySales = ref([
 .stat-value {
   font-size: 1.75rem;
   font-weight: 700;
-  color: #0F172A;
+  color: #0f172a;
   margin-bottom: 0.5rem;
 }
 
@@ -388,11 +690,15 @@ const categorySales = ref([
   font-weight: 600;
 }
 
-.stat-change.up { color: #10B981; }
-.stat-change.down { color: #EF4444; }
+.stat-change.up {
+  color: #10b981;
+}
+.stat-change.down {
+  color: #ef4444;
+}
 
 .text-muted {
-  color: #94A3B8;
+  color: #94a3b8;
   font-weight: 400;
   margin-left: 4px;
 }
@@ -407,7 +713,7 @@ const categorySales = ref([
 .card {
   background: white;
   border-radius: 16px;
-  border: 1px solid #F1F5F9;
+  border: 1px solid #f1f5f9;
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
   overflow: hidden;
   display: flex;
@@ -416,7 +722,7 @@ const categorySales = ref([
 
 .card-header {
   padding: 1.25rem 1.5rem;
-  border-bottom: 1px solid #F1F5F9;
+  border-bottom: 1px solid #f1f5f9;
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -425,21 +731,21 @@ const categorySales = ref([
 .card-header h3 {
   font-size: 1.1rem;
   font-weight: 700;
-  color: #0F172A;
+  color: #0f172a;
 }
 
 .btn-icon {
   background: transparent;
   border: none;
   cursor: pointer;
-  color: #64748B;
+  color: #64748b;
   padding: 4px;
   border-radius: 4px;
 }
 
 .btn-icon:hover {
-  background: #F1F5F9;
-  color: #0F172A;
+  background: #f1f5f9;
+  color: #0f172a;
 }
 
 /* Revenue Chart (Bar Chart) */
@@ -470,7 +776,7 @@ const categorySales = ref([
 
 .bar {
   width: 60%;
-  background-color: #3B82F6;
+  background-color: #3b82f6;
   border-radius: 6px 6px 0 0;
   transition: height 0.5s ease-out;
   opacity: 0.8;
@@ -484,7 +790,7 @@ const categorySales = ref([
 .bar-label {
   margin-top: 10px;
   font-size: 0.8rem;
-  color: #64748B;
+  color: #64748b;
 }
 
 /* Category Chart (Donut) */
@@ -500,15 +806,11 @@ const categorySales = ref([
 .donut-chart-placeholder {
   width: 180px;
   height: 180px;
-  border-radius: 50%;
-  background: conic-gradient(
-    #3B82F6 0% 45%,
-    #A855F7 45% 70%,
-    #10B981 70% 90%,
-    #9CA3AF 90% 100%
-  );
   position: relative;
   margin-bottom: 1.5rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .donut-ring {
@@ -516,25 +818,26 @@ const categorySales = ref([
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%);
-  width: 120px;
-  height: 120px;
+  width: 110px;
+  height: 110px;
   background: white;
   border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
   text-align: center;
+  pointer-events: none; /* Let clicks pass through to chart tooltips */
 }
 
 .donut-text {
   font-size: 0.85rem;
-  color: #64748B;
+  color: #64748b;
 }
 
 .donut-text strong {
   display: block;
   font-size: 1.25rem;
-  color: #0F172A;
+  color: #0f172a;
   margin-top: 4px;
 }
 
@@ -562,14 +865,14 @@ const categorySales = ref([
 .legend-value {
   margin-left: auto;
   font-weight: 600;
-  color: #0F172A;
+  color: #0f172a;
 }
 
 /* Top Products Table */
 .btn-link {
   background: none;
   border: none;
-  color: #2563EB;
+  color: #2563eb;
   font-weight: 600;
   cursor: pointer;
   font-size: 0.9rem;
@@ -584,14 +887,15 @@ const categorySales = ref([
   border-collapse: collapse;
 }
 
-.data-table th, .data-table td {
+.data-table th,
+.data-table td {
   padding: 1rem 1.5rem;
   text-align: left;
 }
 
 .data-table th {
-  background-color: #F8FAFC;
-  color: #64748B;
+  background-color: #f8fafc;
+  color: #64748b;
   font-weight: 600;
   font-size: 0.75rem;
   text-transform: uppercase;
@@ -599,7 +903,7 @@ const categorySales = ref([
 }
 
 .data-table td {
-  border-bottom: 1px solid #F1F5F9;
+  border-bottom: 1px solid #f1f5f9;
   color: #334155;
   font-size: 0.9rem;
 }
@@ -613,13 +917,13 @@ const categorySales = ref([
 .product-thumb {
   width: 36px;
   height: 36px;
-  background-color: #F1F5F9;
+  background-color: #f1f5f9;
   border-radius: 6px;
 }
 
 .product-name {
   font-weight: 500;
-  color: #0F172A;
+  color: #0f172a;
 }
 
 .growth-badge {
@@ -629,26 +933,64 @@ const categorySales = ref([
   font-weight: 700;
 }
 
-.growth-badge.positive { background: #DCFCE7; color: #16A34A; }
-.growth-badge.negative { background: #FEE2E2; color: #DC2626; }
+.growth-badge.positive {
+  background: #dcfce7;
+  color: #16a34a;
+}
+.growth-badge.negative {
+  background: #fee2e2;
+  color: #dc2626;
+}
 
 /* Colors Utility */
-.bg-blue-100 { background-color: #DBEAFE; }
-.text-blue-600 { color: #2563EB; }
-.bg-orange-100 { background-color: #FFEDD5; }
-.text-orange-600 { color: #EA580C; }
-.bg-purple-100 { background-color: #F3E8FF; }
-.text-purple-600 { color: #9333EA; }
-.bg-emerald-100 { background-color: #D1FAE5; }
-.text-emerald-600 { color: #059669; }
-.bg-blue-500 { background-color: #3B82F6; }
-.bg-purple-500 { background-color: #A855F7; }
-.bg-emerald-500 { background-color: #10B981; }
-.bg-gray-400 { background-color: #9CA3AF; }
-.bg-red-100 { background-color: #FEE2E2; }
-.text-red-600 { color: #DC2626; }
-.bg-indigo-100 { background-color: #E0E7FF; }
-.text-indigo-600 { color: #4F46E5; }
+.bg-blue-100 {
+  background-color: #dbeafe;
+}
+.text-blue-600 {
+  color: #2563eb;
+}
+.bg-orange-100 {
+  background-color: #ffedd5;
+}
+.text-orange-600 {
+  color: #ea580c;
+}
+.bg-purple-100 {
+  background-color: #f3e8ff;
+}
+.text-purple-600 {
+  color: #9333ea;
+}
+.bg-emerald-100 {
+  background-color: #d1fae5;
+}
+.text-emerald-600 {
+  color: #059669;
+}
+.bg-blue-500 {
+  background-color: #3b82f6;
+}
+.bg-purple-500 {
+  background-color: #a855f7;
+}
+.bg-emerald-500 {
+  background-color: #10b981;
+}
+.bg-gray-400 {
+  background-color: #9ca3af;
+}
+.bg-red-100 {
+  background-color: #fee2e2;
+}
+.text-red-600 {
+  color: #dc2626;
+}
+.bg-indigo-100 {
+  background-color: #e0e7ff;
+}
+.text-indigo-600 {
+  color: #4f46e5;
+}
 
 /* Responsive */
 @media (max-width: 1024px) {
@@ -662,12 +1004,12 @@ const categorySales = ref([
     flex-direction: column;
     align-items: flex-start;
   }
-  
+
   .actions {
     width: 100%;
     justify-content: space-between;
   }
-  
+
   .stats-grid {
     grid-template-columns: 1fr;
   }
@@ -675,15 +1017,27 @@ const categorySales = ref([
 
 /* ── Skeleton ── */
 @keyframes shimmer {
-  0%   { background-position: -300px 0; }
-  100% { background-position:  300px 0; }
+  0% {
+    background-position: -300px 0;
+  }
+  100% {
+    background-position: 300px 0;
+  }
 }
 .skel {
   border-radius: 6px;
-  background: linear-gradient(90deg, #E2E8F0 25%, #F1F5F9 50%, #E2E8F0 75%);
+  background: linear-gradient(90deg, #e2e8f0 25%, #f1f5f9 50%, #e2e8f0 75%);
   background-size: 300px 100%;
   animation: shimmer 1.4s infinite linear;
 }
-.skel-val { height: 36px; width: 70%; border-radius: 8px; }
-.skel-chg { height: 14px; width: 50%; border-radius: 4px; }
+.skel-val {
+  height: 36px;
+  width: 70%;
+  border-radius: 8px;
+}
+.skel-chg {
+  height: 14px;
+  width: 50%;
+  border-radius: 4px;
+}
 </style>

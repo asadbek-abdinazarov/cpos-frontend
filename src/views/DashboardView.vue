@@ -1,26 +1,39 @@
 <script setup>
 import { ref, onMounted } from 'vue'
-import { 
-  DollarSign,
-  ShoppingBag,
-  Activity,
-  TrendingUp,
-  TrendingDown,
-  BarChart2,
-  Sigma,
-  Percent,
-  CreditCard,
-  ChevronRight
-} from 'lucide-vue-next'
+import { DollarSign, BarChart2, Sigma, Percent, ChevronRight } from 'lucide-vue-next'
 import { getStatistics } from '@/services/api'
 
 const statsLoading = ref(true)
 
 const stats = ref([
-  { title: 'Total Revenue',    value: null, icon: DollarSign,  iconColor: 'text-blue-600',    bg: 'bg-blue-100' },
-  { title: 'Total Cost',       value: null, icon: BarChart2,   iconColor: 'text-red-600',     bg: 'bg-red-100' },
-  { title: 'Total Sum',        value: null, icon: Sigma,       iconColor: 'text-indigo-600',  bg: 'bg-indigo-100' },
-  { title: 'Conversion Rate',  value: null, icon: Percent,     iconColor: 'text-emerald-600', bg: 'bg-emerald-100' },
+  {
+    title: 'Total Revenue',
+    value: null,
+    icon: DollarSign,
+    iconColor: 'text-blue-600',
+    bg: 'bg-blue-100',
+  },
+  {
+    title: 'Total Cost',
+    value: null,
+    icon: BarChart2,
+    iconColor: 'text-red-600',
+    bg: 'bg-red-100',
+  },
+  {
+    title: 'Total Sum',
+    value: null,
+    icon: Sigma,
+    iconColor: 'text-indigo-600',
+    bg: 'bg-indigo-100',
+  },
+  {
+    title: 'Conversion Rate',
+    value: null,
+    icon: Percent,
+    iconColor: 'text-emerald-600',
+    bg: 'bg-emerald-100',
+  },
 ])
 
 const fmt = (n) => (n ?? 0).toLocaleString('uz-UZ')
@@ -46,11 +59,41 @@ const fetchStatistics = async () => {
 onMounted(fetchStatistics)
 
 const recentTransactions = ref([
-  { id: '#ORD-001', customer: 'Alex Thompson',  amount: '$120.50', status: 'Completed',  date: '2 mins ago' },
-  { id: '#ORD-002', customer: 'Sarah Parker',   amount: '$75.20',  status: 'Processing', date: '5 mins ago' },
-  { id: '#ORD-003', customer: 'Michael Chen',   amount: '$350.00', status: 'Completed',  date: '10 mins ago' },
-  { id: '#ORD-004', customer: 'Jessica Evans',  amount: '$42.90',  status: 'Failed',     date: '15 mins ago' },
-  { id: '#ORD-005', customer: 'David Wilson',   amount: '$210.30', status: 'Completed',  date: '25 mins ago' },
+  {
+    id: '#ORD-001',
+    customer: 'Alex Thompson',
+    amount: '$120.50',
+    status: 'Completed',
+    date: '2 mins ago',
+  },
+  {
+    id: '#ORD-002',
+    customer: 'Sarah Parker',
+    amount: '$75.20',
+    status: 'Processing',
+    date: '5 mins ago',
+  },
+  {
+    id: '#ORD-003',
+    customer: 'Michael Chen',
+    amount: '$350.00',
+    status: 'Completed',
+    date: '10 mins ago',
+  },
+  {
+    id: '#ORD-004',
+    customer: 'Jessica Evans',
+    amount: '$42.90',
+    status: 'Failed',
+    date: '15 mins ago',
+  },
+  {
+    id: '#ORD-005',
+    customer: 'David Wilson',
+    amount: '$210.30',
+    status: 'Completed',
+    date: '25 mins ago',
+  },
 ])
 </script>
 
@@ -138,8 +181,8 @@ const recentTransactions = ref([
           <svg viewBox="0 0 500 200" class="chart-svg">
             <defs>
               <linearGradient id="chartGradient" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="0%" stop-color="#2563EB" stop-opacity="0.2"/>
-                <stop offset="100%" stop-color="#2563EB" stop-opacity="0"/>
+                <stop offset="0%" stop-color="#2563EB" stop-opacity="0.2" />
+                <stop offset="100%" stop-color="#2563EB" stop-opacity="0" />
               </linearGradient>
             </defs>
             <polyline
@@ -174,7 +217,7 @@ const recentTransactions = ref([
 .page-title {
   font-size: 1.5rem;
   font-weight: 700;
-  color: #0F172A;
+  color: #0f172a;
 }
 
 .actions {
@@ -193,25 +236,25 @@ const recentTransactions = ref([
 }
 
 .btn-primary {
-  background-color: #2563EB;
+  background-color: #2563eb;
   color: white;
   box-shadow: 0 4px 6px -1px rgba(37, 99, 235, 0.2);
 }
 
 .btn-primary:hover {
-  background-color: #1D4ED8;
+  background-color: #1d4ed8;
   box-shadow: 0 4px 12px -1px rgba(37, 99, 235, 0.3);
 }
 
 .btn-secondary {
   background-color: white;
-  border: 1px solid #E2E8F0;
+  border: 1px solid #e2e8f0;
   color: #475569;
 }
 
 .btn-secondary:hover {
-  background-color: #F8FAFC;
-  border-color: #CBD5E1;
+  background-color: #f8fafc;
+  border-color: #cbd5e1;
 }
 
 /* Stats Grid */
@@ -227,8 +270,10 @@ const recentTransactions = ref([
   padding: 1.5rem;
   border-radius: 16px;
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
-  border: 1px solid #F1F5F9;
-  transition: transform 0.2s, box-shadow 0.2s;
+  border: 1px solid #f1f5f9;
+  transition:
+    transform 0.2s,
+    box-shadow 0.2s;
 }
 
 .stat-card:hover {
@@ -244,7 +289,7 @@ const recentTransactions = ref([
 }
 
 .stat-title {
-  color: #64748B;
+  color: #64748b;
   font-size: 0.85rem;
   font-weight: 600;
 }
@@ -263,23 +308,47 @@ const recentTransactions = ref([
 }
 
 /* Background/Text Utility Classes (scoped) */
-.bg-blue-100 { background-color: #DBEAFE; }
-.text-blue-600 { color: #2563EB; }
-.bg-orange-100 { background-color: #FFEDD5; }
-.text-orange-600 { color: #EA580C; }
-.bg-purple-100 { background-color: #F3E8FF; }
-.text-purple-600 { color: #9333EA; }
-.bg-emerald-100 { background-color: #D1FAE5; }
-.text-emerald-600 { color: #059669; }
-.bg-red-100 { background-color: #FEE2E2; }
-.text-red-600 { color: #DC2626; }
-.bg-indigo-100 { background-color: #E0E7FF; }
-.text-indigo-600 { color: #4F46E5; }
+.bg-blue-100 {
+  background-color: #dbeafe;
+}
+.text-blue-600 {
+  color: #2563eb;
+}
+.bg-orange-100 {
+  background-color: #ffedd5;
+}
+.text-orange-600 {
+  color: #ea580c;
+}
+.bg-purple-100 {
+  background-color: #f3e8ff;
+}
+.text-purple-600 {
+  color: #9333ea;
+}
+.bg-emerald-100 {
+  background-color: #d1fae5;
+}
+.text-emerald-600 {
+  color: #059669;
+}
+.bg-red-100 {
+  background-color: #fee2e2;
+}
+.text-red-600 {
+  color: #dc2626;
+}
+.bg-indigo-100 {
+  background-color: #e0e7ff;
+}
+.text-indigo-600 {
+  color: #4f46e5;
+}
 
 .stat-value {
   font-size: 1.75rem;
   font-weight: 700;
-  color: #0F172A;
+  color: #0f172a;
   margin-bottom: 0.5rem;
   letter-spacing: -0.02em;
 }
@@ -297,11 +366,15 @@ const recentTransactions = ref([
   height: 16px;
 }
 
-.stat-change.up { color: #10B981; }
-.stat-change.down { color: #EF4444; }
+.stat-change.up {
+  color: #10b981;
+}
+.stat-change.down {
+  color: #ef4444;
+}
 
 .trend-text {
-  color: #94A3B8;
+  color: #94a3b8;
   font-weight: 500;
 }
 
@@ -315,7 +388,7 @@ const recentTransactions = ref([
 .card {
   background: white;
   border-radius: 16px;
-  border: 1px solid #F1F5F9;
+  border: 1px solid #f1f5f9;
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
   display: flex;
   flex-direction: column;
@@ -324,7 +397,7 @@ const recentTransactions = ref([
 
 .card-header {
   padding: 1.5rem;
-  border-bottom: 1px solid #F1F5F9;
+  border-bottom: 1px solid #f1f5f9;
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -333,11 +406,11 @@ const recentTransactions = ref([
 .card-header h3 {
   font-size: 1.1rem;
   font-weight: 700;
-  color: #0F172A;
+  color: #0f172a;
 }
 
 .view-all {
-  color: #2563EB;
+  color: #2563eb;
   font-size: 0.85rem;
   text-decoration: none;
   font-weight: 600;
@@ -366,14 +439,15 @@ const recentTransactions = ref([
   border-collapse: collapse;
 }
 
-.data-table th, .data-table td {
+.data-table th,
+.data-table td {
   padding: 1rem 1.5rem;
   text-align: left;
 }
 
 .data-table th {
-  background-color: #F8FAFC;
-  color: #64748B;
+  background-color: #f8fafc;
+  color: #64748b;
   font-weight: 600;
   font-size: 0.75rem;
   text-transform: uppercase;
@@ -381,13 +455,13 @@ const recentTransactions = ref([
 }
 
 .data-table td {
-  border-bottom: 1px solid #F1F5F9;
+  border-bottom: 1px solid #f1f5f9;
   color: #334155;
   font-size: 0.9rem;
 }
 
 .data-table tr:hover td {
-  background-color: #F8FAFC;
+  background-color: #f8fafc;
 }
 
 .data-table tr:last-child td {
@@ -399,14 +473,14 @@ const recentTransactions = ref([
   align-items: center;
   gap: 0.75rem;
   font-weight: 500;
-  color: #0F172A;
+  color: #0f172a;
 }
 
 .customer-avatar {
   width: 32px;
   height: 32px;
-  background-color: #EFF6FF;
-  color: #2563EB;
+  background-color: #eff6ff;
+  color: #2563eb;
   border-radius: 50%;
   display: flex;
   align-items: center;
@@ -417,11 +491,11 @@ const recentTransactions = ref([
 
 .font-medium {
   font-weight: 600;
-  color: #0F172A;
+  color: #0f172a;
 }
 
 .text-gray {
-  color: #64748B;
+  color: #64748b;
 }
 
 .status-badge {
@@ -433,9 +507,18 @@ const recentTransactions = ref([
   align-items: center;
 }
 
-.status-badge.completed { background-color: #DCFCE7; color: #16A34A; }
-.status-badge.processing { background-color: #DBEAFE; color: #2563EB; }
-.status-badge.failed { background-color: #FEE2E2; color: #DC2626; }
+.status-badge.completed {
+  background-color: #dcfce7;
+  color: #16a34a;
+}
+.status-badge.processing {
+  background-color: #dbeafe;
+  color: #2563eb;
+}
+.status-badge.failed {
+  background-color: #fee2e2;
+  color: #dc2626;
+}
 
 /* Chart */
 .chart-box {
@@ -455,7 +538,7 @@ const recentTransactions = ref([
 
 .period-select {
   padding: 0.4rem 0.8rem;
-  border: 1px solid #E2E8F0;
+  border: 1px solid #e2e8f0;
   border-radius: 6px;
   color: #475569;
   font-size: 0.85rem;
@@ -474,26 +557,36 @@ const recentTransactions = ref([
   .stats-grid {
     grid-template-columns: 1fr;
   }
-  
+
   .page-title {
     font-size: 1.25rem;
   }
-  
-  .data-table th, .data-table td {
+
+  .data-table th,
+  .data-table td {
     padding: 0.75rem 1rem;
   }
 }
 
 /* ── Skeleton ── */
 @keyframes shimmer {
-  0%   { background-position: -300px 0; }
-  100% { background-position:  300px 0; }
+  0% {
+    background-position: -300px 0;
+  }
+  100% {
+    background-position: 300px 0;
+  }
 }
 .skel {
   border-radius: 6px;
-  background: linear-gradient(90deg, #E2E8F0 25%, #F1F5F9 50%, #E2E8F0 75%);
+  background: linear-gradient(90deg, #e2e8f0 25%, #f1f5f9 50%, #e2e8f0 75%);
   background-size: 300px 100%;
   animation: shimmer 1.4s infinite linear;
 }
-.skel-val { height: 32px; width: 65%; border-radius: 8px; margin-bottom: 0.5rem; }
+.skel-val {
+  height: 32px;
+  width: 65%;
+  border-radius: 8px;
+  margin-bottom: 0.5rem;
+}
 </style>
