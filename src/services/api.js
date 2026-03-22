@@ -6,7 +6,8 @@ import router from '@/router'
 const { showNotification } = useNotification()
 const t = i18n.global.t
 
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080/api/v1/'
+const API_BASE_URL =
+  import.meta.env.VITE_API_BASE_URL || 'https://cpos-backend-uf77.onrender.com/api/v1/'
 //https://cpos-backend-uf77.onrender.com/api/v1/
 
 const api = axios.create({
