@@ -2,12 +2,12 @@ import axios from 'axios'
 import { useNotification } from '@/composables/useNotification'
 import i18n from '@/i18n'
 import router from '@/router'
+import { getApiLocaleTag } from '@/utils/localeApi'
 
 const { showNotification } = useNotification()
 const t = i18n.global.t
 
-const API_BASE_URL =
-  import.meta.env.VITE_API_BASE_URL || 'https://cpos-backend-uf77.onrender.com/api/v1/'
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'https://cpos-backend-uf77.onrender.com/api/v1/'
 //https://cpos-backend-uf77.onrender.com/api/v1/
 
 const api = axios.create({
@@ -16,6 +16,69 @@ const api = axios.create({
   headers: {
     'Content-Type': 'application/json',
   },
+})
+
+/** Backend JSON: access_token / refresh_token (snake) yoki accessToken / refreshToken (camel) */
+export function persistAuthTokensFromResponse(apiResponseData) {
+  if (!apiResponseData || typeof apiResponseData !== 'object') return
+  const nested = apiResponseData.data
+  const inner = nested && typeof nested === 'object' ? nested : null
+  const access =
+    apiResponseData.access_token ||
+    apiResponseData.accessToken ||
+    (inner && (inner.access_token || inner.accessToken))
+  const refresh =
+    apiResponseData.refresh_token ||
+    apiResponseData.refreshToken ||
+    (inner && (inner.refresh_token || inner.refreshToken))
+  if (access) localStorage.setItem('accessToken', access)
+  if (refresh) localStorage.setItem('refreshToken', refresh)
+}
+
+function shouldAttachBearer(url) {
+  if (!url || typeof url !== 'string') return false
+  if (!url.startsWith('web/')) return false
+  const publicAuth = ['web/auth/login', 'web/auth/register', 'web/auth/refresh']
+  return !publicAuth.some((p) => url.includes(p))
+}
+
+/** `api` instance interceptoridan tashqari `axios.post` chaqiruvlari uchun */
+function buildLocaleAxiosConfig(extra = {}) {
+  const lang = getApiLocaleTag()
+  return {
+    ...extra,
+    params: { lang, ...(extra.params || {}) },
+    headers: {
+      'Accept-Language': lang,
+      'X-Locale': lang,
+      ...(extra.headers || {}),
+    },
+  }
+}
+
+api.interceptors.request.use((config) => {
+  const lang = getApiLocaleTag()
+  config.headers = config.headers || {}
+  if (config.headers['Accept-Language'] == null) {
+    config.headers['Accept-Language'] = lang
+  }
+  if (config.headers['X-Locale'] == null) {
+    config.headers['X-Locale'] = lang
+  }
+  config.params = { ...(config.params || {}) }
+  if (config.params.lang == null) {
+    config.params.lang = lang
+  }
+
+  const url = config.url || ''
+  if (shouldAttachBearer(url)) {
+    const token = localStorage.getItem('accessToken')
+    if (token) {
+      config.headers = config.headers || {}
+      config.headers.Authorization = `Bearer ${token}`
+    }
+  }
+  return config
 })
 
 let isRefreshing = false
@@ -77,15 +140,13 @@ api.interceptors.response.use(
           {
             refreshToken: refreshToken,
           },
-          {
+          buildLocaleAxiosConfig({
             withCredentials: true, // needed if backend sets new cookies
-          },
+          }),
         )
 
         if (data.success) {
-          if (data.data && data.data.refreshToken) {
-            localStorage.setItem('refreshToken', data.data.refreshToken)
-          }
+          persistAuthTokensFromResponse(data)
         }
 
         processQueue(null)
@@ -115,7 +176,6 @@ api.interceptors.response.use(
           })
         }
       } else {
-        // Fallback generic error
         showNotification({
           type: 'error',
           message: error.message || 'An unexpected error occurred',
@@ -128,35 +188,18 @@ api.interceptors.response.use(
 )
 
 function forceLogout() {
-  // Show notification
   showNotification({ type: 'error', message: t('auth.session_expired') })
 
-  // Call the logout endpoint on best-effort basis
-  axios.post(`${API_BASE_URL}web/auth/logout`, {}, { withCredentials: true }).catch(() => {})
+  axios.post(`${API_BASE_URL}web/auth/logout`, {}, buildLocaleAxiosConfig({ withCredentials: true })).catch(
+    () => {},
+  )
 
-  // Clear frontend state
   localStorage.removeItem('refreshToken')
   localStorage.removeItem('accessToken')
   localStorage.removeItem('username')
   localStorage.removeItem('userId')
 
-  // Redirect to login page using Vue Router to preserve notification
   router.push('/login')
-}
-
-export function register(data) {
-  return api.post('web/auth/register', {
-    firstName: data.firstName,
-    lastName: data.lastName,
-    username: data.username,
-    password: data.password,
-    email: data.email,
-    phone: data.phone,
-    organizationName: data.organizationName,
-    organizationStir: data.organizationStir,
-    organizationAddress: data.organizationAddress,
-    organizationPhone: data.organizationPhone,
-  })
 }
 
 export function login(data) {
@@ -262,6 +305,18 @@ export function generateBarcode() {
 
 export function generateSku() {
   return api.get('web/products/generate-sku')
+}
+
+export function getCashiers(params) {
+  return api.get('web/cashiers', { params })
+}
+
+export function createCashier(data) {
+  return api.post('web/cashiers', data)
+}
+
+export function toggleCashierStatus(id) {
+  return api.patch(`web/cashiers/${id}/toggle-status`)
 }
 
 export default api

@@ -279,6 +279,17 @@ async function submit() {
               </select>
             </div>
             <div class="data-group">
+              <label>{{ $t('dashboard.products.form.quantity') }}</label>
+              <input
+                v-model.number="form.quantity"
+                type="number"
+                class="premium-input"
+                min="0"
+                step="1"
+                :placeholder="$t('dashboard.products.form.quantity_placeholder')"
+              />
+            </div>
+            <div class="data-group">
               <label>{{ $t('dashboard.products.form.cost') }}</label>
               <input
                 v-model.number="form.cost"
@@ -334,17 +345,6 @@ async function submit() {
                 <RefreshCw :size="14" :class="{'spin': generatingSku}" />
                 {{ generatingSku ? 'Generating...' : 'Auto Generate' }}
               </button>
-            </div>
-            <div class="data-group">
-              <label>{{ $t('dashboard.products.form.quantity') }}</label>
-              <input
-                v-model.number="form.quantity"
-                type="number"
-                class="premium-input"
-                min="0"
-                step="1"
-                :placeholder="$t('dashboard.products.form.quantity_placeholder')"
-              />
             </div>
           </div>
         </div>
@@ -717,6 +717,16 @@ textarea.premium-input {
   .hero-card {
     flex-direction: column;
     align-items: flex-start;
+  }
+
+  .actions {
+    flex-direction: column;
+    width: 100%;
+  }
+
+  .actions .btn {
+    width: 100%;
+    justify-content: center;
   }
 }
 </style>

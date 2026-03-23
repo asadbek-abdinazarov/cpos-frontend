@@ -1,5 +1,5 @@
 <script setup>
-import { onMounted } from 'vue'
+import { onMounted, nextTick } from 'vue'
 import NavBar from '../components/NavBar.vue'
 import HeroSection from '../components/HeroSection.vue'
 import StatsSection from '../components/StatsSection.vue'
@@ -13,8 +13,16 @@ import FAQSection from '../components/FAQSection.vue'
 import ContactSection from '../components/ContactSection.vue'
 import Footer from '../components/Footer.vue'
 
-onMounted(() => {
+onMounted(async () => {
   document.title = 'CPOS - Smart POS for Retail & Services'
+  await import('aos/dist/aos.css')
+  const { default: AOS } = await import('aos')
+  await nextTick()
+  AOS.init({
+    duration: 800,
+    easing: 'slide',
+    once: true,
+  })
 })
 </script>
 

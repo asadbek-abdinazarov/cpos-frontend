@@ -1,6 +1,7 @@
 <script setup>
 import { ref, onMounted, onUnmounted } from 'vue'
 import { useI18n } from 'vue-i18n'
+import { LogIn, LayoutDashboard } from 'lucide-vue-next'
 
 const { t, locale } = useI18n()
 
@@ -9,11 +10,6 @@ const languages = [
   { code: 'oz', name: 'Ўзбек' },
   { code: 'ru', name: 'Русский' },
 ]
-
-const currentFlag = (code) => {
-  // Optional: Add flags if needed, or just return name
-  return code.toUpperCase()
-}
 
 const isScrolled = ref(false)
 const isMenuOpen = ref(false)
@@ -46,17 +42,17 @@ onUnmounted(() => {
     <div class="container navbar-content">
       <!-- Left: Logo -->
       <div class="logo">
-        <a href="#">
+        <router-link to="/" class="logo-link">
           <img src="/logo-nav.svg" alt="CPOS Logo" class="logo-img" />
-        </a>
+        </router-link>
       </div>
 
       <!-- Center: Desktop Nav -->
       <div class="nav-links desktop-nav">
-        <a href="#features" class="nav-link">{{ t('nav.features') }}</a>
-        <a href="#hardware" class="nav-link">{{ t('nav.hardware') }}</a>
-        <a href="#pricing" class="nav-link">{{ t('nav.pricing') }}</a>
-        <a href="#contact" class="nav-link">{{ t('nav.support') }}</a>
+        <a href="/#features" class="nav-link">{{ t('nav.features') }}</a>
+        <a href="/#hardware" class="nav-link">{{ t('nav.hardware') }}</a>
+        <a href="/#pricing" class="nav-link">{{ t('nav.pricing') }}</a>
+        <a href="/#contact" class="nav-link">{{ t('nav.support') }}</a>
       </div>
 
       <!-- Right: Actions -->
@@ -71,15 +67,21 @@ onUnmounted(() => {
         </div>
 
         <template v-if="!isAuthenticated">
-          <router-link to="/login" class="login-link">{{ t('nav.login') }}</router-link>
-          <router-link to="/register" class="btn btn-primary" tag="button">{{
-            t('nav.register')
-          }}</router-link>
+          <router-link to="/login" class="btn-login-nav">
+            <LogIn class="btn-login-nav-icon" :size="18" :stroke-width="2.25" aria-hidden="true" />
+            {{ t('nav.login') }}
+          </router-link>
         </template>
         <template v-else>
-          <router-link to="/dashboard" class="btn btn-primary" tag="button">{{
-            t('nav.dashboard') || 'Go to Dashboard'
-          }}</router-link>
+          <router-link to="/dashboard" class="btn-login-nav">
+            <LayoutDashboard
+              class="btn-login-nav-icon"
+              :size="18"
+              :stroke-width="2.25"
+              aria-hidden="true"
+            />
+            {{ t('nav.dashboard') }}
+          </router-link>
         </template>
       </div>
 
@@ -91,10 +93,10 @@ onUnmounted(() => {
       <!-- Mobile Nav Overlay -->
       <div :class="['mobile-nav', { 'is-open': isMenuOpen }]">
         <div class="mobile-nav-links">
-          <a href="#features" class="nav-link" @click="closeMenu">{{ t('nav.features') }}</a>
-          <a href="#hardware" class="nav-link" @click="closeMenu">{{ t('nav.hardware') }}</a>
-          <a href="#pricing" class="nav-link" @click="closeMenu">{{ t('nav.pricing') }}</a>
-          <a href="#contact" class="nav-link" @click="closeMenu">{{ t('nav.support') }}</a>
+          <a href="/#features" class="nav-link" @click="closeMenu">{{ t('nav.features') }}</a>
+          <a href="/#hardware" class="nav-link" @click="closeMenu">{{ t('nav.hardware') }}</a>
+          <a href="/#pricing" class="nav-link" @click="closeMenu">{{ t('nav.pricing') }}</a>
+          <a href="/#contact" class="nav-link" @click="closeMenu">{{ t('nav.support') }}</a>
 
           <div class="mobile-lang-switcher">
             <button
@@ -109,17 +111,24 @@ onUnmounted(() => {
 
           <div class="mobile-actions">
             <template v-if="!isAuthenticated">
-              <router-link to="/login" class="login-link" @click="closeMenu">{{
-                t('nav.login')
-              }}</router-link>
-              <router-link to="/register" class="btn btn-primary" @click="closeMenu">{{
+              <router-link to="/login" class="btn-login-nav btn-login-nav--mobile" @click="closeMenu">
+                <LogIn class="btn-login-nav-icon" :size="20" :stroke-width="2.25" aria-hidden="true" />
+                {{ t('nav.login') }}
+              </router-link>
+              <a href="/#contact" class="btn btn-primary" @click="closeMenu">{{
                 t('nav.start_trial')
-              }}</router-link>
+              }}</a>
             </template>
             <template v-else>
-              <router-link to="/dashboard" class="btn btn-primary" @click="closeMenu">{{
-                t('nav.dashboard') || 'Go to Dashboard'
-              }}</router-link>
+              <router-link to="/dashboard" class="btn-login-nav btn-login-nav--mobile" @click="closeMenu">
+                <LayoutDashboard
+                  class="btn-login-nav-icon"
+                  :size="20"
+                  :stroke-width="2.25"
+                  aria-hidden="true"
+                />
+                {{ t('nav.dashboard') }}
+              </router-link>
             </template>
           </div>
         </div>
@@ -165,6 +174,12 @@ onUnmounted(() => {
   display: flex;
   align-items: center;
   gap: 0.5rem;
+}
+
+.logo-link {
+  display: flex;
+  align-items: center;
+  text-decoration: none;
 }
 
 .logo-img {
@@ -215,15 +230,60 @@ onUnmounted(() => {
   border-color: var(--color-primary);
 }
 
-.login-link {
+/* Kirish — outline pill tugma */
+.btn-login-nav {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.45rem;
+  padding: 0.5rem 1.1rem;
+  border-radius: 9999px;
   font-weight: 600;
-  color: var(--color-primary);
+  font-size: 0.9rem;
+  letter-spacing: 0.01em;
   text-decoration: none;
-  font-size: 0.95rem;
+  color: var(--color-primary);
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.95) 0%, rgba(248, 250, 252, 0.9) 100%);
+  border: 1.5px solid rgba(0, 123, 255, 0.35);
+  box-shadow:
+    0 1px 2px rgba(15, 23, 42, 0.06),
+    inset 0 1px 0 rgba(255, 255, 255, 0.8);
+  transition:
+    background 0.2s ease,
+    border-color 0.2s ease,
+    box-shadow 0.2s ease,
+    transform 0.2s ease,
+    color 0.2s ease;
 }
 
-.login-link:hover {
-  text-decoration: underline;
+.btn-login-nav-icon {
+  flex-shrink: 0;
+  opacity: 0.92;
+}
+
+.btn-login-nav:hover {
+  color: var(--color-primary-dark);
+  background: linear-gradient(180deg, #ffffff 0%, #f1f5f9 100%);
+  border-color: var(--color-primary);
+  box-shadow:
+    0 4px 14px rgba(0, 86, 179, 0.18),
+    0 1px 2px rgba(15, 23, 42, 0.06);
+  transform: translateY(-1px);
+}
+
+.btn-login-nav:active {
+  transform: translateY(0);
+  box-shadow: 0 1px 3px rgba(15, 23, 42, 0.08);
+}
+
+.btn-login-nav:focus-visible {
+  outline: 2px solid var(--color-primary);
+  outline-offset: 3px;
+}
+
+.btn-login-nav--mobile {
+  padding: 0.65rem 1.35rem;
+  font-size: 1.05rem;
 }
 
 .btn {

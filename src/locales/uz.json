@@ -242,6 +242,10 @@
     "login_success": "Muvaffaqiyatli kirdingiz!",
     "register_success": "Muvaffaqiyatli ro'yxatdan o'tdingiz!",
     "session_restored": "Sessiya muvaffaqiyatli yangilandi",
+    "login_hero_title": "Zamonaviy savdo va xizmat uchun POS",
+    "login_hero_subtitle": "Bulutli yechim bilan savdo va jarayonlarni bir joyda boshqaring.",
+    "show_password": "Parolni ko'rsatish",
+    "hide_password": "Parolni yashirish",
     "session_expired": "Sessiya tugadi, tizimga qayta kiring"
   },
   "footer": {
@@ -260,6 +264,7 @@
       "products": "Mahsulotlar",
       "scales": "Tarozilar",
       "sales": "Sotuvlar",
+      "cashiers": "Kassirlar",
       "settings": "Sozlamalar"
     },
     "header": {

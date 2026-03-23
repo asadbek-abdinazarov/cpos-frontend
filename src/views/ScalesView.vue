@@ -796,6 +796,11 @@ const filteredScales = computed(() => {
 
 /* Modal specific (Removed as history is now full page) */
 
+.table-responsive {
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
 .data-table {
   width: 100%;
   border-collapse: separate;
@@ -882,6 +887,12 @@ const filteredScales = computed(() => {
 @media (max-width: 640px) {
   .scales-grid {
     grid-template-columns: 1fr;
+  }
+
+  .data-table th,
+  .data-table td {
+    padding: 0.65rem 0.75rem;
+    font-size: 0.8125rem;
   }
 }
 

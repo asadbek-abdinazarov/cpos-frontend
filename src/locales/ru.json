@@ -245,6 +245,10 @@
     "login_success": "Вы успешно вошли!",
     "register_success": "Вы успешно зарегистрировались!",
     "session_restored": "Сессия успешно обновлена",
+    "login_hero_title": "Современная POS-система для торговли и услуг",
+    "login_hero_subtitle": "Управляйте продажами и процессами в одном облачном решении.",
+    "show_password": "Показать пароль",
+    "hide_password": "Скрыть пароль",
     "session_expired": "Сессия истекла, войдите снова"
   },
   "footer": {
@@ -263,6 +267,7 @@
       "products": "Товары",
       "scales": "Весы",
       "sales": "Продажи",
+      "cashiers": "Кассиры",
       "settings": "Настройки"
     },
     "header": {

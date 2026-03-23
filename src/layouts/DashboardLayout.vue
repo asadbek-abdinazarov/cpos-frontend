@@ -57,8 +57,10 @@ const closeSidebar = () => {
 
 .page-content {
   flex: 1;
-  padding: 2rem;
+  padding: clamp(1rem, 4vw, 2rem);
+  padding-bottom: max(env(safe-area-inset-bottom, 0px), clamp(1rem, 4vw, 2rem));
   overflow-y: auto;
+  min-width: 0;
 }
 
 .sidebar-overlay {

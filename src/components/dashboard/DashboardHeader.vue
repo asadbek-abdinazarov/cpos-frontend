@@ -1,13 +1,12 @@
 <script setup>
 import { ref, onMounted, onUnmounted } from 'vue'
-import { Search, Bell, HelpCircle, Menu } from 'lucide-vue-next'
-import { getUnreadNotificationCount, getNotifications, markNotificationAsRead } from '@/services/api'
-import { useI18n } from 'vue-i18n'
+import { Bell, HelpCircle, Menu } from 'lucide-vue-next'
+import {
+  getUnreadNotificationCount,
+  getNotifications,
+  markNotificationAsRead,
+} from '@/services/api'
 
-const { t } = useI18n()
-
-// const emit = defineEmits(['toggle-sidebar'])
-const searchQuery = ref('')
 const languages = [
   { code: 'uz', name: "O'zbek" },
   { code: 'oz', name: 'Ўзбек' },
@@ -86,11 +85,6 @@ onUnmounted(() => {
       <button class="menu-btn" @click="$emit('toggle-sidebar')">
         <Menu class="icon-md" />
       </button>
-
-      <div class="search-bar">
-        <Search class="search-icon" />
-        <input type="text" :placeholder="$t('dashboard.header.search')" v-model="searchQuery" />
-      </div>
     </div>
 
     <div class="header-actions">
@@ -105,7 +99,9 @@ onUnmounted(() => {
       <div class="notification-wrapper">
         <button class="icon-btn notification-btn" @click.stop="toggleNotifications">
           <Bell class="icon-md" />
-          <span class="badge" v-if="unreadCount > 0">{{ unreadCount > 99 ? '99+' : unreadCount }}</span>
+          <span class="badge" v-if="unreadCount > 0">{{
+            unreadCount > 99 ? '99+' : unreadCount
+          }}</span>
         </button>
 
         <div v-if="showNotifications" class="notification-dropdown shadow-lg">
@@ -113,20 +109,23 @@ onUnmounted(() => {
             <h4>Notifications</h4>
             <span class="unread-text" v-if="unreadCount > 0">{{ unreadCount }} unread</span>
           </div>
-          
+
           <div class="dropdown-body">
             <div v-if="loadingNotifications" class="p-4 text-center text-sm text-gray-500">
               Loading...
             </div>
-            <div v-else-if="notifications.length === 0" class="p-4 text-center text-sm text-gray-500">
+            <div
+              v-else-if="notifications.length === 0"
+              class="p-4 text-center text-sm text-gray-500"
+            >
               No notifications.
             </div>
             <ul v-else class="notification-list">
-              <li 
-                v-for="item in notifications" 
-                :key="item.id" 
-                class="notification-item" 
-                :class="{ 'unread': !item.isRead }"
+              <li
+                v-for="item in notifications"
+                :key="item.id"
+                class="notification-item"
+                :class="{ unread: !item.isRead }"
                 @click="markAsRead(item)"
               >
                 <div class="notif-content">
@@ -179,6 +178,10 @@ onUnmounted(() => {
   padding: 0.5rem;
   color: #64748b;
   border-radius: 8px;
+  min-width: 44px;
+  min-height: 44px;
+  align-items: center;
+  justify-content: center;
 }
 
 .menu-btn:hover {
@@ -229,6 +232,8 @@ onUnmounted(() => {
   display: flex;
   align-items: center;
   justify-content: center;
+  min-width: 44px;
+  min-height: 44px;
 }
 
 .icon-btn:hover {
@@ -287,6 +292,11 @@ onUnmounted(() => {
   .dashboard-header {
     padding: 0 1rem;
   }
+
+  .notification-dropdown {
+    width: min(340px, calc(100vw - 2rem));
+    max-width: calc(100vw - 2rem);
+  }
 }
 
 .notification-wrapper {
@@ -302,7 +312,9 @@ onUnmounted(() => {
   background: white;
   border-radius: 12px;
   border: 1px solid #e2e8f0;
-  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+  box-shadow:
+    0 10px 15px -3px rgba(0, 0, 0, 0.1),
+    0 4px 6px -2px rgba(0, 0, 0, 0.05);
   z-index: 50;
   overflow: hidden;
 }
@@ -396,9 +408,16 @@ onUnmounted(() => {
   margin-top: 0.25rem;
 }
 
-.p-4 { padding: 1rem; }
-.text-center { text-align: center; }
-.text-sm { font-size: 0.875rem; }
-.text-gray-500 { color: #6b7280; }
-
+.p-4 {
+  padding: 1rem;
+}
+.text-center {
+  text-align: center;
+}
+.text-sm {
+  font-size: 0.875rem;
+}
+.text-gray-500 {
+  color: #6b7280;
+}
 </style>

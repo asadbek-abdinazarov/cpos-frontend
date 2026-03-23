@@ -28,7 +28,7 @@ const { notification, closeNotification } = useNotification()
 <style scoped>
 .notification-wrapper {
   position: fixed;
-  top: 24px;
+  top: max(env(safe-area-inset-top, 0px), 24px);
   left: 50%;
   transform: translateX(-50%);
   z-index: 10000;
@@ -40,33 +40,34 @@ const { notification, closeNotification } = useNotification()
   display: flex;
   align-items: center;
   gap: 12px;
-  padding: 14px 20px;
-  border-radius: 12px;
-  min-width: 320px;
-  max-width: 500px;
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.12), 0 2px 8px rgba(0, 0, 0, 0.08);
-  backdrop-filter: blur(12px);
-  font-size: 0.95rem;
+  padding: 14px 18px;
+  border-radius: 10px;
+  min-width: 300px;
+  max-width: min(500px, calc(100vw - 32px));
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-left-width: 4px;
+  box-shadow:
+    0 1px 3px rgba(15, 23, 42, 0.06),
+    0 8px 24px rgba(15, 23, 42, 0.08);
+  font-size: 0.9375rem;
   font-weight: 500;
-  line-height: 1.4;
+  line-height: 1.45;
 }
 
 .notification--success {
-  background: linear-gradient(135deg, #ecfdf5, #d1fae5);
-  border: 1px solid #a7f3d0;
+  border-left-color: #10b981;
   color: #065f46;
 }
 
 .notification--error {
-  background: linear-gradient(135deg, #fef2f2, #fde8e8);
-  border: 1px solid #fecaca;
+  border-left-color: #ef4444;
   color: #991b1b;
 }
 
 .notification--info {
-  background: linear-gradient(135deg, #eff6ff, #dbeafe);
-  border: 1px solid #bfdbfe;
-  color: #1e40af;
+  border-left-color: var(--color-primary);
+  color: #1e3a5f;
 }
 
 .notification-icon {

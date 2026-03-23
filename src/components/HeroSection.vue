@@ -19,8 +19,8 @@ const isVideoOpen = ref(false)
           {{ t('hero.subtitle') }}
         </p>
         <div class="cta-group">
-          <a href="/register">
-            <button class="btn btn-primary btn-lg">{{ t('hero.cta') }}</button>
+          <a href="#contact">
+            <button type="button" class="btn btn-primary btn-lg">{{ t('hero.cta') }}</button>
           </a>
           <button class="btn btn-outline btn-lg" @click="isVideoOpen = true">{{ t('hero.watch_demo') }}</button>
         </div>

@@ -101,9 +101,9 @@ const plans = computed(() => [
           </div>
 
           <div class="card-footer">
-            <button :class="['btn-action', plan.variant === 'primary' ? 'btn-primary' : 'btn-default']">
+            <a href="#contact" :class="['btn-action', plan.variant === 'primary' ? 'btn-primary' : 'btn-default']">
               {{ plan.buttonText }}
-            </button>
+            </a>
           </div>
         </div>
       </div>
@@ -334,6 +334,9 @@ const plans = computed(() => [
   transition: all 0.3s ease;
   text-align: center;
   border: none;
+  display: block;
+  text-decoration: none;
+  box-sizing: border-box;
 }
 
 .btn-default {

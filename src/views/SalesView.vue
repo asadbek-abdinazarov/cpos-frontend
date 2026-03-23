@@ -450,6 +450,7 @@ const formatCurrency = (amount) => {
 
 .table-responsive {
   overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
   border-bottom: 1px solid #f1f5f9;
 }
 
@@ -522,6 +523,9 @@ const formatCurrency = (amount) => {
 
 .flex {
   display: flex;
+}
+.justify-between {
+  justify-content: space-between;
 }
 .items-center {
   align-items: center;
@@ -807,5 +811,57 @@ const formatCurrency = (amount) => {
 }
 .ml-auto {
   margin-left: auto;
+}
+
+@media (max-width: 768px) {
+  .page-title {
+    font-size: 1.35rem;
+  }
+
+  .toolbar-card {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .search-form {
+    flex-direction: column;
+    width: 100%;
+  }
+
+  .search-box {
+    min-width: 0;
+    width: 100%;
+  }
+
+  .search-btn {
+    width: 100%;
+    justify-content: center;
+  }
+
+  .data-table th,
+  .data-table td {
+    padding: 0.65rem 0.75rem;
+    font-size: 0.8125rem;
+  }
+
+  .expanded-content .flex.justify-between {
+    flex-direction: column;
+    align-items: flex-start !important;
+    gap: 0.75rem;
+  }
+
+  .expanded-content .sale-summary {
+    flex-direction: column;
+    align-items: flex-start !important;
+    margin-left: 0 !important;
+    gap: 0.35rem !important;
+    width: 100%;
+  }
+
+  .pagination-footer {
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+  }
 }
 </style>

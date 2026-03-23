@@ -1,7 +1,7 @@
 <script setup>
 import { useRoute } from 'vue-router'
 import { useI18n } from 'vue-i18n'
-import { TrendingUp, Package, ShoppingBag, Scale, Tag, Settings, X, LogOut } from 'lucide-vue-next'
+import { TrendingUp, Package, ShoppingBag, Scale, Settings, X, LogOut, Users } from 'lucide-vue-next'
 import { ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { logout, getUserProfile } from '@/services/api'
@@ -26,6 +26,7 @@ const menuItems = [
   { name: 'dashboard.sidebar.products', path: '/dashboard/products', icon: Package },
   { name: 'dashboard.sidebar.scales', path: '/dashboard/scales', icon: Scale },
   { name: 'dashboard.sidebar.sales', path: '/dashboard/sales', icon: ShoppingBag },
+  { name: 'dashboard.sidebar.cashiers', path: '/dashboard/cashiers', icon: Users },
   { name: 'dashboard.sidebar.settings', path: '/dashboard/settings', icon: Settings },
 ]
 
