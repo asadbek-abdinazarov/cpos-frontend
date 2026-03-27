@@ -1,13 +1,18 @@
 
 <script setup>
-import { ref, computed } from 'vue'
+import { computed } from 'vue'
 import { useI18n } from 'vue-i18n'
+import { useRouter } from 'vue-router'
+import { goToHomeSection } from '@/composables/useHomeSectionNav'
 import { ArrowRight } from 'lucide-vue-next'
 import terminalImg from '@/assets/images/terminal.png'
 import printerImg from '@/assets/images/printer.png'
 import scannerImg from '@/assets/images/scanner.png'
 
 const { t } = useI18n()
+const router = useRouter()
+
+const goCatalog = () => goToHomeSection(router, 'catalog')
 
 const products = computed(() => [
   {
@@ -42,10 +47,12 @@ const products = computed(() => [
           <h2 class="section-title">{{ t('hardware.title') }}</h2>
           <p class="section-subtitle">{{ t('hardware.subtitle') }}</p>
         </div>
-        <a href="#catalog" class="view-catalog">{{ t('hardware.view_catalog') }} <ArrowRight class="icon-sm" /></a>
+        <a href="/" class="view-catalog" @click.prevent="goCatalog"
+          >{{ t('hardware.view_catalog') }} <ArrowRight class="icon-sm"
+        /></a>
       </div>
 
-      <div class="product-grid">
+      <div id="catalog" class="product-grid">
         <div v-for="product in products" :key="product.id" class="product-card">
           <div class="image-wrapper">
              <img :src="product.image" :alt="product.title" class="product-image" loading="lazy" />

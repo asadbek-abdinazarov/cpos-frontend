@@ -146,12 +146,12 @@ const formatCurrency = (amount) => {
           <thead>
             <tr>
               <th class="w-10"></th>
-              <th>Transaction ID</th>
-              <th>Cashier</th>
-              <th>Status</th>
-              <th>Payment Type</th>
-              <th class="text-right">Total Amount</th>
-              <th class="text-right">Date</th>
+              <th>{{ $t('dashboard.table.transaction_id') }}</th>
+              <th>{{ $t('dashboard.table.cashier') }}</th>
+              <th>{{ $t('dashboard.table.status') }}</th>
+              <th>{{ $t('dashboard.table.payment_type') }}</th>
+              <th class="text-right">{{ $t('dashboard.table.total_amount') }}</th>
+              <th class="text-right">{{ $t('dashboard.table.date') }}</th>
             </tr>
           </thead>
           <tbody>
@@ -255,11 +255,11 @@ const formatCurrency = (amount) => {
                       <table class="w-full text-sm text-left">
                         <thead class="bg-slate-50 text-slate-500 uppercase text-xs">
                           <tr>
-                            <th class="px-4 py-2 font-medium">Product</th>
-                            <th class="px-4 py-2 font-medium">Code</th>
-                            <th class="px-4 py-2 text-right font-medium">Qty/Unit</th>
-                            <th class="px-4 py-2 text-right font-medium">Price</th>
-                            <th class="px-4 py-2 text-right font-medium">Total</th>
+                            <th class="px-4 py-2 font-medium">{{ $t('dashboard.table.product') }}</th>
+                            <th class="px-4 py-2 font-medium">{{ $t('dashboard.table.code') }}</th>
+                            <th class="px-4 py-2 text-right font-medium">{{ $t('dashboard.table.qty_unit') }}</th>
+                            <th class="px-4 py-2 text-right font-medium">{{ $t('dashboard.table.price') }}</th>
+                            <th class="px-4 py-2 text-right font-medium">{{ $t('dashboard.table.line_total') }}</th>
                           </tr>
                         </thead>
                         <tbody class="divide-y divide-slate-100">
@@ -320,18 +320,6 @@ const formatCurrency = (amount) => {
   flex-direction: column;
   gap: 1.5rem;
   padding-bottom: 2rem;
-  animation: fadeIn 0.3s ease-in-out;
-}
-
-@keyframes fadeIn {
-  from {
-    opacity: 0;
-    transform: translateY(10px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
 }
 
 /* Header */
@@ -450,7 +438,9 @@ const formatCurrency = (amount) => {
 
 .table-responsive {
   overflow-x: auto;
-  -webkit-overflow-scrolling: touch;
+  overflow-y: visible;
+  overscroll-behavior-x: contain;
+  touch-action: pan-x pan-y;
   border-bottom: 1px solid #f1f5f9;
 }
 

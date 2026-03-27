@@ -1,9 +1,16 @@
 <script setup>
 import { ref, onMounted, onUnmounted } from 'vue'
 import { useI18n } from 'vue-i18n'
+import { useRouter } from 'vue-router'
+import { goToHomeSection } from '@/composables/useHomeSectionNav'
 import { LogIn, LayoutDashboard } from 'lucide-vue-next'
 
 const { t, locale } = useI18n()
+const router = useRouter()
+
+const goSection = (id) => {
+  goToHomeSection(router, id)
+}
 
 const languages = [
   { code: 'uz', name: "O'zbek" },
@@ -49,10 +56,10 @@ onUnmounted(() => {
 
       <!-- Center: Desktop Nav -->
       <div class="nav-links desktop-nav">
-        <a href="/#features" class="nav-link">{{ t('nav.features') }}</a>
-        <a href="/#hardware" class="nav-link">{{ t('nav.hardware') }}</a>
-        <a href="/#pricing" class="nav-link">{{ t('nav.pricing') }}</a>
-        <a href="/#contact" class="nav-link">{{ t('nav.support') }}</a>
+        <a href="/" class="nav-link" @click.prevent="goSection('features')">{{ t('nav.features') }}</a>
+        <a href="/" class="nav-link" @click.prevent="goSection('hardware')">{{ t('nav.hardware') }}</a>
+        <a href="/" class="nav-link" @click.prevent="goSection('pricing')">{{ t('nav.pricing') }}</a>
+        <a href="/" class="nav-link" @click.prevent="goSection('contact')">{{ t('nav.support') }}</a>
       </div>
 
       <!-- Right: Actions -->
@@ -93,10 +100,18 @@ onUnmounted(() => {
       <!-- Mobile Nav Overlay -->
       <div :class="['mobile-nav', { 'is-open': isMenuOpen }]">
         <div class="mobile-nav-links">
-          <a href="/#features" class="nav-link" @click="closeMenu">{{ t('nav.features') }}</a>
-          <a href="/#hardware" class="nav-link" @click="closeMenu">{{ t('nav.hardware') }}</a>
-          <a href="/#pricing" class="nav-link" @click="closeMenu">{{ t('nav.pricing') }}</a>
-          <a href="/#contact" class="nav-link" @click="closeMenu">{{ t('nav.support') }}</a>
+          <a href="/" class="nav-link" @click.prevent="goSection('features'); closeMenu()">{{
+            t('nav.features')
+          }}</a>
+          <a href="/" class="nav-link" @click.prevent="goSection('hardware'); closeMenu()">{{
+            t('nav.hardware')
+          }}</a>
+          <a href="/" class="nav-link" @click.prevent="goSection('pricing'); closeMenu()">{{
+            t('nav.pricing')
+          }}</a>
+          <a href="/" class="nav-link" @click.prevent="goSection('contact'); closeMenu()">{{
+            t('nav.support')
+          }}</a>
 
           <div class="mobile-lang-switcher">
             <button
@@ -115,7 +130,7 @@ onUnmounted(() => {
                 <LogIn class="btn-login-nav-icon" :size="20" :stroke-width="2.25" aria-hidden="true" />
                 {{ t('nav.login') }}
               </router-link>
-              <a href="/#contact" class="btn btn-primary" @click="closeMenu">{{
+              <a href="/" class="btn btn-primary" @click.prevent="goSection('contact'); closeMenu()">{{
                 t('nav.start_trial')
               }}</a>
             </template>

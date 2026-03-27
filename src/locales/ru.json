@@ -197,12 +197,17 @@
     "subtitle": "Есть вопросы? Напишите или позвоните нам.",
     "form": {
       "name": "Ваше имя",
+      "email_or_phone": "Email или телефон",
       "phone": "Ваш телефон",
+      "email": "Ваш email",
+      "mode_phone": "Телефон",
+      "mode_email": "Email",
       "message": "Сообщение",
       "submit": "Отправить",
       "success": "Ваше сообщение успешно отправлено!",
       "placeholder_name": "Введите ваше имя",
       "placeholder_phone": "+998 90 123 45 67",
+      "placeholder_email": "email@example.com",
       "placeholder_message": "Ваш вопрос или предложение..."
     }
   },
@@ -276,6 +281,23 @@
       "mark_all_read": "Отметить все как прочитанные",
       "no_notifications": "Нет уведомлений",
       "profile": "Профиль"
+    },
+    "table": {
+      "id": "ID",
+      "product": "Товар",
+      "category": "Категория",
+      "price": "Цена",
+      "stock": "Остаток",
+      "status": "Статус",
+      "actions": "Действия",
+      "transaction_id": "ID транзакции",
+      "cashier": "Кассир",
+      "payment_type": "Тип оплаты",
+      "total_amount": "Сумма",
+      "date": "Дата",
+      "code": "Код",
+      "qty_unit": "Кол-во/Ед.",
+      "line_total": "Итого"
     },
     "analytics": {
       "title": "Аналитика",

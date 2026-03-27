@@ -1,12 +1,15 @@
 @import './base.css';
 
-html {
-  scroll-behavior: smooth;
-}
+/*
+  Global scroll-behavior: smooth trackpad/tez g‘ilof skrollda sekinlik / “qarshilik” beradi
+  (dashboard ichki overflow ham chalkashadi). Kerak bo‘lsa scrollIntoView({ behavior: 'smooth' })
+  yoki alohida marketing sahifada qo‘llanadi.
+*/
 
 #app {
   width: 100%;
   min-height: 100vh;
+  min-height: 100dvh;
   display: flex;
   flex-direction: column;
 }

@@ -7,7 +7,7 @@ import { getApiLocaleTag } from '@/utils/localeApi'
 const { showNotification } = useNotification()
 const t = i18n.global.t
 
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'https://cpos-backend-uf77.onrender.com/api/v1/'
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080/api/v1/'
 //https://cpos-backend-uf77.onrender.com/api/v1/
 
 const api = axios.create({
@@ -279,10 +279,6 @@ export function getSalesByCategory(params) {
   return api.get('web/statistics/sales-by-category', { params })
 }
 
-export function getTopProductsTrend(params) {
-  return api.get('web/statistics/top-products-trend', { params })
-}
-
 export function updatePassword(data) {
   return api.put('web/users/password', data)
 }
@@ -317,6 +313,10 @@ export function createCashier(data) {
 
 export function toggleCashierStatus(id) {
   return api.patch(`web/cashiers/${id}/toggle-status`)
+}
+
+export function sendPublicContactRequest(payload) {
+  return api.post('public/contact', payload)
 }
 
 export default api

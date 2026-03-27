@@ -197,12 +197,17 @@
     "subtitle": "Саволларингиз борми? Бизга ёзинг ёки қўнғироқ қилинг.",
     "form": {
       "name": "Исмингиз",
+      "email_or_phone": "Email ёки телефон",
       "phone": "Телефон рақамингиз",
+      "email": "Email манзилингиз",
+      "mode_phone": "Телефон",
+      "mode_email": "Email",
       "message": "Хабар",
       "submit": "Юбориш",
       "success": "Хабарингиз муваффақиятли юборилди!",
       "placeholder_name": "Исмингизни киритинг",
       "placeholder_phone": "+998 90 123 45 67",
+      "placeholder_email": "email@example.com",
       "placeholder_message": "Саволингиз ёки таклифингиз..."
     }
   },
@@ -276,6 +281,23 @@
       "mark_all_read": "Барчасини ўқилган деб белгилаш",
       "no_notifications": "Билдиришномалар йўқ",
       "profile": "Профил"
+    },
+    "table": {
+      "id": "ID",
+      "product": "Маҳсулот",
+      "category": "Категория",
+      "price": "Нарх",
+      "stock": "Захира",
+      "status": "Ҳолат",
+      "actions": "Амаллар",
+      "transaction_id": "Транзакция ID",
+      "cashier": "Кассир",
+      "payment_type": "Тўлов тури",
+      "total_amount": "Жами сумма",
+      "date": "Сана",
+      "code": "Код",
+      "qty_unit": "Миқдор/Бирлик",
+      "line_total": "Жами"
     },
     "analytics": {
       "title": "Аналитика",

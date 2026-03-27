@@ -798,7 +798,8 @@ const filteredScales = computed(() => {
 
 .table-responsive {
   overflow-x: auto;
-  -webkit-overflow-scrolling: touch;
+  overflow-y: visible;
+  overscroll-behavior-x: contain;
 }
 
 .data-table {

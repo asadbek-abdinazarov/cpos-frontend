@@ -1,5 +1,5 @@
 <script setup>
-import { Bar, Doughnut, Line } from 'vue-chartjs'
+import { Bar, Doughnut } from 'vue-chartjs'
 import { MoreVertical } from 'lucide-vue-next'
 
 defineProps({
@@ -9,15 +9,12 @@ defineProps({
   },
   salesTrendLoading: Boolean,
   categorySalesLoading: Boolean,
-  topProductsLoading: Boolean,
   totalCategoryRevenue: [Number, String],
   barChartData: Object,
   barChartOptions: Object,
   donutChartData: Object,
   donutChartOptions: Object,
   categorySales: Array,
-  lineChartData: Object,
-  lineChartOptions: [Object, Function],
 })
 </script>
 
@@ -76,18 +73,6 @@ defineProps({
     </div>
   </div>
 
-  <div class="card top-products">
-    <div class="card-header">
-      <h3>{{ $t('dashboard.analytics.top_products') }}</h3>
-      <button type="button" class="btn-link">{{ $t('dashboard.analytics.view_details') }}</button>
-    </div>
-    <div class="chart-container" style="height: 350px; width: 100%; padding-top: 5px">
-      <template v-if="topProductsLoading">
-        <div class="skel" style="width: 100%; height: 100%; border-radius: 8px"></div>
-      </template>
-      <Line v-else :data="lineChartData" :options="lineChartOptions" />
-    </div>
-  </div>
 </template>
 
 <style scoped>
@@ -216,15 +201,6 @@ defineProps({
   color: #0f172a;
 }
 
-.btn-link {
-  background: none;
-  border: none;
-  color: #2563eb;
-  font-weight: 600;
-  cursor: pointer;
-  font-size: 0.9rem;
-}
-
 .icon-sm {
   width: 18px;
   height: 18px;
@@ -243,6 +219,15 @@ defineProps({
   background: linear-gradient(90deg, #e2e8f0 25%, #f1f5f9 50%, #e2e8f0 75%);
   background-size: 300px 100%;
   animation: shimmer 1.4s infinite linear;
+}
+
+/*
+  Chart.js canvas default touch-action ba’zi brauzerlarda vertikal sahifa skrolini ushlab qoladi.
+  pan-y: asosan sahifa bilan birga vertikal surilishni davom ettiradi.
+*/
+.chart-container :deep(canvas),
+.donut-chart-placeholder :deep(canvas) {
+  touch-action: pan-y;
 }
 
 @media (max-width: 1024px) {

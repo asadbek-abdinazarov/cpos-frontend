@@ -1,15 +1,9 @@
 import { ref, computed, watch, onMounted } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { DollarSign, BarChart2, Sigma, Percent } from 'lucide-vue-next'
-import {
-  getStatistics,
-  getSalesTrend,
-  getSalesByCategory,
-  getTopProductsTrend,
-} from '@/services/api'
+import { getStatistics, getSalesTrend, getSalesByCategory } from '@/services/api'
 
 const DEFAULT_CATEGORY_COLORS = ['#3b82f6', '#a855f7', '#10b981', '#f59e0b', '#ef4444', '#6b7280']
-const DEFAULT_LINE_COLORS = ['#3b82f6', '#a855f7', '#10b981', '#f59e0b', '#ef4444']
 
 export function useAnalyticsCharts() {
   const { t } = useI18n()
@@ -18,7 +12,6 @@ export function useAnalyticsCharts() {
   const statsLoading = ref(true)
   const salesTrendLoading = ref(true)
   const categorySalesLoading = ref(true)
-  const topProductsLoading = ref(true)
   const totalCategoryRevenue = ref(0)
 
   const metrics = ref([
@@ -82,135 +75,6 @@ export function useAnalyticsCharts() {
     { name: 'Home & Garden', percentage: 20, color: '#10b981' },
     { name: 'Others', percentage: 10, color: '#9ca3af' },
   ])
-
-  const lineChartData = ref({
-    labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'],
-    datasets: [
-      {
-        label: 'Wireless Headphones',
-        data: [65, 59, 80, 81, 56, 120],
-        fill: true,
-        backgroundColor: '#3b82f61A',
-        borderColor: '#3b82f6',
-        borderWidth: 3,
-        tension: 0.4,
-        pointBackgroundColor: '#ffffff',
-        pointBorderColor: '#3b82f6',
-        pointBorderWidth: 2,
-        pointRadius: 4,
-        pointHoverRadius: 6,
-      },
-      {
-        label: 'Smart Watch Series 7',
-        data: [28, 48, 40, 19, 86, 85],
-        fill: true,
-        backgroundColor: '#a855f71A',
-        borderColor: '#a855f7',
-        borderWidth: 3,
-        tension: 0.4,
-        pointBackgroundColor: '#ffffff',
-        pointBorderColor: '#a855f7',
-        pointBorderWidth: 2,
-        pointRadius: 4,
-        pointHoverRadius: 6,
-      },
-      {
-        label: 'Ergonomic Chair',
-        data: [15, 25, 30, 45, 35, 45],
-        fill: true,
-        backgroundColor: '#10b9811A',
-        borderColor: '#10b981',
-        borderWidth: 3,
-        tension: 0.4,
-        pointBackgroundColor: '#ffffff',
-        pointBorderColor: '#10b981',
-        pointBorderWidth: 2,
-        pointRadius: 4,
-        pointHoverRadius: 6,
-      },
-    ],
-  })
-
-  const lineChartOptions = computed(() => ({
-    responsive: true,
-    maintainAspectRatio: false,
-    interaction: {
-      mode: 'index',
-      intersect: false,
-    },
-    plugins: {
-      legend: {
-        position: 'top',
-        labels: {
-          usePointStyle: true,
-          boxWidth: 8,
-          font: {
-            family: 'Inter, sans-serif',
-            size: 13,
-            weight: '500',
-          },
-        },
-      },
-      tooltip: {
-        backgroundColor: 'rgba(15, 23, 42, 0.9)',
-        padding: 12,
-        cornerRadius: 8,
-        titleFont: { family: 'Inter, sans-serif', size: 13, weight: '600' },
-        bodyFont: { family: 'Inter, sans-serif', size: 12 },
-        callbacks: {
-          label: function (context) {
-            let label = context.dataset.label || ''
-            if (label) {
-              label += ': '
-            }
-            if (context.parsed.y !== null) {
-              label += context.parsed.y + ' ' + t('dashboard.analytics.sales')
-            }
-            return label
-          },
-        },
-      },
-    },
-    scales: {
-      y: {
-        beginAtZero: true,
-        grid: {
-          color: '#e2e8f0',
-          drawBorder: false,
-          borderDash: [5, 5],
-        },
-        ticks: {
-          color: '#64748b',
-          font: {
-            family: 'Inter, sans-serif',
-            size: 11,
-          },
-        },
-        title: {
-          display: true,
-          text: 'Number of Sales',
-          color: '#64748b',
-          font: {
-            family: 'Inter, sans-serif',
-            size: 12,
-          },
-        },
-      },
-      x: {
-        grid: {
-          display: false,
-          drawBorder: false,
-        },
-        ticks: {
-          color: '#64748b',
-          font: {
-            family: 'Inter, sans-serif',
-            size: 12,
-          },
-        },
-      },
-    },
-  }))
 
   const barChartData = ref({
     labels: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
@@ -358,34 +222,10 @@ export function useAnalyticsCharts() {
     syncDonutFromCategorySales()
   }
 
-  const applyTopProductsResult = (res) => {
-    if (res.status !== 'fulfilled' || !res.value?.data?.success || !res.value.data.data) return
-    const data = res.value.data.data
-    lineChartData.value.labels = data.labels || []
-    lineChartData.value.datasets = (data.datasets || []).map((ds, index) => {
-      const color = DEFAULT_LINE_COLORS[index % DEFAULT_LINE_COLORS.length]
-      return {
-        label: ds.label,
-        data: ds.data,
-        fill: true,
-        backgroundColor: color + '1A',
-        borderColor: color,
-        borderWidth: 3,
-        tension: 0.4,
-        pointBackgroundColor: '#ffffff',
-        pointBorderColor: color,
-        pointBorderWidth: 2,
-        pointRadius: 4,
-        pointHoverRadius: 6,
-      }
-    })
-  }
-
   const fetchStatistics = async () => {
     statsLoading.value = true
     salesTrendLoading.value = true
     categorySalesLoading.value = true
-    topProductsLoading.value = true
 
     const params = getApiParams()
 
@@ -393,10 +233,9 @@ export function useAnalyticsCharts() {
       getStatistics(params),
       getSalesTrend(params),
       getSalesByCategory(params),
-      getTopProductsTrend({ ...params, limit: 5 }),
     ])
 
-    const [statsRes, trendRes, catRes, topRes] = settled
+    const [statsRes, trendRes, catRes] = settled
 
     applyStatsResult(statsRes)
     statsLoading.value = false
@@ -409,10 +248,6 @@ export function useAnalyticsCharts() {
     applyCategoryResult(catRes)
     categorySalesLoading.value = false
     if (catRes.status === 'rejected') console.error('Failed to load category sales', catRes.reason)
-
-    applyTopProductsResult(topRes)
-    topProductsLoading.value = false
-    if (topRes.status === 'rejected') console.error('Failed to load top products trend', topRes.reason)
   }
 
   watch(dateRange, () => {
@@ -428,12 +263,9 @@ export function useAnalyticsCharts() {
     statsLoading,
     salesTrendLoading,
     categorySalesLoading,
-    topProductsLoading,
     totalCategoryRevenue,
     metrics,
     fmt,
-    lineChartData,
-    lineChartOptions,
     barChartData,
     barChartOptions,
     donutChartData,

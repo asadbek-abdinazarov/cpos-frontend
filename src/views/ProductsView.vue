@@ -115,13 +115,13 @@ const {
               <th class="w-16">
                 <input type="checkbox" :checked="isAllSelected" @change="toggleSelectAll" />
               </th>
-              <th>ID</th>
-              <th>Product</th>
-              <th>Category</th>
-              <th>Price</th>
-              <th>Stock</th>
-              <th>Status</th>
-              <th class="text-right">Actions</th>
+              <th>{{ $t('dashboard.table.id') }}</th>
+              <th>{{ $t('dashboard.table.product') }}</th>
+              <th>{{ $t('dashboard.table.category') }}</th>
+              <th>{{ $t('dashboard.table.price') }}</th>
+              <th>{{ $t('dashboard.table.stock') }}</th>
+              <th>{{ $t('dashboard.table.status') }}</th>
+              <th class="text-right">{{ $t('dashboard.table.actions') }}</th>
             </tr>
           </thead>
           <tbody>
@@ -409,7 +409,9 @@ const {
 
 .table-responsive {
   overflow-x: auto;
-  -webkit-overflow-scrolling: touch;
+  overflow-y: visible;
+  overscroll-behavior-x: contain;
+  touch-action: pan-x pan-y;
   border-bottom: 1px solid #f1f5f9;
 }
 

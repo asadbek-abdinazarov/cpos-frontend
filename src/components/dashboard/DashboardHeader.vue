@@ -153,14 +153,13 @@ onUnmounted(() => {
 <style scoped>
 .dashboard-header {
   height: 70px;
+  flex-shrink: 0;
   background: white;
   border-bottom: 1px solid #e2e8f0;
   display: flex;
   align-items: center;
   justify-content: space-between;
   padding: 0 2rem;
-  position: sticky;
-  top: 0;
   z-index: 40;
 }
 

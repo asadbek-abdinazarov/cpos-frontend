@@ -13,7 +13,6 @@ const {
   statsLoading,
   salesTrendLoading,
   categorySalesLoading,
-  topProductsLoading,
   totalCategoryRevenue,
   fmt,
   barChartData,
@@ -21,8 +20,6 @@ const {
   donutChartData,
   donutChartOptions,
   categorySales,
-  lineChartData,
-  lineChartOptions,
 } = useAnalyticsCharts()
 </script>
 
@@ -56,15 +53,12 @@ const {
       :fmt="fmt"
       :sales-trend-loading="salesTrendLoading"
       :category-sales-loading="categorySalesLoading"
-      :top-products-loading="topProductsLoading"
       :total-category-revenue="totalCategoryRevenue"
       :bar-chart-data="barChartData"
       :bar-chart-options="barChartOptions"
       :donut-chart-data="donutChartData"
       :donut-chart-options="donutChartOptions"
       :category-sales="categorySales"
-      :line-chart-data="lineChartData"
-      :line-chart-options="lineChartOptions"
     />
   </div>
 </template>
@@ -149,6 +143,7 @@ const {
   font-weight: 500;
   font-size: 0.9rem;
   box-shadow: none;
+  touch-action: manipulation;
 }
 
 .date-picker-wrapper :deep(.dp__input_icon) {

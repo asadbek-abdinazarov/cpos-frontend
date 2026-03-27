@@ -1,7 +1,15 @@
 <script setup>
 import { useI18n } from 'vue-i18n'
+import { useRouter } from 'vue-router'
+import { goToHomeSection } from '@/composables/useHomeSectionNav'
 import { Mail, Phone, MapPin } from 'lucide-vue-next'
+
 const { t } = useI18n()
+const router = useRouter()
+
+const goSection = (id) => {
+  goToHomeSection(router, id)
+}
 </script>
 
 <template>
@@ -34,17 +42,17 @@ const { t } = useI18n()
         <div class="footer-col">
           <h4 class="col-title">{{ t('footer.product') }}</h4>
           <ul class="footer-links">
-            <li><a href="/#features">{{ t('nav.features') }}</a></li>
-            <li><a href="/#hardware">{{ t('nav.hardware') }}</a></li>
-            <li><a href="/#pricing">{{ t('nav.pricing') }}</a></li>
+            <li><a href="/" @click.prevent="goSection('features')">{{ t('nav.features') }}</a></li>
+            <li><a href="/" @click.prevent="goSection('hardware')">{{ t('nav.hardware') }}</a></li>
+            <li><a href="/" @click.prevent="goSection('pricing')">{{ t('nav.pricing') }}</a></li>
           </ul>
         </div>
 
         <div class="footer-col">
           <h4 class="col-title">{{ t('footer.company') }}</h4>
           <ul class="footer-links">
-            <li><a href="/#about">{{ t('footer.about') }}</a></li>
-            <li><a href="/#contact">{{ t('footer.contact') }}</a></li>
+            <li><router-link to="/about">{{ t('footer.about') }}</router-link></li>
+            <li><a href="/" @click.prevent="goSection('contact')">{{ t('footer.contact') }}</a></li>
           </ul>
         </div>
 

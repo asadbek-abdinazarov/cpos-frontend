@@ -153,6 +153,9 @@ const handleLogout = async () => {
 .sidebar {
   width: 260px;
   height: 100vh;
+  height: 100dvh;
+  max-height: 100vh;
+  max-height: 100dvh;
   background-color: #ffffff;
   border-right: 1px solid #e2e8f0;
   display: flex;
@@ -206,8 +209,10 @@ const handleLogout = async () => {
 
 .sidebar-nav {
   flex: 1;
+  min-height: 0;
   padding: 1.5rem 1rem;
   overflow-y: auto;
+  overscroll-behavior-y: contain;
   display: flex;
   flex-direction: column;
   gap: 0.5rem;

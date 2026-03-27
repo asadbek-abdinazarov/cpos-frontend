@@ -1,10 +1,15 @@
 <script setup>
 import { ref } from 'vue'
 import { useI18n } from 'vue-i18n'
+import { useRouter } from 'vue-router'
+import { goToHomeSection } from '@/composables/useHomeSectionNav'
 import VideoPlayer from './VideoPlayer.vue'
 
 const { t } = useI18n()
+const router = useRouter()
 const isVideoOpen = ref(false)
+
+const goContact = () => goToHomeSection(router, 'contact')
 </script>
 
 <template>
@@ -19,7 +24,7 @@ const isVideoOpen = ref(false)
           {{ t('hero.subtitle') }}
         </p>
         <div class="cta-group">
-          <a href="#contact">
+          <a href="/" @click.prevent="goContact">
             <button type="button" class="btn btn-primary btn-lg">{{ t('hero.cta') }}</button>
           </a>
           <button class="btn btn-outline btn-lg" @click="isVideoOpen = true">{{ t('hero.watch_demo') }}</button>

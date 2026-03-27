@@ -41,26 +41,37 @@ const closeSidebar = () => {
 <style scoped>
 .dashboard-layout {
   display: flex;
-  min-height: 100vh;
-  background-color: #F8FAFC;
+  /* Bir nechta scroll zanjiri (body + ichki) o‘rniga yagona vertikal skroll — tez surilganda qarshilik kamayadi */
+  height: 100vh;
+  height: 100dvh;
+  max-height: 100vh;
+  max-height: 100dvh;
+  overflow: hidden;
+  background-color: #f8fafc;
   position: relative;
 }
 
 .main-content {
-  flex: 1;
+  flex: 1 1 auto;
   margin-left: 260px; /* Width of sidebar */
   display: flex;
   flex-direction: column;
-  min-height: 100vh;
+  min-height: 0;
+  min-width: 0;
   transition: margin-left 0.3s ease;
 }
 
 .page-content {
-  flex: 1;
+  flex: 1 1 auto;
+  min-height: 0;
+  min-width: 0;
   padding: clamp(1rem, 4vw, 2rem);
   padding-bottom: max(env(safe-area-inset-bottom, 0px), clamp(1rem, 4vw, 2rem));
+  overflow-x: hidden;
   overflow-y: auto;
-  min-width: 0;
+  overscroll-behavior-y: contain;
+  -webkit-overflow-scrolling: touch;
+  touch-action: pan-y;
 }
 
 .sidebar-overlay {

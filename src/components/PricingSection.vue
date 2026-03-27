@@ -1,9 +1,14 @@
 <script setup>
 import { ref, computed } from 'vue'
 import { useI18n } from 'vue-i18n'
+import { useRouter } from 'vue-router'
+import { goToHomeSection } from '@/composables/useHomeSectionNav'
 import { Check } from 'lucide-vue-next'
 
 const { t } = useI18n()
+const router = useRouter()
+
+const goContact = () => goToHomeSection(router, 'contact')
 
 const isAnnual = ref(true)
 
@@ -101,7 +106,11 @@ const plans = computed(() => [
           </div>
 
           <div class="card-footer">
-            <a href="#contact" :class="['btn-action', plan.variant === 'primary' ? 'btn-primary' : 'btn-default']">
+            <a
+              href="/"
+              :class="['btn-action', plan.variant === 'primary' ? 'btn-primary' : 'btn-default']"
+              @click.prevent="goContact"
+            >
               {{ plan.buttonText }}
             </a>
           </div>
