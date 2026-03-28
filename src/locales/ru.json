@@ -207,7 +207,7 @@
       "success": "Ваше сообщение успешно отправлено!",
       "placeholder_name": "Введите ваше имя",
       "placeholder_phone": "+998 90 123 45 67",
-      "placeholder_email": "email@example.com",
+      "placeholder_email": "email{'@'}example.com",
       "placeholder_message": "Ваш вопрос или предложение..."
     }
   },

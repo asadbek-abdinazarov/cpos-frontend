@@ -207,7 +207,7 @@
       "success": "Хабарингиз муваффақиятли юборилди!",
       "placeholder_name": "Исмингизни киритинг",
       "placeholder_phone": "+998 90 123 45 67",
-      "placeholder_email": "email@example.com",
+      "placeholder_email": "email{'@'}example.com",
       "placeholder_message": "Саволингиз ёки таклифингиз..."
     }
   },

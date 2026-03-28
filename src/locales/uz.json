@@ -204,7 +204,7 @@
       "success": "Xabaringiz muvaffaqiyatli yuborildi!",
       "placeholder_name": "Ismingizni kiriting",
       "placeholder_phone": "+998 90 123 45 67",
-      "placeholder_email": "email@example.com",
+      "placeholder_email": "email{'@'}example.com",
       "placeholder_message": "Savolingiz yoki taklifingiz..."
     }
   },
