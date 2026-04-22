@@ -4,6 +4,7 @@ import { useRouter } from 'vue-router'
 import { useI18n } from 'vue-i18n'
 import { login, persistAuthTokensFromResponse } from '@/services/api'
 import { useNotification } from '@/composables/useNotification'
+import { enterDashboard } from '@/composables/useAppLoader'
 import { Eye, EyeOff } from 'lucide-vue-next'
 
 const { t } = useI18n()
@@ -45,7 +46,8 @@ const handleLogin = async () => {
       localStorage.setItem('username', data.data.username)
       localStorage.setItem('userId', data.data.userId)
       showNotification({ type: 'success', message: t('auth.login_success') })
-      router.push('/dashboard')
+      loading.value = false
+      await enterDashboard(() => router.push('/dashboard'))
     } else {
       showNotification({ type: 'error', message: data.message || t('auth.login_error') })
     }
@@ -60,7 +62,6 @@ const handleLogin = async () => {
 
 <template>
   <div class="lp">
-
     <!-- ══════════════════════════════════════════
          LEFT  –  Brand panel
     ══════════════════════════════════════════ -->
@@ -72,7 +73,6 @@ const handleLogin = async () => {
       <div class="bp-orb orb-3"></div>
 
       <div class="bp-inner">
-
         <!-- Top logo -->
         <div class="bp-logo">
           <img src="/logo-footer.svg" alt="CPOS" />
@@ -85,7 +85,17 @@ const handleLogin = async () => {
           <!-- Stat cards -->
           <div class="stat-card sc-1">
             <div class="sc-icon sc-blue">
-              <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+              <svg
+                width="16"
+                height="16"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                viewBox="0 0 24 24"
+              >
+                <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" />
+                <polyline points="9 22 9 12 15 12 15 22" />
+              </svg>
             </div>
             <div class="sc-body">
               <span class="sc-val">1,240</span>
@@ -96,7 +106,17 @@ const handleLogin = async () => {
 
           <div class="stat-card sc-2">
             <div class="sc-icon sc-green">
-              <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/><polyline points="17 6 23 6 23 12"/></svg>
+              <svg
+                width="16"
+                height="16"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                viewBox="0 0 24 24"
+              >
+                <polyline points="23 6 13.5 15.5 8.5 10.5 1 18" />
+                <polyline points="17 6 23 6 23 12" />
+              </svg>
             </div>
             <div class="sc-body">
               <span class="sc-val">4.28M</span>
@@ -107,7 +127,17 @@ const handleLogin = async () => {
 
           <div class="stat-card sc-3">
             <div class="sc-icon sc-purple">
-              <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+              <svg
+                width="16"
+                height="16"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                viewBox="0 0 24 24"
+              >
+                <line x1="12" y1="1" x2="12" y2="23" />
+                <path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6" />
+              </svg>
             </div>
             <div class="sc-body">
               <span class="sc-val">5M+</span>
@@ -126,9 +156,15 @@ const handleLogin = async () => {
         <!-- Bottom quote -->
         <div class="bp-quote">
           <svg class="quote-mark" width="32" height="24" viewBox="0 0 32 24" fill="none">
-            <path d="M0 24V14.4C0 6.4 4.8 1.6 14.4 0l1.6 2.4C10.4 3.6 7.6 6.4 7.2 10.4H14.4V24H0ZM17.6 24V14.4C17.6 6.4 22.4 1.6 32 0l1.6 2.4C28 3.6 25.2 6.4 24.8 10.4H32V24H17.6Z" fill="currentColor" opacity=".18"/>
+            <path
+              d="M0 24V14.4C0 6.4 4.8 1.6 14.4 0l1.6 2.4C10.4 3.6 7.6 6.4 7.2 10.4H14.4V24H0ZM17.6 24V14.4C17.6 6.4 22.4 1.6 32 0l1.6 2.4C28 3.6 25.2 6.4 24.8 10.4H32V24H17.6Z"
+              fill="currentColor"
+              opacity=".18"
+            />
           </svg>
-          <p class="quote-text">CPOS bilan ishlash juda oson. Xodimlarim 15 daqiqada o'rganib olishdi.</p>
+          <p class="quote-text">
+            CPOS bilan ishlash juda oson. Xodimlarim 15 daqiqada o'rganib olishdi.
+          </p>
           <div class="quote-author">
             <div class="qa-avatar">A</div>
             <div>
@@ -137,7 +173,6 @@ const handleLogin = async () => {
             </div>
           </div>
         </div>
-
       </div>
     </aside>
 
@@ -145,14 +180,12 @@ const handleLogin = async () => {
          RIGHT  –  Form panel
     ══════════════════════════════════════════ -->
     <main class="form-panel">
-
       <!-- Mobile-only top bar -->
       <div class="mobile-bar">
         <img src="/logo-nav.svg" alt="CPOS" class="mobile-logo" />
       </div>
 
       <div class="form-wrap">
-
         <!-- Header -->
         <div class="fh">
           <div class="fh-eyebrow">
@@ -165,13 +198,24 @@ const handleLogin = async () => {
 
         <!-- Form -->
         <form class="the-form" @submit.prevent="handleLogin" novalidate>
-
           <!-- Username -->
           <div class="fg">
             <label class="fg-label" for="un">{{ t('auth.username') }}</label>
             <div class="fg-input-wrap">
               <span class="fg-icon">
-                <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+                <svg
+                  width="15"
+                  height="15"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  viewBox="0 0 24 24"
+                >
+                  <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
+                  <circle cx="12" cy="7" r="4" />
+                </svg>
               </span>
               <input
                 id="un"
@@ -195,7 +239,19 @@ const handleLogin = async () => {
             </div>
             <div class="fg-input-wrap">
               <span class="fg-icon">
-                <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+                <svg
+                  width="15"
+                  height="15"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  viewBox="0 0 24 24"
+                >
+                  <rect x="3" y="11" width="18" height="11" rx="2" />
+                  <path d="M7 11V7a5 5 0 0 1 10 0v4" />
+                </svg>
               </span>
               <input
                 id="pw"
@@ -215,8 +271,8 @@ const handleLogin = async () => {
                 :aria-pressed="showPassword"
                 @click="showPassword = !showPassword"
               >
-                <Eye   v-if="showPassword" :size="17" :stroke-width="1.75" aria-hidden="true" />
-                <EyeOff v-else             :size="17" :stroke-width="1.75" aria-hidden="true" />
+                <Eye v-if="showPassword" :size="17" :stroke-width="1.75" aria-hidden="true" />
+                <EyeOff v-else :size="17" :stroke-width="1.75" aria-hidden="true" />
               </button>
             </div>
           </div>
@@ -225,27 +281,46 @@ const handleLogin = async () => {
           <button type="submit" class="btn-submit" :disabled="loading">
             <span v-if="!loading" class="btn-inner">
               {{ t('auth.login_btn') }}
-              <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+              <svg
+                width="15"
+                height="15"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2.5"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                viewBox="0 0 24 24"
+              >
+                <path d="M5 12h14M12 5l7 7-7 7" />
+              </svg>
             </span>
             <span v-else class="btn-loading">
               <span class="spinner"></span>
               {{ t('auth.logging_in') }}
             </span>
           </button>
-
         </form>
 
         <!-- Footer link -->
         <div class="ff">
           <router-link to="/" class="ff-back">
-            <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><path d="M19 12H5M12 5l-7 7 7 7"/></svg>
+            <svg
+              width="14"
+              height="14"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2.5"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              viewBox="0 0 24 24"
+            >
+              <path d="M19 12H5M12 5l-7 7 7 7" />
+            </svg>
             {{ t('auth.back_to_home') }}
           </router-link>
         </div>
-
       </div>
     </main>
-
   </div>
 </template>
 
@@ -266,7 +341,7 @@ const handleLogin = async () => {
 .brand-panel {
   position: relative;
   flex: 1.15;
-  background: #080D1A;
+  background: #080d1a;
   overflow: hidden;
   display: flex;
 }
@@ -275,8 +350,7 @@ const handleLogin = async () => {
 .bp-grid {
   position: absolute;
   inset: 0;
-  background-image:
-    radial-gradient(circle, rgba(255,255,255,0.06) 1px, transparent 1px);
+  background-image: radial-gradient(circle, rgba(255, 255, 255, 0.06) 1px, transparent 1px);
   background-size: 28px 28px;
   z-index: 0;
 }
@@ -291,21 +365,27 @@ const handleLogin = async () => {
 }
 
 .orb-1 {
-  width: 480px; height: 480px;
-  background: radial-gradient(circle, rgba(0,123,255,0.18) 0%, transparent 65%);
-  top: -140px; right: -100px;
+  width: 480px;
+  height: 480px;
+  background: radial-gradient(circle, rgba(0, 123, 255, 0.18) 0%, transparent 65%);
+  top: -140px;
+  right: -100px;
 }
 
 .orb-2 {
-  width: 360px; height: 360px;
-  background: radial-gradient(circle, rgba(99,102,241,0.14) 0%, transparent 65%);
-  bottom: -80px; left: -60px;
+  width: 360px;
+  height: 360px;
+  background: radial-gradient(circle, rgba(99, 102, 241, 0.14) 0%, transparent 65%);
+  bottom: -80px;
+  left: -60px;
 }
 
 .orb-3 {
-  width: 240px; height: 240px;
-  background: radial-gradient(circle, rgba(16,185,129,0.10) 0%, transparent 65%);
-  top: 45%; left: 35%;
+  width: 240px;
+  height: 240px;
+  background: radial-gradient(circle, rgba(16, 185, 129, 0.1) 0%, transparent 65%);
+  top: 45%;
+  left: 35%;
 }
 
 /* Inner scaffold */
@@ -346,12 +426,13 @@ const handleLogin = async () => {
   width: 280px;
   height: 280px;
   border-radius: 50%;
-  background: radial-gradient(circle at 40% 40%,
-    rgba(0,123,255,0.18) 0%,
-    rgba(99,102,241,0.10) 50%,
+  background: radial-gradient(
+    circle at 40% 40%,
+    rgba(0, 123, 255, 0.18) 0%,
+    rgba(99, 102, 241, 0.1) 50%,
     transparent 70%
   );
-  border: 1px solid rgba(0,123,255,0.12);
+  border: 1px solid rgba(0, 123, 255, 0.12);
   flex-shrink: 0;
   position: relative;
 }
@@ -361,7 +442,7 @@ const handleLogin = async () => {
   position: absolute;
   inset: 16px;
   border-radius: 50%;
-  border: 1px solid rgba(0,123,255,0.08);
+  border: 1px solid rgba(0, 123, 255, 0.08);
 }
 
 .orb-center::after {
@@ -369,7 +450,7 @@ const handleLogin = async () => {
   position: absolute;
   inset: 36px;
   border-radius: 50%;
-  border: 1px solid rgba(0,123,255,0.05);
+  border: 1px solid rgba(0, 123, 255, 0.05);
 }
 
 /* ── Stat cards ── */
@@ -378,8 +459,8 @@ const handleLogin = async () => {
   display: flex;
   align-items: center;
   gap: 10px;
-  background: rgba(255,255,255,0.05);
-  border: 1px solid rgba(255,255,255,0.10);
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
   backdrop-filter: blur(20px);
   -webkit-backdrop-filter: blur(20px);
   border-radius: 14px;
@@ -407,13 +488,23 @@ const handleLogin = async () => {
 }
 
 @keyframes float-a {
-  0%, 100% { transform: translateY(0px); }
-  50%       { transform: translateY(-9px); }
+  0%,
+  100% {
+    transform: translateY(0px);
+  }
+  50% {
+    transform: translateY(-9px);
+  }
 }
 
 @keyframes float-b {
-  0%, 100% { transform: translateY(0px); }
-  50%       { transform: translateY(9px); }
+  0%,
+  100% {
+    transform: translateY(0px);
+  }
+  50% {
+    transform: translateY(9px);
+  }
 }
 
 .sc-icon {
@@ -426,9 +517,18 @@ const handleLogin = async () => {
   flex-shrink: 0;
 }
 
-.sc-blue   { background: rgba(0,  123,255,0.18); color: #60A5FA; }
-.sc-green  { background: rgba(16, 185,129,0.18); color: #34D399; }
-.sc-purple { background: rgba(99, 102,241,0.18); color: #A5B4FC; }
+.sc-blue {
+  background: rgba(0, 123, 255, 0.18);
+  color: #60a5fa;
+}
+.sc-green {
+  background: rgba(16, 185, 129, 0.18);
+  color: #34d399;
+}
+.sc-purple {
+  background: rgba(99, 102, 241, 0.18);
+  color: #a5b4fc;
+}
 
 .sc-body {
   display: flex;
@@ -439,13 +539,13 @@ const handleLogin = async () => {
 .sc-val {
   font-size: 1rem;
   font-weight: 700;
-  color: #F1F5F9;
+  color: #f1f5f9;
   line-height: 1.1;
 }
 
 .sc-lbl {
   font-size: 0.7rem;
-  color: #64748B;
+  color: #64748b;
   font-weight: 500;
 }
 
@@ -457,8 +557,8 @@ const handleLogin = async () => {
 }
 
 .sc-trend.up {
-  background: rgba(16,185,129,0.12);
-  color: #34D399;
+  background: rgba(16, 185, 129, 0.12);
+  color: #34d399;
 }
 
 /* Live pill */
@@ -469,20 +569,20 @@ const handleLogin = async () => {
   display: flex;
   align-items: center;
   gap: 7px;
-  background: rgba(16,185,129,0.08);
-  border: 1px solid rgba(16,185,129,0.2);
+  background: rgba(16, 185, 129, 0.08);
+  border: 1px solid rgba(16, 185, 129, 0.2);
   border-radius: 100px;
   padding: 5px 12px;
   font-size: 0.72rem;
   font-weight: 600;
-  color: #34D399;
+  color: #34d399;
 }
 
 .live-dot {
   width: 7px;
   height: 7px;
   border-radius: 50%;
-  background: #10B981;
+  background: #10b981;
   position: relative;
   flex-shrink: 0;
 }
@@ -492,13 +592,19 @@ const handleLogin = async () => {
   position: absolute;
   inset: -3px;
   border-radius: 50%;
-  border: 1.5px solid #10B981;
+  border: 1.5px solid #10b981;
   animation: ping 1.8s ease-out infinite;
 }
 
 @keyframes ping {
-  0%   { opacity: 1; transform: scale(1); }
-  100% { opacity: 0; transform: scale(2.4); }
+  0% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  100% {
+    opacity: 0;
+    transform: scale(2.4);
+  }
 }
 
 /* ── Bottom quote ── */
@@ -516,7 +622,7 @@ const handleLogin = async () => {
   left: 0;
   right: 0;
   height: 1px;
-  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.08), transparent);
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.08), transparent);
 }
 
 .quote-mark {
@@ -526,7 +632,7 @@ const handleLogin = async () => {
 
 .quote-text {
   font-size: 1rem;
-  color: #94A3B8;
+  color: #94a3b8;
   line-height: 1.7;
   margin-bottom: 1.25rem;
   font-style: italic;
@@ -542,7 +648,7 @@ const handleLogin = async () => {
   width: 38px;
   height: 38px;
   border-radius: 50%;
-  background: linear-gradient(135deg, #007BFF, #6366F1);
+  background: linear-gradient(135deg, #007bff, #6366f1);
   color: #fff;
   font-weight: 700;
   font-size: 0.9rem;
@@ -555,12 +661,12 @@ const handleLogin = async () => {
 .qa-name {
   font-size: 0.875rem;
   font-weight: 700;
-  color: #E2E8F0;
+  color: #e2e8f0;
 }
 
 .qa-biz {
   font-size: 0.75rem;
-  color: #64748B;
+  color: #64748b;
   margin-top: 1px;
 }
 
@@ -586,7 +692,10 @@ const handleLogin = async () => {
   justify-content: center;
 }
 
-.mobile-logo { height: 40px; width: auto; }
+.mobile-logo {
+  height: 40px;
+  width: auto;
+}
 
 /* Main form wrapper */
 .form-wrap {
@@ -605,7 +714,7 @@ const handleLogin = async () => {
   gap: 7px;
   font-size: 0.75rem;
   font-weight: 600;
-  color: #94A3B8;
+  color: #94a3b8;
   letter-spacing: 0.06em;
   text-transform: uppercase;
   margin-bottom: 1rem;
@@ -615,13 +724,13 @@ const handleLogin = async () => {
   width: 6px;
   height: 6px;
   border-radius: 50%;
-  background: #007BFF;
+  background: #007bff;
 }
 
 .fh-title {
   font-size: 2rem;
   font-weight: 800;
-  color: #0F172A;
+  color: #0f172a;
   letter-spacing: -0.035em;
   line-height: 1.15;
   margin-bottom: 0.5rem;
@@ -629,7 +738,7 @@ const handleLogin = async () => {
 
 .fh-sub {
   font-size: 0.9rem;
-  color: #94A3B8;
+  color: #94a3b8;
   line-height: 1.5;
 }
 
@@ -665,12 +774,14 @@ const handleLogin = async () => {
   padding: 0;
   font-size: 0.78rem;
   font-weight: 600;
-  color: #007BFF;
+  color: #007bff;
   cursor: pointer;
   transition: color 0.2s;
 }
 
-.fg-forgot:hover { color: #0056b3; }
+.fg-forgot:hover {
+  color: #0056b3;
+}
 
 /* Input wrapper */
 .fg-input-wrap {
@@ -682,7 +793,7 @@ const handleLogin = async () => {
 .fg-icon {
   position: absolute;
   left: 14px;
-  color: #CBD5E1;
+  color: #cbd5e1;
   display: flex;
   align-items: center;
   pointer-events: none;
@@ -693,34 +804,37 @@ const handleLogin = async () => {
 .fg-input {
   width: 100%;
   padding: 0.78rem 1rem 0.78rem 2.7rem;
-  border: 1.5px solid #E2E8F0;
+  border: 1.5px solid #e2e8f0;
   border-radius: 10px;
   font-size: 0.9rem;
   font-family: inherit;
-  background: #F8FAFC;
-  color: #0F172A;
+  background: #f8fafc;
+  color: #0f172a;
   outline: none;
-  transition: border-color 0.2s ease, box-shadow 0.2s ease, background 0.2s ease;
+  transition:
+    border-color 0.2s ease,
+    box-shadow 0.2s ease,
+    background 0.2s ease;
 }
 
 .fg-input::placeholder {
-  color: #CBD5E1;
+  color: #cbd5e1;
   letter-spacing: 0.01em;
 }
 
 /* Focus: shift icon color + ring */
 .fg-input-wrap:focus-within .fg-icon {
-  color: #007BFF;
+  color: #007bff;
 }
 
 .fg-input:hover:not(:focus):not(:disabled) {
-  border-color: #CBD5E1;
+  border-color: #cbd5e1;
 }
 
 .fg-input:focus {
-  border-color: #007BFF;
+  border-color: #007bff;
   background: #fff;
-  box-shadow: 0 0 0 3px rgba(0,123,255,0.10);
+  box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.1);
 }
 
 .fg-input:disabled {
@@ -735,19 +849,24 @@ const handleLogin = async () => {
   background: none;
   border: none;
   cursor: pointer;
-  color: #94A3B8;
+  color: #94a3b8;
   display: flex;
   align-items: center;
   padding: 5px;
   border-radius: 6px;
-  transition: color 0.2s, background 0.15s;
+  transition:
+    color 0.2s,
+    background 0.15s;
   line-height: 1;
 }
 
-.fg-eye:hover { color: #475569; background: rgba(0,0,0,0.04); }
+.fg-eye:hover {
+  color: #475569;
+  background: rgba(0, 0, 0, 0.04);
+}
 
 .fg-eye:focus-visible {
-  outline: 2px solid #007BFF;
+  outline: 2px solid #007bff;
   outline-offset: 1px;
 }
 
@@ -757,26 +876,33 @@ const handleLogin = async () => {
   padding: 0.88rem 1.25rem;
   border: none;
   border-radius: 10px;
-  background: linear-gradient(135deg, #007BFF 0%, #4F67F5 60%, #6366F1 100%);
+  background: linear-gradient(135deg, #007bff 0%, #4f67f5 60%, #6366f1 100%);
   color: #fff;
   font-size: 0.95rem;
   font-weight: 700;
   font-family: inherit;
   cursor: pointer;
-  transition: transform 0.2s ease, box-shadow 0.2s ease, opacity 0.2s;
-  box-shadow: 0 4px 18px rgba(0,123,255,0.32), 0 1px 4px rgba(0,0,0,0.08);
+  transition:
+    transform 0.2s ease,
+    box-shadow 0.2s ease,
+    opacity 0.2s;
+  box-shadow:
+    0 4px 18px rgba(0, 123, 255, 0.32),
+    0 1px 4px rgba(0, 0, 0, 0.08);
   margin-top: 0.4rem;
   letter-spacing: 0.01em;
 }
 
 .btn-submit:hover:not(:disabled) {
   transform: translateY(-2px);
-  box-shadow: 0 8px 26px rgba(0,123,255,0.40), 0 2px 8px rgba(0,0,0,0.08);
+  box-shadow:
+    0 8px 26px rgba(0, 123, 255, 0.4),
+    0 2px 8px rgba(0, 0, 0, 0.08);
 }
 
 .btn-submit:active:not(:disabled) {
   transform: translateY(0);
-  box-shadow: 0 2px 8px rgba(0,123,255,0.25);
+  box-shadow: 0 2px 8px rgba(0, 123, 255, 0.25);
 }
 
 .btn-submit:disabled {
@@ -786,7 +912,7 @@ const handleLogin = async () => {
 }
 
 .btn-submit:focus-visible {
-  outline: 2px solid #007BFF;
+  outline: 2px solid #007bff;
   outline-offset: 3px;
 }
 
@@ -807,20 +933,24 @@ const handleLogin = async () => {
 .spinner {
   width: 15px;
   height: 15px;
-  border: 2px solid rgba(255,255,255,0.3);
+  border: 2px solid rgba(255, 255, 255, 0.3);
   border-top-color: #fff;
   border-radius: 50%;
   animation: spin 0.65s linear infinite;
   flex-shrink: 0;
 }
 
-@keyframes spin { to { transform: rotate(360deg); } }
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
 
 /* ── Form footer ── */
 .ff {
   margin-top: 2rem;
   padding-top: 1.5rem;
-  border-top: 1px solid #F1F5F9;
+  border-top: 1px solid #f1f5f9;
   text-align: center;
 }
 
@@ -828,11 +958,13 @@ const handleLogin = async () => {
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  color: #94A3B8;
+  color: #94a3b8;
   font-size: 0.82rem;
   font-weight: 500;
   text-decoration: none;
-  transition: color 0.2s ease, gap 0.2s ease;
+  transition:
+    color 0.2s ease,
+    gap 0.2s ease;
 }
 
 .ff-back:hover {
@@ -844,21 +976,33 @@ const handleLogin = async () => {
    Responsive
 ───────────────────────────────────────────── */
 @media (max-width: 960px) {
-  .brand-panel { display: none; }
+  .brand-panel {
+    display: none;
+  }
 
   .form-panel {
-    background: linear-gradient(155deg, #EEF4FF 0%, #F8FAFF 60%, #EDF2FF 100%);
+    background: linear-gradient(155deg, #eef4ff 0%, #f8faff 60%, #edf2ff 100%);
     justify-content: flex-start;
     padding: 0 1.25rem 2rem;
   }
 
-  .mobile-bar { display: flex; padding-top: 2.25rem; }
+  .mobile-bar {
+    display: flex;
+    padding-top: 2.25rem;
+  }
 
-  .form-wrap { max-width: 420px; margin: 0 auto; }
+  .form-wrap {
+    max-width: 420px;
+    margin: 0 auto;
+  }
 }
 
 @media (max-width: 480px) {
-  .form-panel { padding: 0 1rem 2rem; }
-  .fh-title { font-size: 1.7rem; }
+  .form-panel {
+    padding: 0 1rem 2rem;
+  }
+  .fh-title {
+    font-size: 1.7rem;
+  }
 }
 </style>

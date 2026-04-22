@@ -2,7 +2,18 @@
 import { computed } from 'vue'
 import { useRoute } from 'vue-router'
 import { useI18n } from 'vue-i18n'
-import { TrendingUp, Package, ShoppingBag, Scale, Settings, X, LogOut, Users, ChevronRight } from 'lucide-vue-next'
+import {
+  TrendingUp,
+  Package,
+  ShoppingBag,
+  Scale,
+  X,
+  LogOut,
+  Users,
+  ChevronRight,
+  Settings,
+} from 'lucide-vue-next'
+
 import { ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { logout, getUserProfile } from '@/services/api'
@@ -13,30 +24,32 @@ defineProps({
 })
 defineEmits(['close'])
 
-const route  = useRoute()
+const route = useRoute()
 const router = useRouter()
-const { t }  = useI18n()
+const { t } = useI18n()
 const { showNotification } = useNotification()
 
 const menuItems = [
   { name: 'dashboard.sidebar.analytics', path: '/dashboard/analytics', icon: TrendingUp },
-  { name: 'dashboard.sidebar.products',  path: '/dashboard/products',  icon: Package },
-  { name: 'dashboard.sidebar.scales',    path: '/dashboard/scales',    icon: Scale },
-  { name: 'dashboard.sidebar.sales',     path: '/dashboard/sales',     icon: ShoppingBag },
-  { name: 'dashboard.sidebar.cashiers',  path: '/dashboard/cashiers',  icon: Users },
-  { name: 'dashboard.sidebar.settings',  path: '/dashboard/settings',  icon: Settings },
+  { name: 'dashboard.sidebar.products', path: '/dashboard/products', icon: Package },
+  { name: 'dashboard.sidebar.scales', path: '/dashboard/scales', icon: Scale },
+  { name: 'dashboard.sidebar.sales', path: '/dashboard/sales', icon: ShoppingBag },
+  { name: 'dashboard.sidebar.cashiers', path: '/dashboard/cashiers', icon: Users },
 ]
 
 const isActive = (path) => route.path === path
 
 const userData = ref({
-  username: '', firstName: '', lastName: '',
-  roles: [], isActive: false,
+  username: '',
+  firstName: '',
+  lastName: '',
+  roles: [],
+  isActive: false,
 })
 
 const initials = computed(() => {
   const f = userData.value.firstName?.[0] || ''
-  const l = userData.value.lastName?.[0]  || ''
+  const l = userData.value.lastName?.[0] || ''
   return (f + l).toUpperCase() || userData.value.username?.[0]?.toUpperCase() || '?'
 })
 
@@ -51,11 +64,11 @@ const fetchProfile = async () => {
     if (res.data?.success) {
       const u = res.data.data
       userData.value = {
-        username:  u.username  || '',
+        username: u.username || '',
         firstName: u.firstName || '',
-        lastName:  u.lastName  || '',
-        roles:     u.roles     || [],
-        isActive:  !!u.isActive,
+        lastName: u.lastName || '',
+        roles: u.roles || [],
+        isActive: !!u.isActive,
       }
     }
   } catch (e) {
@@ -66,8 +79,11 @@ const fetchProfile = async () => {
 onMounted(fetchProfile)
 
 const handleLogout = async () => {
-  try { await logout() } catch (e) { console.error('Logout error:', e) }
-  finally {
+  try {
+    await logout()
+  } catch (e) {
+    console.error('Logout error:', e)
+  } finally {
     localStorage.removeItem('refreshToken')
     localStorage.removeItem('accessToken')
     localStorage.removeItem('username')
@@ -80,7 +96,6 @@ const handleLogout = async () => {
 
 <template>
   <aside class="sidebar" :class="{ open: isOpen }">
-
     <!-- ─── Logo ──────────────────────────────────── -->
     <div class="sidebar-header">
       <router-link to="/" class="logo-link">
@@ -115,20 +130,24 @@ const handleLogout = async () => {
 
     <!-- ─── Footer ────────────────────────────────── -->
     <div class="sidebar-footer">
-      <div class="user-row">
+      <router-link
+        to="/dashboard/settings"
+        class="user-row"
+        :class="{ 'user-row--active': isActive('/dashboard/settings') }"
+        @click="$emit('close')"
+      >
         <div class="user-avatar">{{ initials }}</div>
         <div class="user-info">
           <span class="user-name">{{ fullName }}</span>
           <span class="user-role">{{ userData.roles[0] || 'User' }}</span>
         </div>
-        <span class="user-status" :class="userData.isActive ? 'online' : 'offline'"></span>
-      </div>
+        <Settings :size="15" class="user-settings-icon" />
+      </router-link>
       <button class="logout-btn" @click="handleLogout">
         <LogOut :size="16" />
         <span>{{ t('nav.logout') || 'Chiqish' }}</span>
       </button>
     </div>
-
   </aside>
 </template>
 
@@ -155,8 +174,8 @@ const handleLogout = async () => {
   position: absolute;
   inset: 0;
   background-image:
-    linear-gradient(rgba(0,123,255,0.03) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(0,123,255,0.03) 1px, transparent 1px);
+    linear-gradient(rgba(0, 123, 255, 0.03) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(0, 123, 255, 0.03) 1px, transparent 1px);
   background-size: 28px 28px;
   pointer-events: none;
   z-index: 0;
@@ -248,9 +267,16 @@ const handleLogout = async () => {
   gap: 2px;
 }
 
-.sidebar-nav::-webkit-scrollbar { width: 4px; }
-.sidebar-nav::-webkit-scrollbar-track { background: transparent; }
-.sidebar-nav::-webkit-scrollbar-thumb { background: #e2e8f0; border-radius: 4px; }
+.sidebar-nav::-webkit-scrollbar {
+  width: 4px;
+}
+.sidebar-nav::-webkit-scrollbar-track {
+  background: transparent;
+}
+.sidebar-nav::-webkit-scrollbar-thumb {
+  background: #e2e8f0;
+  border-radius: 4px;
+}
 
 .nav-section-label {
   font-size: 0.68rem;
@@ -284,7 +310,7 @@ const handleLogout = async () => {
   background: rgba(0, 123, 255, 0.08);
   color: #007bff;
   font-weight: 600;
-  box-shadow: inset 0 0 0 1px rgba(0,123,255,0.15);
+  box-shadow: inset 0 0 0 1px rgba(0, 123, 255, 0.15);
 }
 
 .nav-item.active .nav-icon-wrap {
@@ -338,6 +364,30 @@ const handleLogout = async () => {
   border-radius: 10px;
   background: #f8fafc;
   border: 1px solid #e2e8f0;
+  text-decoration: none;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.user-row:hover {
+  background: #f1f5f9;
+  border-color: #cbd5e1;
+}
+
+.user-row--active {
+  background: rgba(0, 123, 255, 0.06);
+  border-color: rgba(0, 123, 255, 0.2);
+}
+
+.user-settings-icon {
+  color: #94a3b8;
+  flex-shrink: 0;
+  transition: color 0.2s;
+}
+
+.user-row:hover .user-settings-icon,
+.user-row--active .user-settings-icon {
+  color: #007bff;
 }
 
 .user-avatar {
@@ -386,8 +436,13 @@ const handleLogout = async () => {
   flex-shrink: 0;
 }
 
-.user-status.online  { background: #10b981; box-shadow: 0 0 6px rgba(16,185,129,0.6); }
-.user-status.offline { background: #475569; }
+.user-status.online {
+  background: #10b981;
+  box-shadow: 0 0 6px rgba(16, 185, 129, 0.6);
+}
+.user-status.offline {
+  background: #475569;
+}
 
 .logout-btn {
   display: flex;

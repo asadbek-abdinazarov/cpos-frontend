@@ -4,9 +4,15 @@ import { useI18n } from 'vue-i18n'
 import { useRouter } from 'vue-router'
 import { goToHomeSection } from '@/composables/useHomeSectionNav'
 import { LogIn, LayoutDashboard } from 'lucide-vue-next'
+import { enterDashboard } from '@/composables/useAppLoader'
 
 const { t, locale } = useI18n()
 const router = useRouter()
+
+const goToDashboard = () => {
+  closeMenu()
+  enterDashboard(() => router.push('/dashboard'))
+}
 
 const goSection = (id) => {
   goToHomeSection(router, id)
@@ -101,10 +107,10 @@ onUnmounted(() => {
           </a>
         </template>
         <template v-else>
-          <router-link to="/dashboard" class="btn-login-nav">
+          <button class="btn-login-nav" @click="goToDashboard">
             <LayoutDashboard :size="16" :stroke-width="2.25" />
             {{ t('nav.dashboard') }}
-          </router-link>
+          </button>
         </template>
       </div>
 
@@ -161,14 +167,10 @@ onUnmounted(() => {
               </a>
             </template>
             <template v-else>
-              <router-link
-                to="/dashboard"
-                class="btn-login-nav btn-login-nav--mobile"
-                @click="closeMenu"
-              >
+              <button class="btn-login-nav btn-login-nav--mobile" @click="goToDashboard">
                 <LayoutDashboard :size="18" :stroke-width="2.25" />
                 {{ t('nav.dashboard') }}
-              </router-link>
+              </button>
             </template>
           </div>
         </div>
