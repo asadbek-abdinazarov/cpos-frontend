@@ -3,9 +3,12 @@ import { nextTick } from 'vue'
 export function scrollToSectionId(id) {
   if (!id || typeof id !== 'string') return
   const el = document.getElementById(id)
-  if (el) {
-    el.scrollIntoView({ behavior: 'smooth', block: 'start' })
-  }
+  if (!el) return
+
+  const navbar = document.querySelector('nav')
+  const navHeight = navbar ? navbar.offsetHeight : 80
+  const top = el.getBoundingClientRect().top + window.scrollY - navHeight
+  window.scrollTo({ top, behavior: 'smooth' })
 }
 
 /**

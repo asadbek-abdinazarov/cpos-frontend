@@ -1,6 +1,6 @@
 <script setup>
 import { ref, onMounted, onUnmounted } from 'vue'
-import { Bell, HelpCircle, Menu } from 'lucide-vue-next'
+import { Bell, HelpCircle, Menu, CheckCheck, Inbox } from 'lucide-vue-next'
 import {
   getUnreadNotificationCount,
   getNotifications,
@@ -13,41 +13,30 @@ const languages = [
   { code: 'ru', name: 'Русский' },
 ]
 
-const unreadCount = ref(0)
-const notifications = ref([])
-const showNotifications = ref(false)
-const loadingNotifications = ref(false)
+const unreadCount           = ref(0)
+const notifications         = ref([])
+const showNotifications     = ref(false)
+const loadingNotifications  = ref(false)
 
 async function fetchUnreadCount() {
   try {
     const res = await getUnreadNotificationCount()
-    if (res.data?.success) {
-      unreadCount.value = res.data.data
-    }
-  } catch (err) {
-    console.error(err)
-  }
+    if (res.data?.success) unreadCount.value = res.data.data
+  } catch (err) { console.error(err) }
 }
 
 async function loadNotifications() {
   loadingNotifications.value = true
   try {
     const res = await getNotifications({ page: 0, size: 20, sort: 'id,desc' })
-    if (res.data?.success) {
-      notifications.value = res.data.data.content
-    }
-  } catch (err) {
-    console.error(err)
-  } finally {
-    loadingNotifications.value = false
-  }
+    if (res.data?.success) notifications.value = res.data.data.content
+  } catch (err) { console.error(err) }
+  finally { loadingNotifications.value = false }
 }
 
 async function toggleNotifications() {
   showNotifications.value = !showNotifications.value
-  if (showNotifications.value) {
-    await loadNotifications()
-  }
+  if (showNotifications.value) await loadNotifications()
 }
 
 async function markAsRead(notification) {
@@ -58,13 +47,11 @@ async function markAsRead(notification) {
       notification.isRead = true
       if (unreadCount.value > 0) unreadCount.value--
     }
-  } catch (err) {
-    console.error(err)
-  }
+  } catch (err) { console.error(err) }
 }
 
 function closeNotifications(e) {
-  if (showNotifications.value && !e.target.closest('.notification-wrapper')) {
+  if (showNotifications.value && !e.target.closest('.notif-wrapper')) {
     showNotifications.value = false
   }
 }
@@ -81,14 +68,19 @@ onUnmounted(() => {
 
 <template>
   <header class="dashboard-header">
-    <div class="header-left">
-      <button class="menu-btn" @click="$emit('toggle-sidebar')">
-        <Menu class="icon-md" />
+    <!-- bg grid overlay -->
+    <div class="hdr-grid"></div>
+
+    <div class="hdr-left">
+      <button class="hdr-menu-btn" @click="$emit('toggle-sidebar')" aria-label="Menu">
+        <Menu :size="20" />
       </button>
     </div>
 
-    <div class="header-actions">
-      <div class="lang-switcher">
+    <div class="hdr-right">
+
+      <!-- Language -->
+      <div class="lang-wrap">
         <select v-model="$i18n.locale" class="lang-select">
           <option v-for="lang in languages" :key="lang.code" :value="lang.code">
             {{ lang.name }}
@@ -96,327 +88,392 @@ onUnmounted(() => {
         </select>
       </div>
 
-      <div class="notification-wrapper">
-        <button class="icon-btn notification-btn" @click.stop="toggleNotifications">
-          <Bell class="icon-md" />
-          <span class="badge" v-if="unreadCount > 0">{{
-            unreadCount > 99 ? '99+' : unreadCount
-          }}</span>
+      <!-- Notifications -->
+      <div class="notif-wrapper">
+        <button class="hdr-icon-btn" :class="{ active: showNotifications }" @click.stop="toggleNotifications" aria-label="Bildirishnomalar">
+          <Bell :size="18" />
+          <span v-if="unreadCount > 0" class="notif-badge">
+            {{ unreadCount > 99 ? '99+' : unreadCount }}
+          </span>
         </button>
 
-        <div v-if="showNotifications" class="notification-dropdown shadow-lg">
-          <div class="dropdown-header">
-            <h4>Notifications</h4>
-            <span class="unread-text" v-if="unreadCount > 0">{{ unreadCount }} unread</span>
-          </div>
+        <!-- Dropdown -->
+        <Transition name="dropdown">
+          <div v-if="showNotifications" class="notif-dropdown">
+            <div class="notif-head">
+              <div class="notif-head-left">
+                <Bell :size="15" color="#007bff" />
+                <h4>Bildirishnomalar</h4>
+              </div>
+              <span v-if="unreadCount > 0" class="unread-chip">
+                {{ unreadCount }} yangi
+              </span>
+            </div>
 
-          <div class="dropdown-body">
-            <div v-if="loadingNotifications" class="p-4 text-center text-sm text-gray-500">
-              Loading...
+            <div class="notif-body">
+              <!-- Loading -->
+              <div v-if="loadingNotifications" class="notif-state">
+                <div class="notif-spinner"></div>
+                <span>Yuklanmoqda…</span>
+              </div>
+
+              <!-- Empty -->
+              <div v-else-if="notifications.length === 0" class="notif-state">
+                <Inbox :size="32" color="#cbd5e1" />
+                <span>Bildirishnomalar yo'q</span>
+              </div>
+
+              <!-- List -->
+              <ul v-else class="notif-list">
+                <li
+                  v-for="item in notifications"
+                  :key="item.id"
+                  class="notif-item"
+                  :class="{ unread: !item.isRead }"
+                  @click="markAsRead(item)"
+                >
+                  <div class="notif-icon-col">
+                    <div class="notif-icon-wrap" :class="item.isRead ? 'read' : 'unread'">
+                      <CheckCheck :size="13" />
+                    </div>
+                  </div>
+                  <div class="notif-text">
+                    <p class="notif-title">{{ item.subject }}</p>
+                    <p class="notif-body-text">{{ item.body }}</p>
+                    <p class="notif-time">{{ new Date(item.createdAt).toLocaleString('uz-UZ') }}</p>
+                  </div>
+                  <span v-if="!item.isRead" class="unread-dot"></span>
+                </li>
+              </ul>
             </div>
-            <div
-              v-else-if="notifications.length === 0"
-              class="p-4 text-center text-sm text-gray-500"
-            >
-              No notifications.
-            </div>
-            <ul v-else class="notification-list">
-              <li
-                v-for="item in notifications"
-                :key="item.id"
-                class="notification-item"
-                :class="{ unread: !item.isRead }"
-                @click="markAsRead(item)"
-              >
-                <div class="notif-content">
-                  <p class="notif-title">{{ item.subject }}</p>
-                  <p class="notif-body">{{ item.body }}</p>
-                  <p class="notif-time">{{ new Date(item.createdAt).toLocaleString('uz-UZ') }}</p>
-                </div>
-                <div v-if="!item.isRead" class="unread-dot"></div>
-              </li>
-            </ul>
           </div>
-          <!-- <div class="dropdown-footer">
-            <button class="view-all-btn">View All</button>
-          </div> -->
-        </div>
+        </Transition>
       </div>
 
-      <button class="icon-btn">
-        <HelpCircle class="icon-md" />
+      <!-- Help -->
+      <button class="hdr-icon-btn" aria-label="Yordam">
+        <HelpCircle :size="18" />
       </button>
+
     </div>
   </header>
 </template>
 
 <style scoped>
 .dashboard-header {
+  position: relative;
   height: 70px;
   flex-shrink: 0;
-  background: white;
+  background: #fff;
   border-bottom: 1px solid #e2e8f0;
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 0 2rem;
+  padding: 0 1.75rem;
   z-index: 40;
+  overflow: visible;
 }
 
-.header-left {
+/* Subtle bg grid */
+.hdr-grid {
+  position: absolute;
+  inset: 0;
+  background-image:
+    linear-gradient(rgba(0,123,255,0.025) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(0,123,255,0.025) 1px, transparent 1px);
+  background-size: 28px 28px;
+  pointer-events: none;
+  z-index: 0;
+}
+
+.hdr-left,
+.hdr-right {
+  position: relative;
+  z-index: 1;
   display: flex;
   align-items: center;
-  gap: 1rem;
+  gap: 0.5rem;
 }
 
-.menu-btn {
+/* Hamburger */
+.hdr-menu-btn {
   display: none;
   background: transparent;
-  border: none;
+  border: 1.5px solid #e2e8f0;
   cursor: pointer;
   padding: 0.5rem;
   color: #64748b;
-  border-radius: 8px;
-  min-width: 44px;
-  min-height: 44px;
+  border-radius: 10px;
+  min-width: 40px;
+  min-height: 40px;
   align-items: center;
   justify-content: center;
+  transition: all 0.2s;
 }
 
-.menu-btn:hover {
-  background-color: #f1f5f9;
-  color: #0f172a;
+.hdr-menu-btn:hover {
+  background: #f8fafc;
+  border-color: #007bff;
+  color: #007bff;
 }
 
-.search-bar {
+/* Language */
+.lang-wrap {
   display: flex;
   align-items: center;
-  background: #f1f5f9;
-  border-radius: 8px;
-  padding: 0.5rem 1rem;
-  width: 300px;
-  gap: 0.75rem;
-}
-
-.search-icon {
-  width: 18px;
-  height: 18px;
-  color: #94a3b8;
-}
-
-.search-bar input {
-  background: transparent;
-  border: none;
-  outline: none;
-  width: 100%;
-  font-size: 0.95rem;
-  color: #0f172a;
-}
-
-.header-actions {
-  display: flex;
-  align-items: center;
-  gap: 1rem;
-}
-
-.icon-btn {
-  background: transparent;
-  border: none;
-  cursor: pointer;
-  padding: 0.6rem;
-  border-radius: 50%;
-  transition: background 0.2s;
-  position: relative;
-  color: #64748b;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  min-width: 44px;
-  min-height: 44px;
-}
-
-.icon-btn:hover {
-  background-color: #f1f5f9;
-  color: #0f172a;
-}
-
-.icon-md {
-  width: 22px;
-  height: 22px;
 }
 
 .lang-select {
-  padding: 0.5rem;
-  border-radius: 8px;
-  border: 1px solid #e2e8f0;
-  background-color: transparent;
+  padding: 0.45rem 0.65rem;
+  border-radius: 9px;
+  border: 1.5px solid #e2e8f0;
+  background: transparent;
   font-family: inherit;
-  font-size: 0.9rem;
+  font-size: 0.85rem;
+  font-weight: 500;
   color: #475569;
   cursor: pointer;
   outline: none;
+  transition: border-color 0.2s;
 }
 
-.lang-select:focus {
-  border-color: var(--color-primary);
+.lang-select:focus,
+.lang-select:hover {
+  border-color: #007bff;
+  color: #007bff;
 }
 
-.badge {
-  position: absolute;
-  top: 2px;
-  right: 2px;
-  background: #ef4444;
-  color: white;
-  font-size: 0.7rem;
-  padding: 2px 5px;
+/* Icon buttons */
+.hdr-icon-btn {
+  position: relative;
+  background: transparent;
+  border: 1.5px solid #e2e8f0;
+  cursor: pointer;
+  width: 40px;
+  height: 40px;
   border-radius: 10px;
-  border: 2px solid white;
-  min-width: 16px;
+  color: #64748b;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s;
+}
+
+.hdr-icon-btn:hover {
+  background: #f8fafc;
+  border-color: #007bff;
+  color: #007bff;
+}
+
+.hdr-icon-btn.active {
+  background: rgba(0,123,255,0.07);
+  border-color: rgba(0,123,255,0.3);
+  color: #007bff;
+}
+
+/* Notification badge */
+.notif-badge {
+  position: absolute;
+  top: -5px;
+  right: -5px;
+  background: linear-gradient(135deg, #ef4444, #f97316);
+  color: #fff;
+  font-size: 0.62rem;
+  font-weight: 700;
+  padding: 2px 5px;
+  border-radius: 100px;
+  border: 2px solid #fff;
+  min-width: 18px;
   text-align: center;
+  line-height: 1.2;
 }
 
-@media (max-width: 1024px) {
-  .menu-btn {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-  }
-}
-
-@media (max-width: 768px) {
-  .search-bar {
-    display: none; /* Hide search on mobile for cleaner look, or reduce width */
-  }
-
-  .dashboard-header {
-    padding: 0 1rem;
-  }
-
-  .notification-dropdown {
-    width: min(340px, calc(100vw - 2rem));
-    max-width: calc(100vw - 2rem);
-  }
-}
-
-.notification-wrapper {
+/* ─── Notification dropdown ──────────────────────── */
+.notif-wrapper {
   position: relative;
 }
 
-.notification-dropdown {
+.notif-dropdown {
   position: absolute;
-  top: 100%;
+  top: calc(100% + 10px);
   right: 0;
-  margin-top: 0.5rem;
   width: 340px;
-  background: white;
-  border-radius: 12px;
+  background: #fff;
+  border-radius: 16px;
   border: 1px solid #e2e8f0;
   box-shadow:
-    0 10px 15px -3px rgba(0, 0, 0, 0.1),
-    0 4px 6px -2px rgba(0, 0, 0, 0.05);
-  z-index: 50;
+    0 4px 6px -1px rgba(0,0,0,0.07),
+    0 20px 40px -8px rgba(0,0,0,0.12);
+  z-index: 100;
   overflow: hidden;
 }
 
-.dropdown-header {
-  padding: 1rem;
-  border-bottom: 1px solid #e2e8f0;
+.notif-head {
   display: flex;
   justify-content: space-between;
   align-items: center;
+  padding: 1rem 1.1rem;
+  border-bottom: 1px solid #f1f5f9;
+  background: #f8fafc;
 }
 
-.dropdown-header h4 {
+.notif-head-left {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+}
+
+.notif-head h4 {
   margin: 0;
-  font-size: 1rem;
-  font-weight: 600;
+  font-size: 0.9rem;
+  font-weight: 700;
   color: #0f172a;
 }
 
-.unread-text {
-  font-size: 0.75rem;
-  color: #2563eb;
+.unread-chip {
+  font-size: 0.7rem;
   font-weight: 600;
-  background: #eff6ff;
-  padding: 0.2rem 0.6rem;
-  border-radius: 999px;
+  color: #007bff;
+  background: rgba(0,123,255,0.08);
+  border: 1px solid rgba(0,123,255,0.18);
+  padding: 2px 9px;
+  border-radius: 100px;
 }
 
-.dropdown-body {
+.notif-body {
   max-height: 360px;
   overflow-y: auto;
 }
 
-.notification-list {
+.notif-body::-webkit-scrollbar { width: 4px; }
+.notif-body::-webkit-scrollbar-track { background: transparent; }
+.notif-body::-webkit-scrollbar-thumb { background: #e2e8f0; border-radius: 4px; }
+
+/* Empty / loading state */
+.notif-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.6rem;
+  padding: 2.5rem 1rem;
+  color: #94a3b8;
+  font-size: 0.85rem;
+}
+
+.notif-spinner {
+  width: 22px;
+  height: 22px;
+  border: 2.5px solid #e2e8f0;
+  border-top-color: #007bff;
+  border-radius: 50%;
+  animation: spin 0.7s linear infinite;
+}
+
+@keyframes spin { to { transform: rotate(360deg); } }
+
+/* Notification list */
+.notif-list {
   list-style: none;
   margin: 0;
   padding: 0;
 }
 
-.notification-item {
-  padding: 1rem;
-  border-bottom: 1px solid #f1f5f9;
+.notif-item {
   display: flex;
-  justify-content: space-between;
   align-items: flex-start;
-  gap: 1rem;
+  gap: 0.75rem;
+  padding: 0.9rem 1.1rem;
+  border-bottom: 1px solid #f8fafc;
   cursor: pointer;
-  transition: background 0.2s;
+  transition: background 0.15s;
+  position: relative;
 }
 
-.notification-item:hover {
-  background: #f8fafc;
+.notif-item:last-child { border-bottom: none; }
+.notif-item:hover { background: #f8fafc; }
+.notif-item.unread { background: rgba(0,123,255,0.03); }
+.notif-item.unread:hover { background: rgba(0,123,255,0.06); }
+
+.notif-icon-col { flex-shrink: 0; margin-top: 2px; }
+
+.notif-icon-wrap {
+  width: 28px;
+  height: 28px;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
-.notification-item.unread {
-  background: #f0f9ff;
-}
-.notification-item.unread:hover {
-  background: #e0f2fe;
-}
+.notif-icon-wrap.unread { background: rgba(0,123,255,0.1); color: #007bff; }
+.notif-icon-wrap.read   { background: #f1f5f9; color: #94a3b8; }
 
-.notif-content {
-  flex: 1;
-}
+.notif-text { flex: 1; min-width: 0; }
 
 .notif-title {
-  margin: 0 0 0.25rem 0;
-  font-size: 0.85rem;
+  margin: 0 0 3px;
+  font-size: 0.83rem;
   font-weight: 600;
   color: #0f172a;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
-.notif-body {
-  margin: 0 0 0.4rem 0;
-  font-size: 0.8rem;
-  color: #475569;
-  line-height: 1.4;
+.notif-body-text {
+  margin: 0 0 4px;
+  font-size: 0.78rem;
+  color: #64748b;
+  line-height: 1.45;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
 }
 
 .notif-time {
   margin: 0;
-  font-size: 0.7rem;
+  font-size: 0.68rem;
   color: #94a3b8;
 }
 
 .unread-dot {
-  width: 8px;
-  height: 8px;
+  width: 7px;
+  height: 7px;
   border-radius: 50%;
-  background: #3b82f6;
-  margin-top: 0.25rem;
+  background: #007bff;
+  flex-shrink: 0;
+  margin-top: 5px;
 }
 
-.p-4 {
-  padding: 1rem;
+/* Dropdown transition */
+.dropdown-enter-active,
+.dropdown-leave-active {
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
 }
-.text-center {
-  text-align: center;
+
+.dropdown-enter-from,
+.dropdown-leave-to {
+  opacity: 0;
+  transform: translateY(-6px) scale(0.98);
 }
-.text-sm {
-  font-size: 0.875rem;
+
+/* ─── Responsive ─────────────────────────────────── */
+@media (max-width: 1024px) {
+  .hdr-menu-btn {
+    display: flex;
+  }
 }
-.text-gray-500 {
-  color: #6b7280;
+
+@media (max-width: 640px) {
+  .dashboard-header {
+    padding: 0 1rem;
+  }
+
+  .notif-dropdown {
+    width: min(320px, calc(100vw - 1.5rem));
+    right: -0.5rem;
+  }
 }
 </style>

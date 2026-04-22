@@ -47,11 +47,11 @@ function buildLocaleAxiosConfig(extra = {}) {
   const lang = getApiLocaleTag()
   return {
     ...extra,
-    params: { lang, ...(extra.params || {}) },
+    params: { lang, ...extra.params },
     headers: {
       'Accept-Language': lang,
       'X-Locale': lang,
-      ...(extra.headers || {}),
+      ...extra.headers,
     },
   }
 }
@@ -65,7 +65,7 @@ api.interceptors.request.use((config) => {
   if (config.headers['X-Locale'] == null) {
     config.headers['X-Locale'] = lang
   }
-  config.params = { ...(config.params || {}) }
+  config.params = { ...config.params }
   if (config.params.lang == null) {
     config.params.lang = lang
   }
@@ -190,9 +190,9 @@ api.interceptors.response.use(
 function forceLogout() {
   showNotification({ type: 'error', message: t('auth.session_expired') })
 
-  axios.post(`${API_BASE_URL}web/auth/logout`, {}, buildLocaleAxiosConfig({ withCredentials: true })).catch(
-    () => {},
-  )
+  axios
+    .post(`${API_BASE_URL}web/auth/logout`, {}, buildLocaleAxiosConfig({ withCredentials: true }))
+    .catch(() => {})
 
   localStorage.removeItem('refreshToken')
   localStorage.removeItem('accessToken')

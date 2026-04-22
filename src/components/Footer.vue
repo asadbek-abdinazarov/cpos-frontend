@@ -14,31 +14,29 @@ const goSection = (id) => {
 
 <template>
   <footer class="footer">
-    <div class="container">
+    <div class="footer-top-line"></div>
+    <div class="footer-container">
       <div class="footer-grid">
-        <!-- Column 1: Brand -->
+        <!-- Brand col -->
         <div class="footer-col brand-col">
-          <div class="brand-wrapper">
-            <router-link to="/" class="footer-logo-link">
-              <img src="/logo-footer.svg" alt="CPOS Logo" class="footer-logo" />
-            </router-link>
-          </div>
-          <p class="footer-desc">
-            {{ t('footer.desc') }}
-          </p>
+          <router-link to="/" class="footer-logo-link">
+            <img src="/logo-footer.svg" alt="CPOS Logo" class="footer-logo" />
+          </router-link>
+          <p class="footer-desc">{{ t('footer.desc') }}</p>
           <div class="social-links">
-            <button type="button" class="social-link" aria-label="Facebook">
-              <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2.04c-5.5 0-10 4.49-10 10.02c0 5 3.66 9.15 8.44 9.9v-7H7.9v-2.9h2.54V9.85c0-2.51 1.49-3.89 3.78-3.89c1.09 0 2.23.19 2.23.19v2.47h-1.26c-1.24 0-1.63.77-1.63 1.56v1.88h2.78l-.45 2.9h-2.33v7a10 10 0 0 0 8.44-9.9c0-5.53-4.5-10.02-10-10.02Z"/></svg>
+            <button type="button" class="social-btn" aria-label="Facebook">
+              <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2.04c-5.5 0-10 4.49-10 10.02c0 5 3.66 9.15 8.44 9.9v-7H7.9v-2.9h2.54V9.85c0-2.51 1.49-3.89 3.78-3.89c1.09 0 2.23.19 2.23.19v2.47h-1.26c-1.24 0-1.63.77-1.63 1.56v1.88h2.78l-.45 2.9h-2.33v7a10 10 0 0 0 8.44-9.9c0-5.53-4.5-10.02-10-10.02Z"/></svg>
             </button>
-            <button type="button" class="social-link" aria-label="Instagram">
-              <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="currentColor"><path d="M7.8 2h8.4C19.4 2 22 4.6 22 7.8v8.4a5.8 5.8 0 0 1-5.8 5.8H7.8C4.6 22 2 19.4 2 16.2V7.8A5.8 5.8 0 0 1 7.8 2m-.2 2A3.6 3.6 0 0 0 4 7.6v8.8C4 18.39 5.61 20 7.6 20h8.8a3.6 3.6 0 0 0 3.6-3.6V7.6C20 5.61 18.39 4 16.4 4H7.6m9.65 1.5a1.25 1.25 0 0 1 1.25 1.25A1.25 1.25 0 0 1 17.25 8A1.25 1.25 0 0 1 16 6.75a1.25 1.25 0 0 1 1.25-1.25M12 7a5 5 0 0 1 5 5a5 5 0 0 1-5 5a5 5 0 0 1-5-5a5 5 0 0 1 5-5m0 2a3 3 0 0 0-3 3a3 3 0 0 0 3 3a3 3 0 0 0 3-3a3 3 0 0 0-3-3Z"/></svg>
+            <button type="button" class="social-btn" aria-label="Instagram">
+              <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M7.8 2h8.4C19.4 2 22 4.6 22 7.8v8.4a5.8 5.8 0 0 1-5.8 5.8H7.8C4.6 22 2 19.4 2 16.2V7.8A5.8 5.8 0 0 1 7.8 2m-.2 2A3.6 3.6 0 0 0 4 7.6v8.8C4 18.39 5.61 20 7.6 20h8.8a3.6 3.6 0 0 0 3.6-3.6V7.6C20 5.61 18.39 4 16.4 4H7.6m9.65 1.5a1.25 1.25 0 0 1 1.25 1.25A1.25 1.25 0 0 1 17.25 8A1.25 1.25 0 0 1 16 6.75a1.25 1.25 0 0 1 1.25-1.25M12 7a5 5 0 0 1 5 5a5 5 0 0 1-5 5a5 5 0 0 1-5-5a5 5 0 0 1 5-5m0 2a3 3 0 0 0-3 3a3 3 0 0 0 3 3a3 3 0 0 0 3-3a3 3 0 0 0-3-3Z"/></svg>
             </button>
-            <button type="button" class="social-link" aria-label="Website">
-              <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2a10 10 0 0 1 10 10a10 10 0 0 1-10 10A10 10 0 0 1 2 12A10 10 0 0 1 12 2M4.07 13H1v-2h3.07c.1 0 .1.1.2.2q-1.2 5.05-1.2 9c0 .1.1.2.2.2c3.4 0 6.6-1.5 8.7-3.9h-1.6c-.6 1.4-1.3 2.7-2.1 3.8c-.8-1.5-1.5-3.3-2-5.3m2.2-5.7c.3-1.6.8-3.1 1.4-4.5c.8 1.1 1.4 2.4 1.9 3.8h1.6c-2.1-2.4-5.3-3.9-8.7-3.9c-.1 0-.2.1-.2.2c0 3.95.4 7.9 1.2 9l-.2.1H1v-2h3.07c-.1-.7-.1-1.3-.1-2s0-1.4.1-2.1v-.2l-.2-.3m5.8 4.7H8.8c.2 2 .7 3.9 1.5 5.7c.8-1.8 1.3-3.7 1.5-5.7l.2-.1v.1m0-2H8.8c-.2-2-.7-3.9-1.5-5.7c-.8 1.8-1.3 3.7-1.5 5.7l-.2.1v-.1m10.9-2.7c.1.7.1 1.3.1 2s0 1.4-.1 2.1l.1.3h3.1v-2h-3.1c-.1 0-.1-.1-.2-.2q1.2-5.05 1.2-9c0-.1-.1-.2-.2-.2c-3.4 0-6.6 1.5-8.7 3.9h1.6c.6-1.4 1.3-2.7 2.1-3.8c.8 1.5 1.5 3.3 2 5.3l-.1.6m-2.2 5.7c-.3 1.6-.8 3.1-1.4 4.5c-.8-1.1-1.4-2.4-1.9-3.8h-1.6c2.1 2.4 5.3 3.9 8.7 3.9c.1 0 .2-.1.2-.2c0-3.95-.4-7.9-1.2-9l.2-.1H23v2h-3.07l-.2.2v.3Z"/></svg>
+            <button type="button" class="social-btn" aria-label="Website">
+              <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
             </button>
           </div>
         </div>
 
+        <!-- Product col -->
         <div class="footer-col">
           <h4 class="col-title">{{ t('footer.product') }}</h4>
           <ul class="footer-links">
@@ -48,6 +46,7 @@ const goSection = (id) => {
           </ul>
         </div>
 
+        <!-- Company col -->
         <div class="footer-col">
           <h4 class="col-title">{{ t('footer.company') }}</h4>
           <ul class="footer-links">
@@ -56,31 +55,31 @@ const goSection = (id) => {
           </ul>
         </div>
 
-        <!-- Column 4: Contact -->
+        <!-- Contact col -->
         <div class="footer-col">
-          <h4 class="col-title">Contact</h4>
+          <h4 class="col-title">{{ t('footer.contact') }}</h4>
           <ul class="contact-list">
             <li>
-              <span class="icon"><Mail class="icon-sm" /></span>
+              <span class="contact-icon"><Mail :size="14" :stroke-width="2" /></span>
               <a href="mailto:hello@cpos.uz">hello@cpos.uz</a>
             </li>
             <li>
-              <span class="icon"><Phone class="icon-sm" /></span>
+              <span class="contact-icon"><Phone :size="14" :stroke-width="2" /></span>
               <a href="tel:+998712000000">+998 71 200 00 00</a>
             </li>
             <li>
-              <span class="icon"><MapPin class="icon-sm" /></span>
+              <span class="contact-icon"><MapPin :size="14" :stroke-width="2" /></span>
               <span>Tashkent, Uzbekistan</span>
             </li>
           </ul>
         </div>
       </div>
-      
+
       <div class="footer-bottom">
-        <p class="copyright">&copy; 2023 CPOS. {{ t('footer.rights') }}</p>
+        <p class="copyright">&copy; {{ new Date().getFullYear() }} CPOS. {{ t('footer.rights') }}</p>
         <div class="legal-links">
-          <button type="button" class="legal-link">{{ t('footer.privacy') }}</button>
-          <button type="button" class="legal-link">{{ t('footer.terms') }}</button>
+          <button type="button" class="legal-btn">{{ t('footer.privacy') }}</button>
+          <button type="button" class="legal-btn">{{ t('footer.terms') }}</button>
         </div>
       </div>
     </div>
@@ -89,13 +88,23 @@ const goSection = (id) => {
 
 <style scoped>
 .footer {
-  background-color: #0F172A; /* Dark Slate Blue */
-  color: #94A3B8; /* Slate Gray */
-  padding: 5rem 0 2rem;
-  font-size: 0.95rem;
+  background: #0A0F1E;
+  color: #94A3B8;
+  padding-top: 5rem;
+  font-size: 0.9rem;
+  position: relative;
 }
 
-.container {
+.footer-top-line {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(0, 123, 255, 0.5), rgba(99, 102, 241, 0.4), transparent);
+}
+
+.footer-container {
   max-width: 1200px;
   margin: 0 auto;
   padding: 0 2rem;
@@ -105,102 +114,120 @@ const goSection = (id) => {
   display: grid;
   grid-template-columns: 2fr 1fr 1fr 1.5fr;
   gap: 3rem;
-  margin-bottom: 4rem;
+  padding-bottom: 4rem;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
 }
 
-/* Brand Column */
-.brand-wrapper {
+/* Brand */
+.brand-col {
   display: flex;
-  align-items: center;
-  gap: 0.75rem;
-  margin-bottom: 1.5rem;
+  flex-direction: column;
+  gap: 1.25rem;
 }
 
 .footer-logo-link {
   display: inline-flex;
-  text-decoration: none;
 }
 
 .footer-logo {
-  height: 70px;
+  height: 60px;
   width: auto;
-  display: block;
 }
 
 .footer-desc {
-  line-height: 1.6;
-  margin-bottom: 2rem;
-  max-width: 300px;
+  color: #64748B;
+  line-height: 1.65;
+  max-width: 280px;
+  font-size: 0.875rem;
 }
 
 .social-links {
   display: flex;
-  gap: 1rem;
+  gap: 0.5rem;
 }
 
-.social-link {
-  color: #94A3B8;
-  transition: color 0.3s ease;
-}
-
-button.social-link {
-  background: none;
-  border: none;
-  padding: 0;
-  cursor: pointer;
-  font: inherit;
-  display: inline-flex;
+.social-btn {
+  width: 36px;
+  height: 36px;
+  border-radius: 9px;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  color: #64748B;
+  display: flex;
   align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s ease;
 }
 
-.social-link:hover {
-  color: var(--color-primary);
+.social-btn:hover {
+  background: rgba(0, 123, 255, 0.15);
+  border-color: rgba(0, 123, 255, 0.3);
+  color: #60A5FA;
 }
 
-/* Columns General */
+/* Columns */
 .col-title {
-  color: #FFFFFF;
-  font-size: 1rem;
-  font-weight: 600;
-  margin-bottom: 1.5rem;
+  color: #E2E8F0;
+  font-size: 0.875rem;
+  font-weight: 700;
+  margin-bottom: 1.25rem;
+  letter-spacing: 0.02em;
 }
 
-.footer-links, .contact-list {
-  list-style: none;
+.footer-links {
   display: flex;
   flex-direction: column;
-  gap: 1rem;
+  gap: 0.85rem;
 }
 
-.footer-links a, .contact-list a {
-  color: #94A3B8;
-  transition: color 0.3s ease;
+.footer-links a {
+  color: #64748B;
   text-decoration: none;
+  font-size: 0.875rem;
+  transition: color 0.2s;
 }
 
-.footer-links a:hover, .contact-list a:hover {
-  color: var(--color-primary);
+.footer-links a:hover { color: #94A3B8; }
+
+.contact-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.9rem;
 }
 
 .contact-list li {
   display: flex;
   align-items: center;
   gap: 0.75rem;
+  font-size: 0.875rem;
 }
 
-.contact-list .icon {
-  font-size: 1rem;
-  color: #007BFF; /* Primary Blue for Icons */
+.contact-icon {
+  color: #3B82F6;
+  flex-shrink: 0;
 }
 
-/* Footer Bottom */
+.contact-list a {
+  color: #64748B;
+  text-decoration: none;
+  transition: color 0.2s;
+}
+
+.contact-list a:hover { color: #94A3B8; }
+
+.contact-list span {
+  color: #64748B;
+}
+
+/* Footer bottom */
 .footer-bottom {
-  border-top: 1px solid rgba(255, 255, 255, 0.1);
-  padding-top: 2rem;
+  padding: 1.75rem 0;
   display: flex;
   justify-content: space-between;
   align-items: center;
-  font-size: 0.85rem;
+  font-size: 0.82rem;
+  color: #475569;
 }
 
 .legal-links {
@@ -208,46 +235,26 @@ button.social-link {
   gap: 1.5rem;
 }
 
-.legal-link {
+.legal-btn {
   background: none;
   border: none;
   padding: 0;
   cursor: pointer;
   font: inherit;
   font-size: inherit;
-  color: #94a3b8;
-  transition: color 0.3s ease;
+  color: #475569;
+  transition: color 0.2s;
 }
 
-.legal-link:hover {
-  color: #ffffff;
-}
+.legal-btn:hover { color: #94A3B8; }
 
-/* Responsive Design */
 @media (max-width: 900px) {
-  .footer {
-    padding: 4rem 0 2rem;
-  }
-
-  .footer-grid {
-    grid-template-columns: 1fr 1fr;
-    gap: 2rem;
-  }
+  .footer-grid { grid-template-columns: 1fr 1fr; gap: 2.5rem; }
 }
 
-@media (max-width: 600px) {
-  .footer-grid {
-    grid-template-columns: 1fr;
-  }
-  
-  .footer-bottom {
-    flex-direction: column;
-    gap: 1rem;
-    text-align: center;
-  }
-  
-  .brand-wrapper {
-    justify-content: center; /* Center on mobile if desired, or keep left */
-  }
+@media (max-width: 540px) {
+  .footer-grid { grid-template-columns: 1fr; }
+  .footer-bottom { flex-direction: column; gap: 1rem; text-align: center; }
+  .footer { padding-top: 4rem; }
 }
 </style>

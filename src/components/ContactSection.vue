@@ -1,81 +1,107 @@
 <template>
   <section class="contact-section" id="contact">
-    <div class="container">
-      <div class="contact-wrapper">
-        <div class="contact-info">
+    <div class="section-container">
+      <div class="contact-card">
+        <!-- Left info panel -->
+        <div class="info-panel">
+          <span class="section-tag">Aloqa</span>
           <h2 class="contact-title">{{ t('contact.title') }}</h2>
-          <p>{{ t('contact.subtitle') }}</p>
-          
+          <p class="contact-sub">{{ t('contact.subtitle') }}</p>
+
           <div class="info-items">
             <div class="info-item">
-              <span class="icon"><MapPin /></span>
-              <p>Tashkent, Uzbekistan</p>
+              <div class="info-icon">
+                <MapPin :size="18" :stroke-width="2" />
+              </div>
+              <div>
+                <div class="info-label">Manzil</div>
+                <div class="info-value">Tashkent, Uzbekistan</div>
+              </div>
             </div>
             <div class="info-item">
-              <span class="icon"><Phone /></span>
-              <p>+998 90 123 45 67</p>
+              <div class="info-icon">
+                <Phone :size="18" :stroke-width="2" />
+              </div>
+              <div>
+                <div class="info-label">Telefon</div>
+                <a href="tel:+998901234567" class="info-value info-link">+998 90 123 45 67</a>
+              </div>
             </div>
             <div class="info-item">
-              <span class="icon"><Mail /></span>
-              <p>info@cpos.uz</p>
+              <div class="info-icon">
+                <Mail :size="18" :stroke-width="2" />
+              </div>
+              <div>
+                <div class="info-label">Email</div>
+                <a href="mailto:info@cpos.uz" class="info-value info-link">info@cpos.uz</a>
+              </div>
             </div>
+          </div>
+
+          <!-- Decorative element -->
+          <div class="info-deco">
+            <div class="deco-ring ring-1"></div>
+            <div class="deco-ring ring-2"></div>
+            <div class="deco-ring ring-3"></div>
           </div>
         </div>
 
-        <div class="contact-form">
-          <form @submit.prevent="handleSubmit">
+        <!-- Right form panel -->
+        <div class="form-panel">
+          <form @submit.prevent="handleSubmit" class="contact-form">
             <div class="form-group">
-              <label>{{ t('contact.form.name') }}</label>
-              <input type="text" v-model="form.name" required :placeholder="t('contact.form.placeholder_name')" />
+              <label class="form-label">{{ t('contact.form.name') }}</label>
+              <input
+                type="text"
+                v-model="form.name"
+                required
+                class="form-input"
+                :placeholder="t('contact.form.placeholder_name')"
+              />
             </div>
+
             <div class="form-group">
-              <div class="contact-field-head">
-                <span class="contact-main-label">{{ t('contact.form.email_or_phone') }}</span>
-                <div
-                  class="mode-toggle"
-                  role="group"
-                  :aria-label="t('contact.form.email_or_phone')"
-                >
+              <div class="field-head">
+                <span class="form-label">{{ t('contact.form.email_or_phone') }}</span>
+                <div class="mode-toggle" role="group">
                   <button
                     type="button"
-                    class="mode-btn"
-                    :class="{ active: contactMode === 'phone' }"
+                    :class="['mode-btn', { active: contactMode === 'phone' }]"
                     @click="contactMode = 'phone'"
-                  >
-                    {{ t('contact.form.mode_phone') }}
-                  </button>
+                  >{{ t('contact.form.mode_phone') }}</button>
                   <button
                     type="button"
-                    class="mode-btn"
-                    :class="{ active: contactMode === 'email' }"
+                    :class="['mode-btn', { active: contactMode === 'email' }]"
                     @click="contactMode = 'email'"
-                  >
-                    {{ t('contact.form.mode_email') }}
-                  </button>
+                  >{{ t('contact.form.mode_email') }}</button>
                 </div>
               </div>
               <input
-                id="contact-email-or-phone"
                 :type="contactMode === 'email' ? 'email' : 'tel'"
                 v-model="form.emailOrPhone"
                 required
+                class="form-input"
                 :autocomplete="contactMode === 'email' ? 'email' : 'tel'"
-                :aria-label="
-                  contactMode === 'email' ? t('contact.form.email') : t('contact.form.phone')
-                "
-                :placeholder="
-                  contactMode === 'email'
-                    ? t('contact.form.placeholder_email')
-                    : t('contact.form.placeholder_phone')
-                "
+                :placeholder="contactMode === 'email' ? t('contact.form.placeholder_email') : t('contact.form.placeholder_phone')"
               />
             </div>
+
             <div class="form-group">
-              <label>{{ t('contact.form.message') }}</label>
-              <textarea v-model="form.message" rows="2" :placeholder="t('contact.form.placeholder_message')"></textarea>
+              <label class="form-label">{{ t('contact.form.message') }}</label>
+              <textarea
+                v-model="form.message"
+                rows="3"
+                class="form-input form-textarea"
+                :placeholder="t('contact.form.placeholder_message')"
+              ></textarea>
             </div>
+
             <button type="submit" class="btn-submit" :disabled="isSubmitting">
-              {{ isSubmitting ? `${t('contact.form.submit')}...` : t('contact.form.submit') }}
+              <span v-if="!isSubmitting">{{ t('contact.form.submit') }}</span>
+              <span v-else class="loading-text">
+                <span class="spinner"></span>
+                Yuborilmoqda...
+              </span>
             </button>
           </form>
         </div>
@@ -99,7 +125,6 @@ const isSubmitting = ref(false)
 
 const handleSubmit = async () => {
   if (isSubmitting.value) return
-
   isSubmitting.value = true
   try {
     const payload = {
@@ -108,14 +133,12 @@ const handleSubmit = async () => {
       message: form.value.message,
     }
     const { data } = await sendPublicContactRequest(payload)
-
     const successMessage = data?.data || data?.message || t('contact.form.success')
     showNotification({ type: 'success', message: successMessage })
     form.value = { name: '', emailOrPhone: '', message: '' }
   } catch (error) {
     const resData = error?.response?.data
     const validationErrors = resData?.errors
-
     if (validationErrors && typeof validationErrors === 'object') {
       Object.values(validationErrors).forEach((msg) => {
         if (msg) showNotification({ type: 'error', message: String(msg) })
@@ -134,35 +157,80 @@ const handleSubmit = async () => {
 
 <style scoped>
 .contact-section {
-  padding: 6rem 0;
-  background-color: #0F172A;
-  color: white;
+  padding: 7rem 0;
+  background: #0F172A;
+  position: relative;
+  overflow: hidden;
 }
 
-.contact-wrapper {
-  display: flex;
-  gap: 4rem;
-  align-items: center;
-  max-width: 1000px;
+.contact-section::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background-image:
+    linear-gradient(rgba(0, 123, 255, 0.04) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(0, 123, 255, 0.04) 1px, transparent 1px);
+  background-size: 40px 40px;
+}
+
+.section-container {
+  max-width: 1200px;
   margin: 0 auto;
+  padding: 0 2rem;
+  position: relative;
+  z-index: 1;
 }
 
-.contact-info {
-  flex: 1;
+.contact-card {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  border-radius: 24px;
+  overflow: hidden;
+  box-shadow: 0 32px 80px rgba(0, 0, 0, 0.35);
 }
 
-.contact-info h2 {
-  font-size: 2.5rem;
+/* Info panel */
+.info-panel {
+  background: linear-gradient(155deg, #1E3A5F 0%, #0F172A 100%);
+  border: 1px solid rgba(255, 255, 255, 0.07);
+  border-right: none;
+  border-radius: 24px 0 0 24px;
+  padding: 3.5rem;
+  position: relative;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+.section-tag {
+  display: inline-block;
+  background: rgba(0, 123, 255, 0.15);
+  border: 1px solid rgba(0, 123, 255, 0.25);
+  color: #60A5FA;
+  font-size: 0.78rem;
   font-weight: 700;
-  margin-bottom: 1rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  padding: 5px 14px;
+  border-radius: 100px;
+  margin-bottom: 1.5rem;
+  width: fit-content;
 }
+
 .contact-title {
-  color: white;
+  font-size: clamp(1.8rem, 3vw, 2.5rem);
+  font-weight: 800;
+  color: #fff;
+  margin-bottom: 1rem;
+  letter-spacing: -0.02em;
+  line-height: 1.15;
 }
-.contact-info p {
+
+.contact-sub {
+  font-size: 1rem;
   color: #94A3B8;
-  margin-bottom: 2rem;
-  line-height: 1.6;
+  line-height: 1.7;
+  margin-bottom: 2.5rem;
 }
 
 .info-items {
@@ -173,111 +241,170 @@ const handleSubmit = async () => {
 
 .info-item {
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   gap: 1rem;
 }
 
-.icon {
-  font-size: 1.5rem;
+.info-icon {
+  width: 40px;
+  height: 40px;
+  border-radius: 10px;
+  background: rgba(0, 123, 255, 0.12);
+  border: 1px solid rgba(0, 123, 255, 0.2);
+  color: #60A5FA;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.info-label {
+  font-size: 0.72rem;
+  color: #64748B;
+  font-weight: 500;
+  margin-bottom: 3px;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.info-value {
+  font-size: 0.95rem;
+  color: #CBD5E1;
+  font-weight: 500;
+}
+
+.info-link {
+  color: #CBD5E1;
+  text-decoration: none;
+  transition: color 0.2s;
+}
+
+.info-link:hover { color: #60A5FA; }
+
+/* Decorative rings */
+.info-deco {
+  position: absolute;
+  bottom: -60px;
+  right: -60px;
+  pointer-events: none;
+}
+
+.deco-ring {
+  position: absolute;
+  border-radius: 50%;
+  border: 1px solid rgba(0, 123, 255, 0.1);
+  bottom: 0;
+  right: 0;
+}
+
+.ring-1 { width: 160px; height: 160px; bottom: 0; right: 0; }
+.ring-2 { width: 240px; height: 240px; bottom: -40px; right: -40px; }
+.ring-3 { width: 320px; height: 320px; bottom: -80px; right: -80px; }
+
+/* Form panel */
+.form-panel {
+  background: #fff;
+  border-radius: 0 24px 24px 0;
+  padding: 3.5rem;
 }
 
 .contact-form {
-  flex: 1;
-  background: white;
-  padding: 2.5rem;
-  border-radius: 16px;
-  color: #0F172A;
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+  height: 100%;
 }
 
 .form-group {
-  font-family: var(--font-family-base);
-  margin-bottom: 1.5rem;
-}
-
-.form-group label {
-  display: block;
-  font-weight: 500;
-  margin-bottom: 0.5rem;
-  font-size: 0.9rem;
-}
-
-.contact-field-head {
   display: flex;
-  flex-wrap: wrap;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.form-label {
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: #374151;
+}
+
+.field-head {
+  display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 0.75rem;
-  margin-bottom: 0.5rem;
-}
-
-.contact-main-label {
-  font-weight: 500;
-  font-size: 0.9rem;
-  color: #0f172a;
+  flex-wrap: wrap;
 }
 
 .mode-toggle {
   display: inline-flex;
-  padding: 3px;
-  background: #f1f5f9;
-  border-radius: 999px;
-  border: 1px solid #e2e8f0;
+  padding: 2px;
+  background: #F1F5F9;
+  border-radius: 100px;
+  border: 1px solid #E2E8F0;
 }
 
 .mode-btn {
-  padding: 0.35rem 0.85rem;
-  font-size: 0.8rem;
+  padding: 0.3rem 0.8rem;
+  font-size: 0.75rem;
   font-weight: 600;
   border: none;
-  border-radius: 999px;
+  border-radius: 100px;
   background: transparent;
-  color: #64748b;
+  color: #64748B;
   cursor: pointer;
-  transition:
-    background-color 0.2s,
-    color 0.2s;
-}
-
-.mode-btn:hover {
-  color: #0f172a;
+  transition: all 0.2s;
 }
 
 .mode-btn.active {
   background: #fff;
-  color: #007bff;
-  box-shadow: 0 1px 2px rgba(15, 23, 42, 0.08);
+  color: #007BFF;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.08);
 }
 
-.form-group input,
-.form-group textarea {
+.form-input {
   width: 100%;
-  padding: 0.75rem;
-  border: 1px solid #E2E8F0;
-  border-radius: 8px;
-  font-size: 1rem;
+  padding: 0.75rem 1rem;
+  border: 1.5px solid #E2E8F0;
+  border-radius: 10px;
+  font-size: 0.95rem;
+  font-family: inherit;
   outline: none;
-  transition: border-color 0.2s;
+  transition: border-color 0.2s, box-shadow 0.2s;
+  color: #0F172A;
+  background: #FAFAFA;
 }
 
-.form-group input:focus,
-.form-group textarea:focus {
+.form-input::placeholder { color: #CBD5E1; }
+
+.form-input:focus {
   border-color: #007BFF;
+  box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.08);
+  background: #fff;
+}
+
+.form-textarea {
+  resize: none;
+  min-height: 90px;
 }
 
 .btn-submit {
   width: 100%;
-  background-color: #007BFF;
-  color: white;
-  padding: 1rem;
+  padding: 0.9rem;
   border: none;
-  border-radius: 8px;
-  font-weight: 600;
+  border-radius: 12px;
+  background: linear-gradient(135deg, #007BFF, #6366F1);
+  color: #fff;
+  font-size: 1rem;
+  font-weight: 700;
   cursor: pointer;
-  transition: background-color 0.2s;
+  transition: all 0.25s ease;
+  box-shadow: 0 4px 16px rgba(0, 123, 255, 0.3);
+  margin-top: auto;
 }
 
-.btn-submit:hover {
-  background-color: #0056b3;
+.btn-submit:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 24px rgba(0, 123, 255, 0.4);
 }
 
 .btn-submit:disabled {
@@ -285,18 +412,36 @@ const handleSubmit = async () => {
   cursor: not-allowed;
 }
 
-@media (max-width: 768px) {
-  .contact-section {
-    padding: 4rem 0;
-  }
-  
-  .contact-wrapper {
-    flex-direction: column;
-    gap: 3rem;
-  }
+.loading-text {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
 }
 
-.info-items p {
-  margin-bottom: 0;
+.spinner {
+  width: 16px;
+  height: 16px;
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  border-top-color: #fff;
+  border-radius: 50%;
+  animation: spin 0.7s linear infinite;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+@media (max-width: 860px) {
+  .contact-card {
+    grid-template-columns: 1fr;
+  }
+
+  .info-panel { border-radius: 24px 24px 0 0; border-right: 1px solid rgba(255, 255, 255, 0.07); border-bottom: none; }
+  .form-panel { border-radius: 0 0 24px 24px; }
+}
+
+@media (max-width: 520px) {
+  .contact-section { padding: 5rem 0; }
+  .info-panel, .form-panel { padding: 2.5rem 1.75rem; }
 }
 </style>

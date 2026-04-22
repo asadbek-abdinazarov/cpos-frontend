@@ -1,26 +1,31 @@
 <template>
   <section class="faq-section">
-    <div class="container">
-      <div class="section-header">
+    <div class="section-container">
+      <div class="section-head" data-aos="fade-up">
+        <span class="section-tag">FAQ</span>
         <h2 class="section-title">{{ t('faq.title') }}</h2>
-        <p class="section-subtitle">{{ t('faq.subtitle') }}</p>
+        <p class="section-sub">{{ t('faq.subtitle') }}</p>
       </div>
 
-      <div class="faq-grid">
-        <div 
-          class="faq-item" 
-          v-for="(item, index) in faqList" 
+      <div class="faq-list" data-aos="fade-up" data-aos-delay="80">
+        <div
+          class="faq-item"
+          v-for="(item, index) in faqList"
           :key="index"
+          :class="{ active: activeIndex === index }"
           @click="toggleFaq(index)"
-          :class="{ 'active': activeIndex === index }"
         >
           <div class="faq-question">
-            <h3>{{ item.question }}</h3>
-            <span class="toggle-icon">
-              <component :is="activeIndex === index ? ChevronUp : ChevronDown" />
+            <span class="q-num">{{ String(index + 1).padStart(2, '0') }}</span>
+            <h3 class="q-text">{{ item.question }}</h3>
+            <span class="q-icon">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                <polyline v-if="activeIndex === index" points="18 15 12 9 6 15"/>
+                <polyline v-else points="6 9 12 15 18 9"/>
+              </svg>
             </span>
           </div>
-          <div class="faq-answer-wrapper" :class="{ 'is-open': activeIndex === index }">
+          <div class="faq-answer-wrap" :class="{ open: activeIndex === index }">
             <div class="faq-answer">
               <p>{{ item.answer }}</p>
             </div>
@@ -34,10 +39,9 @@
 <script setup>
 import { ref, computed } from 'vue'
 import { useI18n } from 'vue-i18n'
-import { ChevronDown, ChevronUp } from 'lucide-vue-next'
 
 const { t } = useI18n()
-const activeIndex = ref(null)
+const activeIndex = ref(0)
 
 const toggleFaq = (index) => {
   activeIndex.value = activeIndex.value === index ? null : index
@@ -53,81 +57,124 @@ const faqList = computed(() => [
 
 <style scoped>
 .faq-section {
-  padding: 6rem 0;
-  background-color: #F8FAFC;
+  padding: 7rem 0;
+  background: #fff;
 }
 
-.section-header {
+.section-container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 2rem;
+}
+
+.section-head {
   text-align: center;
   margin-bottom: 4rem;
 }
 
-.section-title {
-  font-size: 2.5rem;
+.section-tag {
+  display: inline-block;
+  background: rgba(245, 158, 11, 0.08);
+  border: 1px solid rgba(245, 158, 11, 0.18);
+  color: #D97706;
+  font-size: 0.78rem;
   font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  padding: 5px 14px;
+  border-radius: 100px;
+  margin-bottom: 1.25rem;
+}
+
+.section-title {
+  font-size: clamp(2rem, 3.5vw, 2.75rem);
+  font-weight: 800;
   color: #0F172A;
   margin-bottom: 1rem;
+  letter-spacing: -0.02em;
 }
 
-.section-subtitle {
+.section-sub {
   font-size: 1.1rem;
   color: #64748B;
-  max-width: 600px;
+  max-width: 560px;
   margin: 0 auto;
+  line-height: 1.7;
 }
 
-.faq-grid {
-  max-width: 800px;
+/* FAQ list */
+.faq-list {
+  max-width: 760px;
   margin: 0 auto;
   display: flex;
   flex-direction: column;
-  gap: 1rem;
+  gap: 0;
 }
 
 .faq-item {
-  background: white;
-  border-radius: 12px;
-  padding: 1.5rem 2rem;
+  border-bottom: 1px solid #F1F5F9;
   cursor: pointer;
-  border: 1px solid #E2E8F0;
-  transition: all 0.3s ease;
+  transition: all 0.2s ease;
 }
 
-.faq-item:hover {
-  border-color: #007BFF;
-}
-
-.faq-item.active {
-  border-color: #007BFF;
-  box-shadow: 0 4px 6px -1px rgba(0, 123, 255, 0.1);
+.faq-item:first-child {
+  border-top: 1px solid #F1F5F9;
 }
 
 .faq-question {
   display: flex;
-  justify-content: space-between;
   align-items: center;
+  gap: 1rem;
+  padding: 1.5rem 0;
+  user-select: none;
 }
 
-.faq-question h3 {
-  font-size: 1.1rem;
-  font-weight: 600;
-  color: #0F172A;
-  margin: 0;
+.q-num {
+  font-size: 0.72rem;
+  font-weight: 700;
+  color: #CBD5E1;
+  letter-spacing: 0.05em;
+  flex-shrink: 0;
+  font-variant-numeric: tabular-nums;
+  width: 24px;
 }
 
-.toggle-icon {
-  font-size: 1.5rem;
+.faq-item.active .q-num {
   color: #007BFF;
-  font-weight: 300;
 }
 
-.faq-answer-wrapper {
+.q-text {
+  flex: 1;
+  font-size: 1.05rem;
+  font-weight: 600;
+  color: #1E293B;
+  margin: 0;
+  line-height: 1.4;
+  transition: color 0.2s;
+}
+
+.faq-item.active .q-text {
+  color: #007BFF;
+}
+
+.q-icon {
+  color: #94A3B8;
+  flex-shrink: 0;
+  transition: color 0.2s;
+}
+
+.faq-item.active .q-icon {
+  color: #007BFF;
+}
+
+/* Answer */
+.faq-answer-wrap {
   display: grid;
   grid-template-rows: 0fr;
-  transition: grid-template-rows 0.3s ease-out;
+  transition: grid-template-rows 0.3s ease;
 }
 
-.faq-answer-wrapper.is-open {
+.faq-answer-wrap.open {
   grid-template-rows: 1fr;
 }
 
@@ -136,24 +183,17 @@ const faqList = computed(() => [
 }
 
 .faq-answer p {
-  margin-top: 1rem;
+  padding: 0 0 1.5rem 2.5rem;
   color: #64748B;
-  line-height: 1.6;
-  border-top: 1px solid #F1F5F9;
-  padding-top: 1rem;
+  font-size: 0.95rem;
+  line-height: 1.7;
+  margin: 0;
 }
 
-@media (max-width: 768px) {
-  .faq-section {
-    padding: 4rem 0;
-  }
-  
-  .faq-item {
-    padding: 1rem;
-  }
-  
-  .question-text {
-    font-size: 1rem;
-  }
+@media (max-width: 640px) {
+  .faq-section { padding: 5rem 0; }
+  .q-text { font-size: 0.95rem; }
+  .faq-answer p { padding-left: 0; }
+  .q-num { display: none; }
 }
 </style>

@@ -250,8 +250,12 @@ export function useAnalyticsCharts() {
     if (catRes.status === 'rejected') console.error('Failed to load category sales', catRes.reason)
   }
 
-  watch(dateRange, () => {
-    fetchStatistics()
+  watch(dateRange, (val) => {
+    const isComplete = Array.isArray(val) && val.length === 2 && val[0] && val[1]
+    const isCleared = !val || (Array.isArray(val) && val.length === 0)
+    if (isComplete || isCleared) {
+      fetchStatistics()
+    }
   })
 
   onMounted(() => {

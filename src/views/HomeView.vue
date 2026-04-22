@@ -25,7 +25,7 @@ function scrollFromQueryIfPresent() {
     setTimeout(() => {
       scrollToSectionId(section)
       router.replace({ path: '/', query: {} })
-    }, 80)
+    }, 200)
   })
 }
 

@@ -20,7 +20,7 @@ const plans = computed(() => [
   {
     name: t('pricing.plans.starter.name'),
     desc: t('pricing.plans.starter.desc'),
-    price: isAnnual.value ? '150k' : '180k', 
+    price: isAnnual.value ? '150k' : '180k',
     features: [
       t('pricing.plans.starter.features[0]'),
       t('pricing.plans.starter.features[1]'),
@@ -48,7 +48,7 @@ const plans = computed(() => [
     name: t('pricing.plans.enterprise.name'),
     desc: t('pricing.plans.enterprise.desc'),
     price: t('pricing.plans.enterprise.price'),
-    priceUnit: '', // No /mo for custom
+    priceUnit: '',
     features: [
       t('pricing.plans.enterprise.features[0]'),
       t('pricing.plans.enterprise.features[1]'),
@@ -64,55 +64,56 @@ const plans = computed(() => [
 
 <template>
   <section id="pricing" class="pricing-section">
-    <div class="container">
-      <div class="section-header">
+    <div class="section-container">
+      <div class="section-head" data-aos="fade-up">
+        <span class="section-tag">Narxlar</span>
         <h2 class="section-title">{{ t('pricing.title') }}</h2>
-        
+
         <div class="billing-toggle">
-          <span :class="{ 'active': !isAnnual }" @click="isAnnual = false">{{ t('pricing.monthly') }}</span>
-          <div class="toggle-switch" @click="toggleBilling" :class="{ 'on': isAnnual }">
-            <div class="toggle-track"></div>
+          <span :class="['toggle-label', { active: !isAnnual }]" @click="isAnnual = false">{{ t('pricing.monthly') }}</span>
+          <div class="toggle-switch" :class="{ on: isAnnual }" @click="toggleBilling">
             <div class="toggle-thumb"></div>
           </div>
-          <span :class="{ 'active': isAnnual }" @click="isAnnual = true">
-            {{ t('pricing.annual') }} <span class="discount-badge">({{ t('pricing.save') }})</span>
+          <span :class="['toggle-label', { active: isAnnual }]" @click="isAnnual = true">
+            {{ t('pricing.annual') }}
+            <span class="save-badge">{{ t('pricing.save') }}</span>
           </span>
         </div>
       </div>
 
-      <div class="pricing-grid">
-        <div 
-          v-for="(plan, index) in plans" 
-          :key="index" 
-          :class="['pricing-card', { 'featured': plan.isPopular }]"
+      <div class="pricing-grid" data-aos="fade-up" data-aos-delay="100">
+        <div
+          v-for="(plan, index) in plans"
+          :key="index"
+          :class="['pricing-card', { featured: plan.isPopular }]"
         >
           <div v-if="plan.isPopular" class="popular-badge">{{ t('pricing.popular') }}</div>
-          
-          <div class="card-content">
+
+          <div class="card-body">
             <h3 class="plan-name">{{ plan.name }}</h3>
             <p class="plan-desc">{{ plan.desc }}</p>
-            
+
             <div class="plan-price">
-              <span class="amount">{{ plan.price }}</span>
-              <span v-if="plan.price !== 'Custom'" class="unit"> UZS/mo</span>
+              <span class="price-amount">{{ plan.price }}</span>
+              <span v-if="plan.price !== 'Kelishilgan'" class="price-unit">UZS / oy</span>
             </div>
-            
+
             <ul class="plan-features">
-              <li v-for="(feature, fIndex) in plan.features" :key="fIndex">
-                <Check class="check-icon" />
-                {{ feature }}
+              <li v-for="(feat, fi) in plan.features" :key="fi">
+                <span class="check-wrap">
+                  <Check :size="13" :stroke-width="3" />
+                </span>
+                {{ feat }}
               </li>
             </ul>
           </div>
 
-          <div class="card-footer">
+          <div class="card-foot">
             <a
               href="/"
-              :class="['btn-action', plan.variant === 'primary' ? 'btn-primary' : 'btn-default']"
+              :class="['btn-plan', plan.variant === 'primary' ? 'btn-plan--primary' : 'btn-plan--default']"
               @click.prevent="goContact"
-            >
-              {{ plan.buttonText }}
-            </a>
+            >{{ plan.buttonText }}</a>
           </div>
         </div>
       </div>
@@ -122,283 +123,298 @@ const plans = computed(() => [
 
 <style scoped>
 .pricing-section {
-  padding: 6rem 0;
-  background-color: #F8FAFC; /* Light background as per image/context */
-  font-family: 'Poppins', sans-serif;
+  padding: 7rem 0;
+  background: #F8FAFC;
 }
 
-.container {
+.section-container {
   max-width: 1200px;
   margin: 0 auto;
   padding: 0 2rem;
 }
 
-.section-header {
+.section-head {
   text-align: center;
   margin-bottom: 4rem;
 }
 
-.section-title {
-  font-size: 2.5rem;
+.section-tag {
+  display: inline-block;
+  background: rgba(16, 185, 129, 0.08);
+  border: 1px solid rgba(16, 185, 129, 0.15);
+  color: #10B981;
+  font-size: 0.78rem;
   font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  padding: 5px 14px;
+  border-radius: 100px;
+  margin-bottom: 1.25rem;
+}
+
+.section-title {
+  font-size: clamp(2rem, 3.5vw, 2.75rem);
+  font-weight: 800;
   color: #0F172A;
+  letter-spacing: -0.02em;
   margin-bottom: 2rem;
 }
 
-/* Billing Toggle */
+/* Billing toggle */
 .billing-toggle {
-  display: flex;
+  display: inline-flex;
   align-items: center;
-  justify-content: center;
-  gap: 1rem;
-  font-weight: 500;
-  color: #64748B;
+  gap: 0.75rem;
+  background: #fff;
+  border: 1px solid #E2E8F0;
+  border-radius: 100px;
+  padding: 6px 16px;
   cursor: pointer;
   user-select: none;
 }
 
-.billing-toggle span.active {
+.toggle-label {
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: #94A3B8;
+  cursor: pointer;
+  transition: color 0.2s;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.toggle-label.active {
   color: #0F172A;
   font-weight: 600;
 }
 
+.save-badge {
+  font-size: 0.7rem;
+  font-weight: 700;
+  background: rgba(16, 185, 129, 0.1);
+  color: #10B981;
+  padding: 2px 7px;
+  border-radius: 100px;
+}
+
 .toggle-switch {
+  width: 40px;
+  height: 22px;
+  background: #E2E8F0;
+  border-radius: 100px;
   position: relative;
-  width: 50px;
-  height: 28px;
-  background-color: #E2E8F0;
-  border-radius: 20px;
   cursor: pointer;
-  transition: background-color 0.3s ease;
+  transition: background 0.3s;
+  flex-shrink: 0;
 }
 
 .toggle-switch.on {
-  background-color: #007BFF;
+  background: #007BFF;
 }
 
 .toggle-thumb {
   position: absolute;
-  top: 4px;
-  left: 4px;
-  width: 20px;
-  height: 20px;
-  background-color: white;
+  top: 3px;
+  left: 3px;
+  width: 16px;
+  height: 16px;
+  background: #fff;
   border-radius: 50%;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.15);
   transition: transform 0.3s ease;
-  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
 }
 
 .toggle-switch.on .toggle-thumb {
-  transform: translateX(22px);
+  transform: translateX(18px);
 }
 
-.discount-badge {
-  color: #10B981; /* Green */
-  font-size: 0.9rem;
-  margin-left: 0.25rem;
-}
-
-/* Pricing Grid */
+/* Grid */
 .pricing-grid {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
-  gap: 2rem;
-  align-items: center; /* Align cards vertically center if needed, or stretch */
-  max-width: 1100px;
+  gap: 1.5rem;
+  align-items: stretch;
+  max-width: 1060px;
   margin: 0 auto;
 }
 
 .pricing-card {
-  background: white;
-  border-radius: 20px;
-  padding: 2.5rem;
-  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
+  background: #fff;
+  border: 1px solid #E2E8F0;
+  border-radius: 24px;
+  padding: 2.25rem;
   position: relative;
-  transition: transform 0.3s ease, box-shadow 0.3s ease;
-  border: 1px solid transparent;
   display: flex;
   flex-direction: column;
-  height: 100%;
+  transition: all 0.3s ease;
 }
 
 .pricing-card:hover {
-  transform: translateY(-5px);
-  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+  transform: translateY(-6px);
+  box-shadow: 0 24px 48px rgba(0, 0, 0, 0.08);
 }
 
-/* Featured Card Styling */
 .pricing-card.featured {
-  background-color: #0056D2; /* Specific Dark Blue from image */
-  color: white;
-  transform: scale(1.05);
-  box-shadow: 0 25px 50px -12px rgba(0, 86, 210, 0.25);
-  z-index: 10;
-  border: none;
+  background: linear-gradient(155deg, #0F172A 0%, #1E3A5F 100%);
+  border-color: transparent;
+  box-shadow: 0 24px 56px rgba(0, 86, 179, 0.22);
+  transform: scale(1.04);
 }
 
 .pricing-card.featured:hover {
-  transform: scale(1.05) translateY(-5px);
+  transform: scale(1.04) translateY(-6px);
+  box-shadow: 0 32px 64px rgba(0, 86, 179, 0.3);
 }
 
 .popular-badge {
   position: absolute;
-  top: 0;
-  right: 2rem;
-  background-color: #14B8A6; /* Teal/Cyan */
-  color: white;
-  padding: 0.25rem 0.75rem;
-  border-bottom-left-radius: 8px;
-  border-bottom-right-radius: 8px;
-  font-size: 0.75rem;
+  top: -1px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: linear-gradient(135deg, #007BFF, #6366F1);
+  color: #fff;
+  font-size: 0.7rem;
   font-weight: 700;
+  letter-spacing: 0.06em;
   text-transform: uppercase;
-  letter-spacing: 0.5px;
+  padding: 5px 16px;
+  border-radius: 0 0 10px 10px;
 }
 
-/* Card Content */
-.card-content {
+.card-body {
   flex: 1;
 }
 
 .plan-name {
-  font-size: 1.5rem;
+  font-size: 1.35rem;
   font-weight: 700;
+  color: #0F172A;
   margin-bottom: 0.5rem;
-  color: inherit;
 }
+
+.pricing-card.featured .plan-name { color: #fff; }
 
 .plan-desc {
-  font-size: 0.95rem;
+  font-size: 0.875rem;
   color: #64748B;
   margin-bottom: 2rem;
-  min-height: 3rem; /* Align prices */
+  min-height: 2.8rem;
+  line-height: 1.5;
 }
 
-.pricing-card.featured .plan-desc {
-  color: #BFDBFE; /* Light Blue text */
-}
+.pricing-card.featured .plan-desc { color: #94A3B8; }
 
 .plan-price {
-  font-size: 2.5rem;
-  font-weight: 800;
-  margin-bottom: 2rem;
-  color: inherit;
   display: flex;
   align-items: baseline;
+  gap: 6px;
+  margin-bottom: 2rem;
 }
 
-.unit {
-  font-size: 1rem;
+.price-amount {
+  font-size: 2.4rem;
+  font-weight: 800;
+  color: #0F172A;
+  letter-spacing: -0.03em;
+  line-height: 1;
+}
+
+.pricing-card.featured .price-amount { color: #fff; }
+
+.price-unit {
+  font-size: 0.85rem;
+  color: #94A3B8;
   font-weight: 500;
-  color: #64748B;
-  margin-left: 0.25rem;
-}
-
-.pricing-card.featured .unit {
-  color: #DBEAFE;
 }
 
 .plan-features {
   list-style: none;
-  padding: 0;
-  margin: 0;
   display: flex;
   flex-direction: column;
-  gap: 1rem;
+  gap: 0.9rem;
 }
 
 .plan-features li {
   display: flex;
   align-items: center;
   gap: 0.75rem;
-  font-size: 0.95rem;
+  font-size: 0.9rem;
   color: #475569;
 }
 
-.pricing-card.featured .plan-features li {
-  color: #E2E8F0;
+.pricing-card.featured .plan-features li { color: #CBD5E1; }
+
+.check-wrap {
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: rgba(16, 185, 129, 0.1);
+  color: #10B981;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
 }
 
-.check-icon {
-  color: #10B981; /* Green check */
-  font-weight: bold;
+.pricing-card.featured .check-wrap {
+  background: rgba(96, 165, 250, 0.15);
+  color: #60A5FA;
 }
 
-.pricing-card.featured .check-icon {
-  color: #34D399; /* Lighter green check on blue */
+.card-foot {
+  margin-top: 2.5rem;
 }
 
-/* Footer & Buttons */
-.card-footer {
-  margin-top: 3rem;
-}
-
-.btn-action {
+.btn-plan {
+  display: block;
   width: 100%;
-  padding: 1rem;
+  padding: 0.9rem;
   border-radius: 12px;
   font-weight: 700;
-  font-size: 1rem;
-  cursor: pointer;
-  transition: all 0.3s ease;
+  font-size: 0.95rem;
   text-align: center;
-  border: none;
-  display: block;
   text-decoration: none;
-  box-sizing: border-box;
+  transition: all 0.25s ease;
+  cursor: pointer;
 }
 
-.btn-default {
-  background-color: #F1F5F9;
+.btn-plan--default {
+  background: #F1F5F9;
   color: #0F172A;
 }
 
-.btn-default:hover {
-  background-color: #E2E8F0;
+.btn-plan--default:hover {
+  background: #E2E8F0;
+  transform: translateY(-1px);
 }
 
-.btn-primary {
-  background-color: white;
-  color: #0056D2; /* Text color matches card bg */
+.btn-plan--primary {
+  background: linear-gradient(135deg, #007BFF, #6366F1);
+  color: #fff;
+  box-shadow: 0 4px 16px rgba(0, 123, 255, 0.35);
 }
 
-.btn-primary:hover {
-  background-color: #F8FAFC;
+.btn-plan--primary:hover {
+  box-shadow: 0 8px 24px rgba(0, 123, 255, 0.45);
   transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
 }
 
-/* Responsive */
 @media (max-width: 900px) {
-  .pricing-section {
-    padding: 4rem 0;
-  }
-
-  .pricing-grid {
-    grid-template-columns: repeat(2, 1fr);
-  }
-  
-  .pricing-card.featured {
-     transform: scale(1);
-     grid-column: span 2; /* Make featured take full width or adjust */
-  }
-  
-  .pricing-card.featured:hover {
-     transform: translateY(-5px);
-  }
-}
-
-@media (max-width: 650px) {
   .pricing-grid {
     grid-template-columns: 1fr;
+    max-width: 440px;
   }
-  
+
   .pricing-card.featured {
-     grid-column: span 1;
+    transform: none;
+    order: -1;
   }
-  
-  .section-title {
-    font-size: 2rem;
-  }
+
+  .pricing-card.featured:hover { transform: translateY(-6px); }
+}
+
+@media (max-width: 520px) {
+  .pricing-section { padding: 5rem 0; }
 }
 </style>
