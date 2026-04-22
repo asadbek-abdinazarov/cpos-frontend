@@ -1,4 +1,5 @@
 <script setup>
+import { CheckCircle, XCircle, Info, X } from 'lucide-vue-next'
 import { useNotification } from '@/composables/useNotification'
 
 const { notification, closeNotification } = useNotification()
@@ -9,16 +10,18 @@ const { notification, closeNotification } = useNotification()
     <Transition name="notification">
       <div
         v-if="notification && notification.visible"
-        class="notification-wrapper"
+        class="notif-wrapper"
       >
-        <div :class="['notification', `notification--${notification.type}`]">
-          <span class="notification-icon">
-            <template v-if="notification.type === 'success'">✓</template>
-            <template v-else-if="notification.type === 'error'">✕</template>
-            <template v-else>ℹ</template>
-          </span>
-          <span class="notification-message">{{ notification.message }}</span>
-          <button class="notification-close" @click="closeNotification">×</button>
+        <div :class="['notif', `notif--${notification.type}`]">
+          <div class="notif-icon-wrap">
+            <CheckCircle v-if="notification.type === 'success'" :size="18" />
+            <XCircle    v-else-if="notification.type === 'error'"   :size="18" />
+            <Info       v-else                                        :size="18" />
+          </div>
+          <span class="notif-message">{{ notification.message }}</span>
+          <button class="notif-close" @click="closeNotification">
+            <X :size="14" />
+          </button>
         </div>
       </div>
     </Transition>
@@ -26,110 +29,122 @@ const { notification, closeNotification } = useNotification()
 </template>
 
 <style scoped>
-.notification-wrapper {
+.notif-wrapper {
   position: fixed;
-  top: max(env(safe-area-inset-top, 0px), 24px);
+  top: max(env(safe-area-inset-top, 0px), 20px);
   left: 50%;
   transform: translateX(-50%);
   z-index: 10000;
   pointer-events: none;
 }
 
-.notification {
+.notif {
   pointer-events: auto;
   display: flex;
   align-items: center;
-  gap: 12px;
-  padding: 14px 18px;
-  border-radius: 10px;
-  min-width: 300px;
-  max-width: min(500px, calc(100vw - 32px));
+  gap: 10px;
+  padding: 12px 14px 12px 12px;
+  border-radius: 14px;
+  min-width: 280px;
+  max-width: min(480px, calc(100vw - 32px));
   background: #ffffff;
   border: 1px solid #e2e8f0;
-  border-left-width: 4px;
   box-shadow:
-    0 1px 3px rgba(15, 23, 42, 0.06),
-    0 8px 24px rgba(15, 23, 42, 0.08);
-  font-size: 0.9375rem;
+    0 2px 8px rgba(15, 23, 42, 0.06),
+    0 12px 32px rgba(15, 23, 42, 0.10);
+  font-family: var(--font-family-base, 'Poppins', sans-serif);
+  font-size: 0.875rem;
   font-weight: 500;
+  color: #0f172a;
   line-height: 1.45;
 }
 
-.notification--success {
-  border-left-color: #10b981;
-  color: #065f46;
-}
-
-.notification--error {
-  border-left-color: #ef4444;
-  color: #991b1b;
-}
-
-.notification--info {
-  border-left-color: var(--color-primary);
-  color: #1e3a5f;
-}
-
-.notification-icon {
+/* ─── Icon wrap ─────────────────────── */
+.notif-icon-wrap {
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 28px;
-  height: 28px;
-  border-radius: 50%;
-  font-size: 0.85rem;
-  font-weight: 700;
+  width: 32px;
+  height: 32px;
+  border-radius: 10px;
   flex-shrink: 0;
 }
 
-.notification--success .notification-icon {
-  background-color: #10b981;
-  color: white;
+.notif--success .notif-icon-wrap {
+  background: rgba(16, 185, 129, 0.1);
+  color: #059669;
 }
 
-.notification--error .notification-icon {
-  background-color: #ef4444;
-  color: white;
+.notif--error .notif-icon-wrap {
+  background: rgba(239, 68, 68, 0.1);
+  color: #dc2626;
 }
 
-.notification--info .notification-icon {
-  background-color: #3b82f6;
-  color: white;
+.notif--info .notif-icon-wrap {
+  background: rgba(0, 123, 255, 0.1);
+  color: #007bff;
 }
 
-.notification-message {
+/* ─── Top accent line ───────────────── */
+.notif::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 14px;
+  right: 14px;
+  height: 2px;
+  border-radius: 0 0 2px 2px;
+}
+
+.notif {
+  position: relative;
+  overflow: hidden;
+}
+
+.notif--success::before { background: linear-gradient(90deg, #10b981, #34d399); }
+.notif--error::before   { background: linear-gradient(90deg, #ef4444, #f87171); }
+.notif--info::before    { background: linear-gradient(90deg, #007bff, #6366f1); }
+
+/* ─── Message ───────────────────────── */
+.notif-message {
   flex: 1;
 }
 
-.notification-close {
+/* ─── Close button ──────────────────── */
+.notif-close {
+  display: flex;
+  align-items: center;
+  justify-content: center;
   background: none;
   border: none;
-  font-size: 1.3rem;
+  width: 24px;
+  height: 24px;
+  border-radius: 6px;
   cursor: pointer;
-  opacity: 0.5;
-  transition: opacity 0.2s;
-  padding: 0 4px;
-  line-height: 1;
-  color: inherit;
+  color: #94a3b8;
+  transition: background 0.15s, color 0.15s;
+  flex-shrink: 0;
+  padding: 0;
 }
 
-.notification-close:hover {
-  opacity: 1;
+.notif-close:hover {
+  background: #f1f5f9;
+  color: #475569;
 }
 
-/* Slide down from top animation */
+/* ─── Animation ─────────────────────── */
 .notification-enter-active {
-  animation: slideDown 0.35s cubic-bezier(0.21, 1.02, 0.73, 1);
+  animation: notifIn 0.32s cubic-bezier(0.21, 1.02, 0.73, 1);
 }
 
 .notification-leave-active {
-  animation: slideUp 0.3s cubic-bezier(0.55, 0.09, 0.68, 0.53);
+  animation: notifOut 0.25s cubic-bezier(0.55, 0.09, 0.68, 0.53);
 }
 
-@keyframes slideDown {
+@keyframes notifIn {
   from {
     opacity: 0;
-    transform: translate(-50%, -40px) scale(0.95);
+    transform: translate(-50%, -32px) scale(0.94);
   }
   to {
     opacity: 1;
@@ -137,14 +152,14 @@ const { notification, closeNotification } = useNotification()
   }
 }
 
-@keyframes slideUp {
+@keyframes notifOut {
   from {
     opacity: 1;
     transform: translate(-50%, 0) scale(1);
   }
   to {
     opacity: 0;
-    transform: translate(-50%, -40px) scale(0.95);
+    transform: translate(-50%, -24px) scale(0.96);
   }
 }
 </style>

@@ -17,24 +17,20 @@ import {
 
 const sales = ref([])
 const loading = ref(false)
-
-// Pagination & Search
 const currentPage = ref(1)
 const itemsPerPage = ref(10)
 const totalElements = ref(0)
 const totalPages = ref(1)
 const searchQuery = ref('')
+const expandedRows = ref([])
 
 const onSearchSubmit = () => {
   currentPage.value = 1
   fetchSales()
 }
 
-watch(searchQuery, (newVal) => {
-  if (newVal === '') {
-    currentPage.value = 1
-    fetchSales()
-  }
+watch(searchQuery, (val) => {
+  if (val === '') { currentPage.value = 1; fetchSales() }
 })
 
 const fetchSales = async () => {
@@ -43,19 +39,15 @@ const fetchSales = async () => {
     const params = {
       page: currentPage.value - 1,
       size: itemsPerPage.value,
-      sort: 'status', // requested default sort behavior
+      sort: 'status',
     }
-
-    if (searchQuery.value) {
-      params.value = searchQuery.value
-    }
+    if (searchQuery.value) params.value = searchQuery.value
 
     const res = await getSalesHistories(params)
-    if (res.data && res.data.success) {
+    if (res.data?.success) {
       sales.value = res.data.data.content
       totalPages.value = res.data.data.page.totalPages === 0 ? 1 : res.data.data.page.totalPages
       totalElements.value = res.data.data.page.totalElements
-      // Reset expansions when new data comes in
       expandedRows.value = []
     }
   } catch (error) {
@@ -65,793 +57,717 @@ const fetchSales = async () => {
   }
 }
 
-onMounted(() => {
-  fetchSales()
-})
-
 const prevPage = () => {
-  if (currentPage.value > 1) {
-    currentPage.value--
-    fetchSales()
-  }
+  if (currentPage.value > 1) { currentPage.value--; fetchSales() }
 }
-
 const nextPage = () => {
-  if (currentPage.value < totalPages.value) {
-    currentPage.value++
-    fetchSales()
-  }
+  if (currentPage.value < totalPages.value) { currentPage.value++; fetchSales() }
 }
-
-// Expand/Collapse Logic
-const expandedRows = ref([])
 
 const toggleRow = (uuid) => {
-  const index = expandedRows.value.indexOf(uuid)
-  if (index > -1) {
-    expandedRows.value.splice(index, 1)
-  } else {
-    expandedRows.value.push(uuid)
-  }
+  const i = expandedRows.value.indexOf(uuid)
+  if (i > -1) expandedRows.value.splice(i, 1)
+  else expandedRows.value.push(uuid)
 }
+const isExpanded = (uuid) => expandedRows.value.includes(uuid)
 
-const isExpanded = (uuid) => {
-  return expandedRows.value.includes(uuid)
+const formatDate = (str) => {
+  if (!str) return '—'
+  return new Date(str).toLocaleString('uz-UZ')
 }
+const formatCurrency = (amount) =>
+  (amount || 0).toLocaleString('uz-UZ') + ' UZS'
 
-// Helpers
-const formatDate = (dateString) => {
-  if (!dateString) return '—'
-  const d = new Date(dateString)
-  return d.toLocaleString('uz-UZ') // Or your preferred format
-}
+const shortUuid = (uuid) => uuid?.split('-')[0] ?? '—'
 
-const formatCurrency = (amount) => {
-  return (amount || 0).toLocaleString('uz-UZ') + ' UZS'
-}
+onMounted(fetchSales)
 </script>
 
 <template>
-  <div class="sales-page">
-    <!-- Header -->
-    <div class="page-header">
-      <div>
-        <h1 class="page-title">{{ $t('dashboard.sales.title') }}</h1>
-        <p class="text-subtitle">{{ $t('dashboard.sales.subtitle') }}</p>
+  <div class="sl-page">
+
+    <!-- ─── Hero ───────────────────────────────────── -->
+    <div class="sl-hero">
+      <div class="sl-hero-grid"></div>
+      <div class="sl-orb sl-orb-1"></div>
+      <div class="sl-orb sl-orb-2"></div>
+      <div class="sl-hero-body">
+        <div class="sl-hero-left">
+          <div class="sl-badge">
+            <ShoppingBag :size="11" />
+            {{ $t('dashboard.sales.title') }}
+          </div>
+          <h1 class="sl-title">{{ $t('dashboard.sales.title') }}</h1>
+          <p class="sl-subtitle">{{ $t('dashboard.sales.subtitle') }}</p>
+        </div>
       </div>
     </div>
 
-    <!-- Toolbar -->
-    <div class="toolbar-card">
-      <form @submit.prevent="onSearchSubmit" class="search-form">
-        <div class="search-box">
-          <Search class="search-icon" />
+    <!-- ─── Toolbar ─────────────────────────────────── -->
+    <div class="sl-toolbar">
+      <form @submit.prevent="onSearchSubmit" class="sl-search-wrap">
+        <div class="sl-search-box">
+          <Search class="sl-search-ico" :size="16" />
           <input
             type="text"
             v-model="searchQuery"
             :placeholder="$t('dashboard.sales.search_placeholder')"
-            class="search-input"
+            class="sl-search-input"
           />
         </div>
-        <button type="submit" class="btn btn-primary search-btn">
+        <button type="submit" class="sl-search-btn">
           {{ $t('dashboard.sales.search_btn') }}
         </button>
       </form>
     </div>
 
-    <!-- Sales Table -->
-    <div class="card table-card">
-      <div class="table-responsive">
-        <table class="data-table">
+    <!-- ─── Table card ──────────────────────────────── -->
+    <div class="sl-card">
+      <div class="sl-table-wrap">
+        <table class="sl-table">
           <thead>
             <tr>
-              <th class="w-10"></th>
+              <th class="th-toggle"></th>
               <th>{{ $t('dashboard.table.transaction_id') }}</th>
               <th>{{ $t('dashboard.table.cashier') }}</th>
               <th>{{ $t('dashboard.table.status') }}</th>
               <th>{{ $t('dashboard.table.payment_type') }}</th>
-              <th class="text-right">{{ $t('dashboard.table.total_amount') }}</th>
-              <th class="text-right">{{ $t('dashboard.table.date') }}</th>
+              <th class="th-right">{{ $t('dashboard.table.total_amount') }}</th>
+              <th class="th-right">{{ $t('dashboard.table.date') }}</th>
             </tr>
           </thead>
           <tbody>
+
+            <!-- Skeleton -->
             <template v-if="loading">
               <tr v-for="n in itemsPerPage" :key="n" class="skel-row">
-                <td><div class="skel skel-icon"></div></td>
-                <td><div class="skel" style="width: 140px; height: 14px"></div></td>
-                <td><div class="skel" style="width: 120px; height: 14px"></div></td>
+                <td><div class="skel skel-toggle"></div></td>
+                <td><div class="skel" style="width:110px;height:13px"></div></td>
+                <td><div class="skel" style="width:120px;height:13px"></div></td>
                 <td><div class="skel skel-badge"></div></td>
-                <td><div class="skel" style="width: 80px; height: 14px"></div></td>
-                <td><div class="skel ml-auto" style="width: 100px; height: 16px"></div></td>
-                <td><div class="skel ml-auto" style="width: 100px; height: 14px"></div></td>
+                <td><div class="skel" style="width:80px;height:13px"></div></td>
+                <td><div class="skel" style="width:110px;height:13px;margin-left:auto"></div></td>
+                <td><div class="skel" style="width:100px;height:13px;margin-left:auto"></div></td>
               </tr>
             </template>
 
+            <!-- Empty -->
             <template v-else-if="sales.length === 0">
               <tr>
-                <td colspan="7" class="empty-state">
-                  <ShoppingBag
-                    class="icon-xl text-subtle mx-auto mb-2"
-                    style="display: block; margin: 0 auto; width: 48px; height: 48px"
-                  />
-                  No sales found matching your criteria.
+                <td colspan="7" class="sl-empty">
+                  <div class="sl-empty-inner">
+                    <div class="sl-empty-icon"><ShoppingBag :size="28" /></div>
+                    <p>Hozircha sotuvlar yoʻq</p>
+                  </div>
                 </td>
               </tr>
             </template>
 
+            <!-- Rows -->
             <template v-else v-for="sale in sales" :key="sale.uuid">
-              <!-- Main Row -->
               <tr
-                class="main-row"
+                class="sl-row"
+                :class="{ 'sl-row--open': isExpanded(sale.uuid) }"
                 @click="toggleRow(sale.uuid)"
-                :class="{ expanded: isExpanded(sale.uuid) }"
               >
-                <td class="w-10 text-center">
-                  <div class="expand-icon-wrapper">
-                    <ChevronUp v-if="isExpanded(sale.uuid)" class="icon-sm text-primary" />
-                    <ChevronDown v-else class="icon-sm text-subtle" />
+                <td class="td-toggle">
+                  <div class="sl-chevron-wrap">
+                    <ChevronUp v-if="isExpanded(sale.uuid)" :size="14" class="sl-chevron-active" />
+                    <ChevronDown v-else :size="14" class="sl-chevron" />
                   </div>
                 </td>
-                <td class="mono-text text-sm">{{ sale.uuid.split('-')[0] }}...</td>
                 <td>
-                  <div class="cashier-info">
-                    <User class="icon-xs text-subtle" />
-                    <span class="font-medium">{{ sale.cashierName || '—' }}</span>
+                  <span class="sl-uuid">{{ shortUuid(sale.uuid) }}…</span>
+                </td>
+                <td>
+                  <div class="sl-cashier">
+                    <User :size="13" class="sl-row-ico" />
+                    <span>{{ sale.cashierName || '—' }}</span>
                   </div>
                 </td>
                 <td>
                   <span
-                    class="status-badge"
-                    :class="sale.status === 'COMPLETED' ? 'badge-success' : 'badge-danger'"
+                    class="sl-status"
+                    :class="sale.status === 'COMPLETED' ? 'sl-status-ok' : 'sl-status-err'"
                   >
-                    {{ sale.status }}
+                    {{ sale.status === 'COMPLETED' ? 'Yakunlandi' : sale.status }}
                   </span>
                 </td>
                 <td>
-                  <div class="payment-info">
-                    <Banknote v-if="sale.paymentType === 'CASH'" class="icon-xs text-emerald" />
-                    <CreditCard v-else class="icon-xs text-blue" />
-                    {{ sale.paymentType }}
+                  <div class="sl-payment">
+                    <Banknote v-if="sale.paymentType === 'CASH'" :size="14" class="sl-ico-cash" />
+                    <CreditCard v-else :size="14" class="sl-ico-card" />
+                    <span>{{ sale.paymentType === 'CASH' ? 'Naqd' : 'Karta' }}</span>
                   </div>
                 </td>
-                <td class="text-right font-medium highlight-amount">
-                  {{ formatCurrency(sale.totalAmount) }}
-                </td>
-                <td class="text-right text-sm text-subtle">
-                  <div class="date-info justify-end">
-                    <Calendar class="icon-xs" />
+                <td class="td-right sl-amount">{{ formatCurrency(sale.totalAmount) }}</td>
+                <td class="td-right sl-date">
+                  <div class="sl-date-cell">
+                    <Calendar :size="12" class="sl-row-ico" />
                     {{ formatDate(sale.createdAt) }}
                   </div>
                 </td>
               </tr>
 
-              <!-- Expanded Sub-Row (Items list) -->
-              <tr v-if="isExpanded(sale.uuid)" class="expanded-row">
-                <td colspan="7" class="expanded-cell">
-                  <div class="expanded-content p-4">
-                    <div class="flex justify-between items-center mb-3">
-                      <h4 class="text-sm font-semibold flex items-center gap-2 mb-2">
-                        <Package class="icon-sm" /> Sale Items
-                      </h4>
-                      <div
-                        class="sale-summary text-sm flex gap-6"
-                        style="margin-left: 2rem; margin-bottom: 0.5rem"
-                      >
-                        <span v-if="sale.discountAmount > 0" class="text-red-500 font-medium"
-                          >Discount: {{ formatCurrency(sale.discountAmount) }}</span
-                        >
-                        <span class="text-emerald-600 font-medium"
-                          >Paid: {{ formatCurrency(sale.paidAmount) }}</span
-                        >
-                        <span v-if="sale.changeAmount > 0" class="text-orange-500 font-medium"
-                          >Change: {{ formatCurrency(sale.changeAmount) }}</span
-                        >
+              <!-- Expanded row -->
+              <tr v-if="isExpanded(sale.uuid)" class="sl-expanded-row">
+                <td colspan="7" class="sl-expanded-cell">
+                  <div class="sl-expanded">
+
+                    <!-- Summary chips -->
+                    <div class="sl-summary-row">
+                      <div class="sl-summary-head">
+                        <Package :size="14" class="sl-row-ico" />
+                        Mahsulotlar
+                      </div>
+                      <div class="sl-summary-chips">
+                        <span v-if="sale.discountAmount > 0" class="sl-chip sl-chip-red">
+                          Chegirma: {{ formatCurrency(sale.discountAmount) }}
+                        </span>
+                        <span class="sl-chip sl-chip-green">
+                          Toʻlangan: {{ formatCurrency(sale.paidAmount) }}
+                        </span>
+                        <span v-if="sale.changeAmount > 0" class="sl-chip sl-chip-orange">
+                          Qaytim: {{ formatCurrency(sale.changeAmount) }}
+                        </span>
                       </div>
                     </div>
 
-                    <div
-                      class="items-table-wrapper rounded-lg border border-slate-200 overflow-hidden"
-                    >
-                      <table class="w-full text-sm text-left">
-                        <thead class="bg-slate-50 text-slate-500 uppercase text-xs">
+                    <!-- Items sub-table -->
+                    <div class="sl-items-wrap">
+                      <table class="sl-items-table">
+                        <thead>
                           <tr>
-                            <th class="px-4 py-2 font-medium">{{ $t('dashboard.table.product') }}</th>
-                            <th class="px-4 py-2 font-medium">{{ $t('dashboard.table.code') }}</th>
-                            <th class="px-4 py-2 text-right font-medium">{{ $t('dashboard.table.qty_unit') }}</th>
-                            <th class="px-4 py-2 text-right font-medium">{{ $t('dashboard.table.price') }}</th>
-                            <th class="px-4 py-2 text-right font-medium">{{ $t('dashboard.table.line_total') }}</th>
+                            <th>{{ $t('dashboard.table.product') }}</th>
+                            <th>{{ $t('dashboard.table.code') }}</th>
+                            <th class="th-right">{{ $t('dashboard.table.qty_unit') }}</th>
+                            <th class="th-right">{{ $t('dashboard.table.price') }}</th>
+                            <th class="th-right">{{ $t('dashboard.table.line_total') }}</th>
                           </tr>
                         </thead>
-                        <tbody class="divide-y divide-slate-100">
-                          <tr
-                            v-for="item in sale.items"
-                            :key="item.uuid"
-                            class="bg-white hover:bg-slate-50"
-                          >
-                            <td class="px-4 py-2 font-medium text-slate-800">{{ item.name }}</td>
-                            <td class="px-4 py-2 font-mono text-slate-500 text-xs">
-                              {{ item.code || '—' }}
-                            </td>
-                            <td class="px-4 py-2 text-right text-slate-600">
+                        <tbody>
+                          <tr v-for="item in sale.items" :key="item.uuid" class="sl-item-row">
+                            <td class="sl-item-name">{{ item.name }}</td>
+                            <td class="sl-item-code">{{ item.code || '—' }}</td>
+                            <td class="td-right">
                               {{ item.quantity }}
-                              <span class="text-xs text-slate-400">{{ item.unit }}</span>
+                              <span class="sl-unit">{{ item.unit }}</span>
                             </td>
-                            <td class="px-4 py-2 text-right text-slate-600">
-                              {{ formatCurrency(item.price) }}
-                            </td>
-                            <td class="px-4 py-2 text-right font-medium text-slate-800">
-                              {{ formatCurrency(item.total) }}
-                            </td>
+                            <td class="td-right">{{ formatCurrency(item.price) }}</td>
+                            <td class="td-right sl-item-total">{{ formatCurrency(item.total) }}</td>
                           </tr>
                         </tbody>
                       </table>
                     </div>
+
                   </div>
                 </td>
               </tr>
             </template>
+
           </tbody>
         </table>
       </div>
 
       <!-- Pagination -->
-      <div class="pagination-footer" v-if="sales.length > 0">
-        <span class="pagination-info">
-          Showing {{ (currentPage - 1) * itemsPerPage + 1 }} to
-          {{ Math.min(currentPage * itemsPerPage, totalElements) }} of {{ totalElements }} entries
+      <div class="sl-pagination" v-if="!loading && sales.length > 0">
+        <span class="sl-page-info">
+          {{ (currentPage - 1) * itemsPerPage + 1 }}–{{ Math.min(currentPage * itemsPerPage, totalElements) }}
+          / {{ totalElements }}
         </span>
-        <div class="pagination-controls">
-          <button class="page-btn" @click="prevPage" :disabled="currentPage === 1">
-            <ChevronLeft class="icon-xs" />
+        <div class="sl-page-controls">
+          <button class="sl-page-btn" @click="prevPage" :disabled="currentPage === 1">
+            <ChevronLeft :size="15" />
           </button>
-          <span class="current-page">Page {{ currentPage }}</span>
-          <button class="page-btn" @click="nextPage" :disabled="currentPage === totalPages">
-            <ChevronRight class="icon-xs" />
+          <span class="sl-page-num">{{ currentPage }}</span>
+          <button class="sl-page-btn" @click="nextPage" :disabled="currentPage === totalPages">
+            <ChevronRight :size="15" />
           </button>
         </div>
       </div>
     </div>
+
   </div>
 </template>
 
 <style scoped>
-.sales-page {
+.sl-page {
   display: flex;
   flex-direction: column;
-  gap: 1.5rem;
-  padding-bottom: 2rem;
+  gap: 1.25rem;
 }
 
-/* Header */
-.page-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  flex-wrap: wrap;
-  gap: 1rem;
-}
-
-.page-title {
-  font-size: 1.7rem;
-  font-weight: 700;
-  color: #0f172a;
-  margin: 0 0 0.25rem 0;
-}
-
-.text-subtitle {
-  color: #64748b;
-  font-size: 0.95rem;
-  margin: 0;
-}
-
-/* Toolbar */
-.toolbar-card {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  background-color: white;
-  padding: 1rem 1.25rem;
-  border-radius: 12px;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
-  border: 1px solid #f1f5f9;
-  gap: 1rem;
-  flex-wrap: wrap;
-}
-
-.search-form {
-  display: flex;
-  flex: 1;
-  gap: 0.5rem;
-  align-items: center;
-}
-
-.search-box {
+/* ─── Hero ─────────────────────────────────────── */
+.sl-hero {
   position: relative;
-  flex: 1;
-  min-width: 200px;
-}
-
-.btn {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  padding: 0.6rem 1rem;
-  border-radius: 8px;
-  font-weight: 600;
-  font-size: 0.9rem;
-  cursor: pointer;
-  transition: all 0.2s;
-  border: none;
-}
-
-.btn-primary {
-  background-color: #2563eb;
-  color: white;
-}
-
-.btn-primary:hover {
-  background-color: #1d4ed8;
-}
-
-.search-btn {
-  padding: 0.6rem 1.2rem;
-}
-
-.search-icon {
-  position: absolute;
-  left: 12px;
-  top: 50%;
-  transform: translateY(-50%);
-  color: #94a3b8;
-  width: 18px;
-  height: 18px;
-}
-
-.search-input {
-  width: 100%;
-  padding: 0.6rem 1rem 0.6rem 2.5rem;
+  background: #fff;
   border: 1px solid #e2e8f0;
-  border-radius: 8px;
-  font-size: 0.95rem;
-  outline: none;
-  transition:
-    border-color 0.2s,
-    box-shadow 0.2s;
-  box-sizing: border-box;
-}
-
-.search-input:focus {
-  border-color: #2563eb;
-  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
-}
-
-/* Table Card */
-.card {
-  background: white;
-  border-radius: 12px;
-  border: 1px solid #f1f5f9;
-  box-shadow:
-    0 4px 6px -1px rgba(0, 0, 0, 0.05),
-    0 2px 4px -2px rgba(0, 0, 0, 0.05);
+  border-radius: 18px;
+  padding: 1.75rem 2rem;
   overflow: hidden;
 }
 
-.table-responsive {
+.sl-hero-grid {
+  position: absolute;
+  inset: 0;
+  background-image:
+    linear-gradient(rgba(0,123,255,0.03) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(0,123,255,0.03) 1px, transparent 1px);
+  background-size: 28px 28px;
+  pointer-events: none;
+}
+
+.sl-orb {
+  position: absolute;
+  border-radius: 50%;
+  filter: blur(70px);
+  pointer-events: none;
+}
+.sl-orb-1 {
+  width: 320px; height: 320px;
+  background: radial-gradient(circle, rgba(0,123,255,0.09) 0%, transparent 70%);
+  top: -100px; right: -60px;
+}
+.sl-orb-2 {
+  width: 220px; height: 220px;
+  background: radial-gradient(circle, rgba(99,102,241,0.07) 0%, transparent 70%);
+  bottom: -80px; left: -40px;
+}
+
+.sl-hero-body {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1.25rem;
+  flex-wrap: wrap;
+}
+
+.sl-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 0.3rem 0.8rem;
+  border-radius: 100px;
+  background: rgba(0,123,255,0.08);
+  border: 1px solid rgba(0,123,255,0.18);
+  color: #007bff;
+  font-size: 0.68rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  margin-bottom: 0.6rem;
+}
+
+.sl-title {
+  margin: 0 0 0.3rem;
+  font-size: 1.6rem;
+  font-weight: 800;
+  background: linear-gradient(135deg, #0f172a 0%, #007bff 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  line-height: 1.2;
+}
+
+.sl-subtitle {
+  margin: 0;
+  font-size: 0.875rem;
+  color: #64748b;
+}
+
+/* ─── Toolbar ──────────────────────────────────── */
+.sl-toolbar {
+  background: #fff;
+  border: 1px solid #e2e8f0;
+  border-radius: 14px;
+  padding: 0.9rem 1.25rem;
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.sl-search-wrap {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  flex: 1;
+}
+
+.sl-search-box {
+  position: relative;
+  flex: 1;
+}
+
+.sl-search-ico {
+  position: absolute;
+  left: 11px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: #94a3b8;
+  pointer-events: none;
+}
+
+.sl-search-input {
+  width: 100%;
+  padding: 0.6rem 1rem 0.6rem 2.25rem;
+  border: 1.5px solid #e2e8f0;
+  border-radius: 10px;
+  font-size: 0.875rem;
+  color: #0f172a;
+  background: #f8fafc;
+  outline: none;
+  transition: all 0.2s;
+  font-family: inherit;
+  box-sizing: border-box;
+}
+.sl-search-input::placeholder { color: #94a3b8; }
+.sl-search-input:focus {
+  border-color: #007bff;
+  background: #fff;
+  box-shadow: 0 0 0 3px rgba(0,123,255,0.08);
+}
+
+.sl-search-btn {
+  padding: 0.6rem 1.1rem;
+  background: #007bff;
+  color: #fff;
+  border: none;
+  border-radius: 10px;
+  font-size: 0.875rem;
+  font-weight: 600;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: background 0.2s;
+  font-family: inherit;
+}
+.sl-search-btn:hover { background: #0069d9; }
+
+/* ─── Table card ───────────────────────────────── */
+.sl-card {
+  background: #fff;
+  border: 1px solid #e2e8f0;
+  border-radius: 16px;
+  overflow: hidden;
+}
+
+.sl-table-wrap {
   overflow-x: auto;
-  overflow-y: visible;
   overscroll-behavior-x: contain;
-  touch-action: pan-x pan-y;
+}
+
+.sl-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.sl-table th {
+  background: #f8fafc;
+  padding: 0.85rem 1.25rem;
+  text-align: left;
+  font-size: 0.7rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.07em;
+  color: #64748b;
+  white-space: nowrap;
   border-bottom: 1px solid #f1f5f9;
 }
 
-.data-table {
-  width: 100%;
-  border-collapse: separate;
-  border-spacing: 0;
-}
-
-.data-table th,
-.data-table td {
-  padding: 1rem 1.25rem;
-  text-align: left;
+.sl-table td {
+  padding: 0.9rem 1.25rem;
+  border-bottom: 1px solid #f8fafc;
+  font-size: 0.875rem;
+  color: #334155;
   vertical-align: middle;
 }
 
-.data-table th {
-  background-color: #f8fafc;
-  color: #64748b;
-  font-weight: 600;
-  font-size: 0.75rem;
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
+.th-toggle { width: 44px; }
+.th-right  { text-align: right; }
+.td-toggle { width: 44px; text-align: center; }
+.td-right  { text-align: right; }
+
+/* ─── Main row ─────────────────────────────────── */
+.sl-row {
+  cursor: pointer;
+  transition: background 0.12s;
+}
+.sl-row:hover td { background: #f8fafc; }
+.sl-row--open td { background: rgba(0,123,255,0.04); border-bottom-color: transparent; }
+
+.sl-chevron-wrap {
+  width: 24px;
+  height: 24px;
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto;
+  background: #f1f5f9;
+  transition: background 0.15s;
+}
+.sl-row:hover .sl-chevron-wrap { background: #e2e8f0; }
+.sl-row--open .sl-chevron-wrap { background: rgba(0,123,255,0.1); }
+
+.sl-chevron      { color: #94a3b8; }
+.sl-chevron-active { color: #007bff; }
+
+.sl-uuid {
+  display: inline-block;
+  padding: 0.2rem 0.5rem;
+  background: #f1f5f9;
+  border-radius: 6px;
+  font-size: 0.78rem;
+  font-family: ui-monospace, monospace;
+  color: #475569;
+}
+
+.sl-cashier {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-weight: 500;
+  color: #0f172a;
+}
+
+.sl-row-ico { color: #94a3b8; flex-shrink: 0; }
+
+.sl-status {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.25rem 0.7rem;
+  border-radius: 100px;
+  font-size: 0.72rem;
+  font-weight: 700;
   white-space: nowrap;
 }
-
-.data-table td {
-  border-bottom: 1px solid #f1f5f9;
-  color: #334155;
-  font-size: 0.95rem;
+.sl-status-ok {
+  background: rgba(16,185,129,0.1);
+  color: #059669;
+  border: 1px solid rgba(16,185,129,0.2);
+}
+.sl-status-err {
+  background: #fef2f2;
+  color: #dc2626;
+  border: 1px solid #fecaca;
 }
 
-.w-10 {
-  width: 40px;
-}
-.text-center {
-  text-align: center;
-}
-.text-right {
-  text-align: right;
-}
-.justify-end {
-  justify-content: flex-end;
-}
-.font-medium {
-  font-weight: 500;
-}
-.font-semibold {
-  font-weight: 600;
-}
-.text-sm {
+.sl-payment {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
   font-size: 0.875rem;
 }
-.text-xs {
-  font-size: 0.75rem;
+.sl-ico-cash { color: #059669; }
+.sl-ico-card { color: #007bff; }
+
+.sl-amount {
+  font-weight: 700;
+  color: #0f172a;
+  font-size: 0.9rem;
 }
 
-.text-subtle {
+.sl-date {
   color: #64748b;
+  font-size: 0.8rem;
 }
-.text-primary {
-  color: #2563eb;
-}
-.text-emerald {
-  color: #10b981;
-}
-.text-blue {
-  color: #3b82f6;
-}
-
-.flex {
+.sl-date-cell {
   display: flex;
-}
-.justify-between {
-  justify-content: space-between;
-}
-.items-center {
   align-items: center;
-}
-.gap-2 {
-  gap: 0.5rem;
-}
-.gap-4 {
-  gap: 1rem;
-}
-.mb-3 {
-  margin-bottom: 0.75rem;
-}
-.p-4 {
-  padding: 1.5rem;
-}
-.mx-auto {
-  margin-left: auto;
-  margin-right: auto;
-}
-.mb-2 {
-  margin-bottom: 0.5rem;
-}
-.bg-slate-50 {
-  background-color: #f8fafc;
+  justify-content: flex-end;
+  gap: 0.35rem;
 }
 
-.main-row {
-  cursor: pointer;
-  transition: background-color 0.2s;
-}
+/* ─── Expanded row ─────────────────────────────── */
+.sl-expanded-row { background: #f8fafc; }
 
-.main-row:hover {
-  background-color: #f8fafc;
-}
-
-.main-row.expanded {
-  background-color: #eff6ff;
-}
-
-.main-row.expanded td {
-  border-bottom-color: transparent;
-}
-
-.expanded-row {
-  background-color: #f8fafc;
-}
-
-.expanded-cell {
+.sl-expanded-cell {
   padding: 0 !important;
   border-bottom: 1px solid #e2e8f0 !important;
 }
 
-.expanded-content {
-  border-left: 3px solid #2563eb;
-  background-color: #fafaf9;
-  box-shadow: inset 0 2px 4px 0 rgba(0, 0, 0, 0.02);
+.sl-expanded {
+  padding: 1.25rem 1.5rem;
+  border-left: 3px solid #007bff;
 }
 
-.expand-icon-wrapper {
+.sl-summary-row {
   display: flex;
   align-items: center;
-  justify-content: center;
-  width: 24px;
-  height: 24px;
-  border-radius: 4px;
-  background-color: transparent;
-  transition: background-color 0.2s;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  margin-bottom: 1rem;
 }
 
-.main-row:hover .expand-icon-wrapper {
-  background-color: #ffffff;
-  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
-}
-
-.mono-text {
-  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
-  background-color: #f1f5f9;
-  padding: 0.2rem 0.4rem;
-  border-radius: 4px;
-  color: #475569;
-}
-
-.status-badge {
-  display: inline-flex;
+.sl-summary-head {
+  display: flex;
   align-items: center;
-  padding: 0.25rem 0.6rem;
-  border-radius: 9999px;
+  gap: 0.4rem;
+  font-size: 0.82rem;
+  font-weight: 700;
+  color: #0f172a;
+}
+
+.sl-summary-chips {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.sl-chip {
+  padding: 0.22rem 0.65rem;
+  border-radius: 100px;
   font-size: 0.75rem;
   font-weight: 600;
 }
+.sl-chip-green  { background: rgba(16,185,129,0.1);  color: #059669; border: 1px solid rgba(16,185,129,0.2); }
+.sl-chip-red    { background: rgba(239,68,68,0.08);   color: #dc2626; border: 1px solid rgba(239,68,68,0.2); }
+.sl-chip-orange { background: rgba(249,115,22,0.08);  color: #ea580c; border: 1px solid rgba(249,115,22,0.2); }
 
-.badge-success {
-  background-color: #dcfce7;
-  color: #166534;
-}
-.badge-danger {
-  background-color: #fee2e2;
-  color: #991b1b;
+/* ─── Items sub-table ──────────────────────────── */
+.sl-items-wrap {
+  border: 1px solid #e2e8f0;
+  border-radius: 10px;
+  overflow: hidden;
 }
 
-.cashier-info,
-.payment-info,
-.date-info {
+.sl-items-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.sl-items-table th {
+  background: #f8fafc;
+  padding: 0.6rem 1rem;
+  font-size: 0.68rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.07em;
+  color: #64748b;
+  text-align: left;
+  border-bottom: 1px solid #e2e8f0;
+}
+
+.sl-items-table td {
+  padding: 0.65rem 1rem;
+  font-size: 0.85rem;
+  color: #334155;
+  border-bottom: 1px solid #f1f5f9;
+  vertical-align: middle;
+}
+
+.sl-item-row:last-child td { border-bottom: none; }
+.sl-item-row:hover td { background: #fff; }
+
+.sl-item-name  { font-weight: 600; color: #0f172a; }
+.sl-item-code  { font-family: ui-monospace, monospace; font-size: 0.75rem; color: #94a3b8; }
+.sl-item-total { font-weight: 700; color: #0f172a; }
+.sl-unit       { font-size: 0.72rem; color: #94a3b8; margin-left: 2px; }
+
+/* ─── Empty ─────────────────────────────────────── */
+.sl-empty { text-align: center; padding: 3rem; }
+.sl-empty-inner {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.6rem;
+  color: #94a3b8;
+}
+.sl-empty-icon {
+  width: 56px; height: 56px;
+  border-radius: 14px;
+  background: #f1f5f9;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #cbd5e1;
+}
+.sl-empty p { font-size: 0.875rem; margin: 0; }
+
+/* ─── Pagination ────────────────────────────────── */
+.sl-pagination {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.9rem 1.25rem;
+  border-top: 1px solid #f1f5f9;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+}
+
+.sl-page-info {
+  font-size: 0.8rem;
+  color: #94a3b8;
+  font-weight: 500;
+}
+
+.sl-page-controls {
   display: flex;
   align-items: center;
   gap: 0.4rem;
 }
 
-.highlight-amount {
-  color: #0f172a;
-  font-size: 1rem;
-}
-
-.icon-sm {
-  width: 18px;
-  height: 18px;
-}
-.icon-xs {
-  width: 14px;
-  height: 14px;
-}
-.icon-xl {
-  width: 48px;
-  height: 48px;
-}
-
-/* Sub Table within Expanded Row */
-.items-table-wrapper {
-  background-color: white;
-}
-
-.w-full {
-  width: 100%;
-}
-.text-left {
-  text-align: left;
-}
-.uppercase {
-  text-transform: uppercase;
-}
-.px-4 {
-  padding-left: 1rem;
-  padding-right: 1rem;
-}
-.py-2 {
-  padding-top: 0.5rem;
-  padding-bottom: 0.5rem;
-}
-.border {
-  border: 1px solid #e2e8f0;
-}
-.border-slate-200 {
-  border-color: #e2e8f0;
-}
-.rounded-lg {
-  border-radius: 0.5rem;
-}
-.overflow-hidden {
-  overflow: hidden;
-}
-.divide-y > * + * {
-  border-top: 1px solid #f1f5f9;
-}
-.text-slate-500 {
-  color: #64748b;
-}
-.text-slate-600 {
-  color: #475569;
-}
-.text-slate-800 {
-  color: #1e293b;
-}
-.text-slate-400 {
-  color: #94a3b8;
-}
-.text-emerald-600 {
-  color: #059669;
-}
-.text-red-500 {
-  color: #ef4444;
-}
-.text-orange-500 {
-  color: #f97316;
-}
-.font-mono {
-  font-family: monospace;
-}
-.hover\:bg-slate-50:hover {
-  background-color: #f8fafc;
-}
-.bg-white {
-  background-color: #ffffff;
-}
-
-/* Pagination */
-.pagination-footer {
-  padding: 1rem 1.5rem;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  flex-wrap: wrap;
-  gap: 1rem;
-  background: white;
-}
-
-.pagination-info {
-  font-size: 0.85rem;
-  color: #64748b;
-}
-
-.pagination-controls {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-}
-
-.page-btn {
+.sl-page-btn {
+  width: 30px; height: 30px;
+  border: 1.5px solid #e2e8f0;
+  background: #fff;
+  border-radius: 8px;
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 32px;
-  height: 32px;
-  border-radius: 6px;
-  border: 1px solid #e2e8f0;
-  background: white;
-  color: #475569;
   cursor: pointer;
-  transition: all 0.2s;
-}
-
-.page-btn:hover:not(:disabled) {
-  background-color: #f1f5f9;
-  border-color: #cbd5e1;
-  color: #0f172a;
-}
-
-.page-btn:disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
-}
-
-.current-page {
-  font-size: 0.85rem;
-  font-weight: 500;
-  color: #1e293b;
-  min-width: 4.5rem;
-  text-align: center;
-}
-
-.empty-state {
-  padding: 3rem;
-  text-align: center;
   color: #64748b;
+  transition: all 0.15s;
+}
+.sl-page-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+.sl-page-btn:not(:disabled):hover {
+  background: #f8fafc;
+  border-color: #007bff;
+  color: #007bff;
 }
 
-/* Skeletons */
+.sl-page-num {
+  min-width: 32px; height: 30px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(0,123,255,0.08);
+  border: 1px solid rgba(0,123,255,0.2);
+  border-radius: 8px;
+  font-size: 0.82rem;
+  font-weight: 700;
+  color: #007bff;
+  padding: 0 0.5rem;
+}
+
+/* ─── Skeleton ──────────────────────────────────── */
 @keyframes shimmer {
-  0% {
-    background-position: -400px 0;
-  }
-  100% {
-    background-position: 400px 0;
-  }
+  0%   { background-position: -400px 0; }
+  100% { background-position:  400px 0; }
 }
-
 .skel {
-  border-radius: 4px;
-  background: linear-gradient(90deg, #e2e8f0 25%, #f1f5f9 50%, #e2e8f0 75%);
+  border-radius: 6px;
+  background: linear-gradient(90deg, #f1f5f9 25%, #e2e8f0 50%, #f1f5f9 75%);
   background-size: 400px 100%;
   animation: shimmer 1.4s infinite linear;
 }
+.skel-row td { border-bottom: 1px solid #f8fafc; }
+.skel-toggle { width: 24px; height: 24px; border-radius: 6px; }
+.skel-badge  { width: 80px; height: 20px; border-radius: 100px; }
 
-.skel-icon {
-  width: 24px;
-  height: 24px;
-  border-radius: 4px;
-}
-.skel-badge {
-  width: 80px;
-  height: 24px;
-  border-radius: 9999px;
-}
-.ml-auto {
-  margin-left: auto;
-}
-
+/* ─── Responsive ────────────────────────────────── */
 @media (max-width: 768px) {
-  .page-title {
-    font-size: 1.35rem;
-  }
-
-  .toolbar-card {
-    flex-direction: column;
-    align-items: stretch;
-  }
-
-  .search-form {
-    flex-direction: column;
-    width: 100%;
-  }
-
-  .search-box {
-    min-width: 0;
-    width: 100%;
-  }
-
-  .search-btn {
-    width: 100%;
-    justify-content: center;
-  }
-
-  .data-table th,
-  .data-table td {
-    padding: 0.65rem 0.75rem;
-    font-size: 0.8125rem;
-  }
-
-  .expanded-content .flex.justify-between {
-    flex-direction: column;
-    align-items: flex-start !important;
-    gap: 0.75rem;
-  }
-
-  .expanded-content .sale-summary {
-    flex-direction: column;
-    align-items: flex-start !important;
-    margin-left: 0 !important;
-    gap: 0.35rem !important;
-    width: 100%;
-  }
-
-  .pagination-footer {
-    flex-direction: column;
-    align-items: center;
-    text-align: center;
-  }
+  .sl-hero     { padding: 1.25rem; }
+  .sl-title    { font-size: 1.3rem; }
+  .sl-toolbar  { flex-direction: column; align-items: stretch; }
+  .sl-search-wrap { flex-direction: column; }
+  .sl-search-btn  { width: 100%; justify-content: center; text-align: center; }
+  .sl-pagination  { flex-direction: column; align-items: center; }
+  .sl-summary-row { flex-direction: column; align-items: flex-start; }
+  .sl-table th,
+  .sl-table td  { padding: 0.7rem 0.85rem; }
 }
 </style>

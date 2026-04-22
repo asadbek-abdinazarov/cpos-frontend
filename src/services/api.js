@@ -255,13 +255,6 @@ export function updateProduct(id, data) {
   return api.patch(`web/products/${id}`, data)
 }
 
-export function getScales() {
-  return api.get('web/scale/my')
-}
-
-export function getScaleHistories(id, params) {
-  return api.get(`web/scale/my/${id}/histories`, { params })
-}
 
 export function getSalesHistories(params) {
   return api.get('web/sale/my/histories', { params })

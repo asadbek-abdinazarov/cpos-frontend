@@ -10,6 +10,7 @@ import {
   ChevronRight,
   Package,
   AlertTriangle,
+  SlidersHorizontal,
 } from 'lucide-vue-next'
 import { useProductList } from '@/composables/useProductList'
 
@@ -48,72 +49,82 @@ const {
 
 <template>
   <div class="products-page">
-    <!-- Header -->
-    <div class="page-header">
-      <div>
-        <h1 class="page-title">{{ $t('dashboard.products.title') }}</h1>
-        <p class="text-subtitle">{{ $t('dashboard.products.subtitle') }}</p>
-      </div>
-      <div class="header-actions">
-        <button
-          v-if="selectedProductIds.length > 0"
-          class="btn btn-danger"
-          @click="confirmBatchDelete"
-        >
-          <Trash2 class="icon-sm" />
-          {{ $t('dashboard.products.delete_selected') }} ({{ selectedProductIds.length }})
-        </button>
-        <button class="btn btn-primary" @click="goToProductNew">
-          <Plus class="icon-sm" />
-          {{ $t('dashboard.products.add_product') }}
-        </button>
+
+    <!-- ─── Hero ───────────────────────────────────── -->
+    <div class="pp-hero">
+      <div class="pp-hero-grid"></div>
+      <div class="pp-orb pp-orb-1"></div>
+      <div class="pp-orb pp-orb-2"></div>
+
+      <div class="pp-hero-body">
+        <div class="pp-hero-left">
+          <div class="pp-badge">
+            <Package :size="11" />
+            {{ $t('dashboard.products.title') }}
+          </div>
+          <h1 class="pp-title">{{ $t('dashboard.products.title') }}</h1>
+          <p class="pp-subtitle">{{ $t('dashboard.products.subtitle') }}</p>
+        </div>
+        <div class="pp-hero-actions">
+          <button
+            v-if="selectedProductIds.length > 0"
+            class="pp-btn-danger"
+            @click="confirmBatchDelete"
+          >
+            <Trash2 :size="15" />
+            {{ $t('dashboard.products.delete_selected') }} ({{ selectedProductIds.length }})
+          </button>
+          <button class="pp-btn-primary" @click="goToProductNew">
+            <Plus :size="15" />
+            {{ $t('dashboard.products.add_product') }}
+          </button>
+        </div>
       </div>
     </div>
 
-    <!-- Toolbar -->
-    <div class="toolbar-card">
-      <form @submit.prevent="onSearchSubmit" class="search-form">
-        <div class="search-box">
-          <Search class="search-icon" />
+    <!-- ─── Toolbar ──────────────────────────────── -->
+    <div class="pp-toolbar">
+      <form @submit.prevent="onSearchSubmit" class="pp-search-wrap">
+        <div class="pp-search-box">
+          <Search class="pp-search-ico" :size="16" />
           <input
             type="text"
             v-model="searchQuery"
             :placeholder="$t('dashboard.products.search_placeholder')"
-            class="search-input"
+            class="pp-search-input"
           />
         </div>
-        <button type="submit" class="btn btn-primary search-btn">
+        <button type="submit" class="pp-search-btn">
           {{ $t('dashboard.products.search_btn') }}
         </button>
       </form>
 
-      <div class="filters">
-        <div class="select-wrapper">
-          <select v-model="selectedCategory" class="filter-select">
+      <div class="pp-filters">
+        <div class="pp-filter-item">
+          <SlidersHorizontal :size="14" class="pp-filter-ico" />
+          <select v-model="selectedCategory" class="pp-filter-select">
             <option v-for="cat in categories" :key="cat.id" :value="cat.id">{{ cat.name }}</option>
           </select>
         </div>
-        <div class="select-wrapper">
-          <select v-model="selectedStatus" class="filter-select">
+        <div class="pp-filter-item">
+          <Filter :size="14" class="pp-filter-ico" />
+          <select v-model="selectedStatus" class="pp-filter-select">
             <option v-for="status in statuses" :key="status.value" :value="status.value">
               {{ status.label }}
             </option>
           </select>
         </div>
-        <button class="btn btn-icon-only filter-btn-mobile">
-          <Filter class="icon-sm" />
-        </button>
       </div>
     </div>
 
-    <!-- Products Table -->
-    <div class="card table-card">
-      <div class="table-responsive">
-        <table class="data-table">
+    <!-- ─── Table card ───────────────────────────── -->
+    <div class="pp-card">
+      <div class="pp-table-wrap">
+        <table class="pp-table">
           <thead>
             <tr>
-              <th class="w-16">
-                <input type="checkbox" :checked="isAllSelected" @change="toggleSelectAll" />
+              <th class="th-check">
+                <input type="checkbox" :checked="isAllSelected" @change="toggleSelectAll" class="pp-checkbox" />
               </th>
               <th>{{ $t('dashboard.table.id') }}</th>
               <th>{{ $t('dashboard.table.product') }}</th>
@@ -121,140 +132,152 @@ const {
               <th>{{ $t('dashboard.table.price') }}</th>
               <th>{{ $t('dashboard.table.stock') }}</th>
               <th>{{ $t('dashboard.table.status') }}</th>
-              <th class="text-right">{{ $t('dashboard.table.actions') }}</th>
+              <th class="th-actions">{{ $t('dashboard.table.actions') }}</th>
             </tr>
           </thead>
           <tbody>
+            <!-- Skeleton -->
             <template v-if="loading">
               <tr v-for="n in itemsPerPage" :key="n" class="skel-row">
                 <td><div class="skel skel-check"></div></td>
-                <td><div class="skel" style="width: 30px; height: 13px"></div></td>
+                <td><div class="skel" style="width:28px;height:12px"></div></td>
                 <td>
-                  <div class="product-cell">
+                  <div class="pp-product-cell">
                     <div class="skel skel-img"></div>
                     <div class="skel skel-name"></div>
                   </div>
                 </td>
                 <td><div class="skel skel-cat"></div></td>
                 <td><div class="skel skel-price"></div></td>
-                <td><div class="skel skel-sku"></div></td>
-                <td><div class="skel skel-badge-xs"></div></td>
+                <td><div class="skel skel-qty"></div></td>
+                <td><div class="skel skel-badge"></div></td>
                 <td>
-                  <div style="display: flex; gap: 0.5rem; justify-content: flex-end">
-                    <div class="skel skel-action"></div>
-                    <div class="skel skel-action"></div>
-                    <div class="skel skel-action"></div>
+                  <div style="display:flex;gap:.4rem;justify-content:flex-end">
+                    <div class="skel skel-act"></div>
+                    <div class="skel skel-act"></div>
+                    <div class="skel skel-act"></div>
                   </div>
                 </td>
               </tr>
             </template>
+
+            <!-- Rows -->
             <tr
               v-else
               v-for="product in filteredProducts"
               :key="product.id"
-              class="product-row"
+              class="pp-row"
               @click="goToProductDetail(product)"
             >
               <td @click.stop>
-                <input type="checkbox" :value="product.id" v-model="selectedProductIds" />
+                <input type="checkbox" :value="product.id" v-model="selectedProductIds" class="pp-checkbox" />
               </td>
-              <td>{{ product.id }}</td>
+              <td class="td-id">#{{ product.id }}</td>
               <td>
-                <div class="product-cell">
-                  <div class="product-image">
-                    <Package class="placeholder-icon" />
+                <div class="pp-product-cell">
+                  <div class="pp-product-thumb">
+                    <Package :size="17" />
                   </div>
-                  <span class="product-name">{{ product.name }}</span>
+                  <span class="pp-product-name">{{ product.name }}</span>
                 </div>
               </td>
-              <td>{{ product.category ? product.category.name : '—' }}</td>
-              <td class="font-medium">{{ product.price.toLocaleString('uz-UZ') }} UZS</td>
-              <td>{{ product.quantity }}</td>
+              <td class="td-cat">{{ product.category ? product.category.name : '—' }}</td>
+              <td class="td-price">{{ product.price.toLocaleString('uz-UZ') }} <span class="currency">UZS</span></td>
+              <td class="td-qty">{{ product.quantity }}</td>
               <td>
-                <span class="status-badge" :class="product.isActive ? 'in-stock' : 'out-of-stock'">
-                  {{ product.isActive ? 'Active' : 'Inactive' }}
+                <span class="pp-status" :class="product.isActive ? 'pp-status-active' : 'pp-status-inactive'">
+                  {{ product.isActive ? $t('dashboard.products.status.active') : $t('dashboard.products.status.inactive') }}
                 </span>
               </td>
               <td @click.stop>
-                <div class="actions-cell">
-                  <button class="action-btn" title="View" @click.stop="goToProductDetail(product)">
-                    <Eye class="icon-xs" />
+                <div class="pp-actions-cell">
+                  <button class="pp-act-btn" :title="$t('dashboard.table.actions')" @click.stop="goToProductDetail(product)">
+                    <Eye :size="14" />
                   </button>
-                  <button class="action-btn" title="Edit" @click.stop="goToProductEdit(product)">
-                    <Edit class="icon-xs" />
+                  <button class="pp-act-btn" @click.stop="goToProductEdit(product)">
+                    <Edit :size="14" />
                   </button>
-                  <button class="action-btn delete" title="Delete" @click.stop="confirmDelete(product)">
-                    <Trash2 class="icon-xs" />
+                  <button class="pp-act-btn pp-act-del" @click.stop="confirmDelete(product)">
+                    <Trash2 :size="14" />
                   </button>
                 </div>
               </td>
             </tr>
+
+            <!-- Empty -->
             <tr v-if="!loading && filteredProducts.length === 0">
-              <td colspan="8" class="empty-state">No products found matching your filters.</td>
+              <td colspan="8" class="pp-empty">
+                <div class="pp-empty-inner">
+                  <div class="pp-empty-icon">
+                    <Package :size="28" />
+                  </div>
+                  <p>{{ $t('dashboard.products.no_products') }}</p>
+                </div>
+              </td>
             </tr>
           </tbody>
         </table>
       </div>
 
       <!-- Pagination -->
-      <div class="pagination-footer">
-        <span class="pagination-info">
-          Showing {{ (currentPage - 1) * itemsPerPage + 1 }} to
-          {{ Math.min(currentPage * itemsPerPage, totalElements) }} of {{ totalElements }} entries
+      <div class="pp-pagination">
+        <span class="pp-page-info">
+          {{ (currentPage - 1) * itemsPerPage + 1 }}–{{ Math.min(currentPage * itemsPerPage, totalElements) }}
+          / {{ totalElements }}
         </span>
-        <div class="pagination-controls">
-          <button class="page-btn" @click="prevPage" :disabled="currentPage === 1">
-            <ChevronLeft class="icon-xs" />
+        <div class="pp-page-controls">
+          <button class="pp-page-btn" @click="prevPage" :disabled="currentPage === 1">
+            <ChevronLeft :size="15" />
           </button>
-          <span class="current-page">Page {{ currentPage }}</span>
-          <button class="page-btn" @click="nextPage" :disabled="currentPage === totalPages">
-            <ChevronRight class="icon-xs" />
+          <span class="pp-page-num">{{ currentPage }}</span>
+          <button class="pp-page-btn" @click="nextPage" :disabled="currentPage === totalPages">
+            <ChevronRight :size="15" />
           </button>
         </div>
       </div>
     </div>
 
-    <!-- Single Delete Modal -->
-    <div v-if="isDeleteModalOpen" class="modal-overlay" @click.self="closeDeleteModal">
-      <div class="modal-content card delete-modal">
-        <div class="modal-body text-center">
-          <div class="warning-icon-wrapper">
-            <AlertTriangle class="icon-xl text-danger" />
+    <!-- ─── Single delete modal ──────────────────── -->
+    <Teleport to="body">
+      <Transition name="modal-fade">
+        <div v-if="isDeleteModalOpen" class="pp-modal-overlay" @click.self="closeDeleteModal">
+          <div class="pp-modal">
+            <div class="pp-modal-icon del-icon">
+              <AlertTriangle :size="22" />
+            </div>
+            <h2 class="pp-modal-title">{{ $t('dashboard.products.delete_confirm_title') }}</h2>
+            <p class="pp-modal-text">
+              {{ $t('dashboard.products.delete_confirm_text', { name: productToDelete?.name }) }}
+            </p>
+            <div class="pp-modal-actions">
+              <button class="pp-btn-ghost" @click="closeDeleteModal">{{ $t('dashboard.products.form.cancel') }}</button>
+              <button class="pp-btn-danger" @click="executeDelete">{{ $t('dashboard.products.delete_product') }}</button>
+            </div>
           </div>
-          <h2 class="modal-title">Delete Product</h2>
-          <p class="modal-text">
-            Are you sure you want to delete <strong>{{ productToDelete?.name }}</strong
-            >? <br />
-            This action cannot be undone.
-          </p>
         </div>
-        <div class="modal-footer justify-center">
-          <button class="btn btn-secondary" @click="closeDeleteModal">Cancel</button>
-          <button class="btn btn-danger" @click="executeDelete">Delete</button>
-        </div>
-      </div>
-    </div>
+      </Transition>
+    </Teleport>
 
-    <!-- Batch Delete Modal -->
-    <div v-if="isBatchDeleteModalOpen" class="modal-overlay" @click.self="closeBatchDeleteModal">
-      <div class="modal-content card delete-modal">
-        <div class="modal-body text-center">
-          <div class="warning-icon-wrapper">
-            <AlertTriangle class="icon-xl text-danger" />
+    <!-- ─── Batch delete modal ───────────────────── -->
+    <Teleport to="body">
+      <Transition name="modal-fade">
+        <div v-if="isBatchDeleteModalOpen" class="pp-modal-overlay" @click.self="closeBatchDeleteModal">
+          <div class="pp-modal">
+            <div class="pp-modal-icon del-icon">
+              <AlertTriangle :size="22" />
+            </div>
+            <h2 class="pp-modal-title">{{ $t('dashboard.products.delete_selected') }}</h2>
+            <p class="pp-modal-text">
+              <strong>{{ selectedProductIds.length }}</strong> ta mahsulot o'chiriladi. Bu amalni bekor qilib bo'lmaydi.
+            </p>
+            <div class="pp-modal-actions">
+              <button class="pp-btn-ghost" @click="closeBatchDeleteModal">{{ $t('dashboard.products.form.cancel') }}</button>
+              <button class="pp-btn-danger" @click="executeBatchDelete">{{ $t('dashboard.products.delete_product') }}</button>
+            </div>
           </div>
-          <h2 class="modal-title">Delete Multiple Products</h2>
-          <p class="modal-text">
-            Are you sure you want to delete
-            <strong>{{ selectedProductIds.length }}</strong> products? <br />
-            This action cannot be undone.
-          </p>
         </div>
-        <div class="modal-footer justify-center">
-          <button class="btn btn-secondary" @click="closeBatchDeleteModal">Cancel</button>
-          <button class="btn btn-danger" @click="executeBatchDelete">Delete All</button>
-        </div>
-      </div>
-    </div>
+      </Transition>
+    </Teleport>
 
   </div>
 </template>
@@ -263,822 +286,581 @@ const {
 .products-page {
   display: flex;
   flex-direction: column;
-  gap: 1.5rem;
+  gap: 1.25rem;
 }
 
-/* Header */
-.page-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  flex-wrap: wrap;
-  gap: 1rem;
-}
-
-.page-title {
-  font-size: 1.5rem;
-  font-weight: 700;
-  color: #0f172a;
-}
-
-.text-subtitle {
-  color: #64748b;
-  font-size: 0.9rem;
-}
-
-/* Buttons */
-.btn {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  padding: 0.6rem 1rem;
-  border-radius: 8px;
-  font-weight: 600;
-  font-size: 0.9rem;
-  cursor: pointer;
-  transition: all 0.2s;
-  border: none;
-}
-
-.btn-primary {
-  background-color: #2563eb;
-  color: white;
-}
-
-.btn-primary:hover {
-  background-color: #1d4ed8;
-}
-
-.icon-sm {
-  width: 18px;
-  height: 18px;
-}
-.icon-xs {
-  width: 16px;
-  height: 16px;
-}
-
-/* Toolbar */
-.toolbar-card {
-  background: white;
-  padding: 1rem;
-  border-radius: 12px;
-  border: 1px solid #f1f5f9;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  gap: 1rem;
-  flex-wrap: wrap;
-}
-
-.search-form {
-  display: flex;
-  flex: 1;
-  gap: 0.5rem;
-  align-items: center;
-}
-
-.search-box {
+/* ─── Hero ─────────────────────────────────────── */
+.pp-hero {
   position: relative;
-  flex: 1;
-  min-width: 200px;
-}
-
-.search-btn {
-  padding: 0.6rem 1.2rem;
-}
-
-.search-icon {
-  position: absolute;
-  left: 12px;
-  top: 50%;
-  transform: translateY(-50%);
-  color: #94a3b8;
-  width: 18px;
-  height: 18px;
-}
-
-.search-input {
-  width: 100%;
-  padding: 0.6rem 1rem 0.6rem 2.5rem;
+  background: #fff;
   border: 1px solid #e2e8f0;
-  border-radius: 8px;
-  font-size: 0.9rem;
-  outline: none;
-  color: #0f172a;
-  transition: border-color 0.2s;
-}
-
-.search-input:focus {
-  border-color: #2563eb;
-}
-
-.filters {
-  display: flex;
-  gap: 0.75rem;
-}
-
-.filter-select {
-  padding: 0.6rem 2rem 0.6rem 1rem;
-  border: 1px solid #e2e8f0;
-  border-radius: 8px;
-  background-color: white;
-  color: #475569;
-  font-size: 0.9rem;
-  cursor: pointer;
-  outline: none;
-}
-
-.filter-btn-mobile {
-  display: none;
-  padding: 0.6rem;
-  border: 1px solid #e2e8f0;
-  background: white;
-  border-radius: 8px;
-  color: #64748b;
-}
-
-/* Table Card */
-.card {
-  background: white;
-  border-radius: 12px;
-  border: 1px solid #f1f5f9;
-  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+  border-radius: 18px;
+  padding: 1.75rem 2rem;
   overflow: hidden;
 }
 
-.table-responsive {
-  overflow-x: auto;
-  overflow-y: visible;
-  overscroll-behavior-x: contain;
-  touch-action: pan-x pan-y;
-  border-bottom: 1px solid #f1f5f9;
+.pp-hero-grid {
+  position: absolute;
+  inset: 0;
+  background-image:
+    linear-gradient(rgba(0,123,255,0.03) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(0,123,255,0.03) 1px, transparent 1px);
+  background-size: 28px 28px;
+  pointer-events: none;
 }
 
-.data-table {
+.pp-orb {
+  position: absolute;
+  border-radius: 50%;
+  filter: blur(70px);
+  pointer-events: none;
+}
+.pp-orb-1 {
+  width: 320px; height: 320px;
+  background: radial-gradient(circle, rgba(0,123,255,0.09) 0%, transparent 70%);
+  top: -100px; right: -60px;
+}
+.pp-orb-2 {
+  width: 220px; height: 220px;
+  background: radial-gradient(circle, rgba(99,102,241,0.07) 0%, transparent 70%);
+  bottom: -80px; left: -40px;
+}
+
+.pp-hero-body {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1.25rem;
+  flex-wrap: wrap;
+}
+
+.pp-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 0.3rem 0.8rem;
+  border-radius: 100px;
+  background: rgba(0,123,255,0.08);
+  border: 1px solid rgba(0,123,255,0.18);
+  color: #007bff;
+  font-size: 0.68rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  margin-bottom: 0.6rem;
+}
+
+.pp-title {
+  margin: 0 0 0.3rem;
+  font-size: 1.6rem;
+  font-weight: 800;
+  background: linear-gradient(135deg, #0f172a 0%, #007bff 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  line-height: 1.2;
+}
+
+.pp-subtitle {
+  margin: 0;
+  font-size: 0.875rem;
+  color: #64748b;
+}
+
+.pp-hero-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  flex-shrink: 0;
+  flex-wrap: wrap;
+}
+
+/* ─── Buttons ──────────────────────────────────── */
+.pp-btn-primary {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 0.6rem 1.1rem;
+  background: linear-gradient(135deg, #007bff, #6366f1);
+  color: #fff;
+  border: none;
+  border-radius: 10px;
+  font-size: 0.875rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+  box-shadow: 0 2px 10px rgba(0,123,255,0.25);
+  font-family: inherit;
+}
+.pp-btn-primary:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 16px rgba(0,123,255,0.35);
+}
+
+.pp-btn-danger {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 0.6rem 1.1rem;
+  background: #fef2f2;
+  color: #dc2626;
+  border: 1px solid #fecaca;
+  border-radius: 10px;
+  font-size: 0.875rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+  font-family: inherit;
+}
+.pp-btn-danger:hover {
+  background: #fee2e2;
+  border-color: #fca5a5;
+}
+
+.pp-btn-ghost {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 0.6rem 1.1rem;
+  background: #f1f5f9;
+  color: #475569;
+  border: none;
+  border-radius: 10px;
+  font-size: 0.875rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+  font-family: inherit;
+}
+.pp-btn-ghost:hover {
+  background: #e2e8f0;
+  color: #0f172a;
+}
+
+/* ─── Toolbar ──────────────────────────────────── */
+.pp-toolbar {
+  background: #fff;
+  border: 1px solid #e2e8f0;
+  border-radius: 14px;
+  padding: 0.9rem 1.25rem;
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.pp-search-wrap {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  flex: 1;
+  min-width: 240px;
+}
+
+.pp-search-box {
+  position: relative;
+  flex: 1;
+}
+
+.pp-search-ico {
+  position: absolute;
+  left: 11px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: #94a3b8;
+  pointer-events: none;
+}
+
+.pp-search-input {
+  width: 100%;
+  padding: 0.6rem 1rem 0.6rem 2.25rem;
+  border: 1.5px solid #e2e8f0;
+  border-radius: 10px;
+  font-size: 0.875rem;
+  color: #0f172a;
+  background: #f8fafc;
+  outline: none;
+  transition: all 0.2s;
+  font-family: inherit;
+  box-sizing: border-box;
+}
+.pp-search-input::placeholder { color: #94a3b8; }
+.pp-search-input:focus {
+  border-color: #007bff;
+  background: #fff;
+  box-shadow: 0 0 0 3px rgba(0,123,255,0.08);
+}
+
+.pp-search-btn {
+  padding: 0.6rem 1.1rem;
+  background: #007bff;
+  color: #fff;
+  border: none;
+  border-radius: 10px;
+  font-size: 0.875rem;
+  font-weight: 600;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: background 0.2s;
+  font-family: inherit;
+}
+.pp-search-btn:hover { background: #0069d9; }
+
+.pp-filters {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+}
+
+.pp-filter-item {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  background: #f8fafc;
+  border: 1.5px solid #e2e8f0;
+  border-radius: 10px;
+  padding: 0 0.75rem;
+  transition: border-color 0.2s;
+}
+.pp-filter-item:focus-within {
+  border-color: #007bff;
+}
+
+.pp-filter-ico { color: #94a3b8; flex-shrink: 0; }
+
+.pp-filter-select {
+  border: none;
+  background: transparent;
+  font-size: 0.85rem;
+  color: #475569;
+  cursor: pointer;
+  outline: none;
+  padding: 0.6rem 0.25rem;
+  font-family: inherit;
+  min-width: 110px;
+}
+
+/* ─── Table card ───────────────────────────────── */
+.pp-card {
+  background: #fff;
+  border: 1px solid #e2e8f0;
+  border-radius: 16px;
+  overflow: hidden;
+}
+
+.pp-table-wrap {
+  overflow-x: auto;
+  overscroll-behavior-x: contain;
+}
+
+.pp-table {
   width: 100%;
   border-collapse: collapse;
 }
 
-.data-table th,
-.data-table td {
-  padding: 1rem 1.5rem;
+.pp-table th {
+  background: #f8fafc;
+  padding: 0.85rem 1.25rem;
   text-align: left;
+  font-size: 0.7rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.07em;
+  color: #64748b;
+  white-space: nowrap;
+  border-bottom: 1px solid #f1f5f9;
+}
+
+.pp-table td {
+  padding: 0.9rem 1.25rem;
+  border-bottom: 1px solid #f8fafc;
+  font-size: 0.875rem;
+  color: #334155;
   vertical-align: middle;
 }
 
-.data-table th {
-  background-color: #f8fafc;
-  color: #64748b;
-  font-weight: 600;
-  font-size: 0.75rem;
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-  white-space: nowrap;
-}
+.th-check, .pp-table td:first-child { width: 3rem; }
+.th-actions { text-align: right; }
 
-.data-table td {
-  border-bottom: 1px solid #f1f5f9;
-  color: #334155;
-  font-size: 0.9rem;
-}
-
-.data-table tr:hover td {
-  background-color: #f8fafc;
-}
-
-.product-row {
+.pp-checkbox {
+  width: 15px;
+  height: 15px;
+  accent-color: #007bff;
   cursor: pointer;
-  transition: background-color 0.15s ease;
 }
 
-.product-row:hover td {
-  background-color: #f1f5f9;
+.pp-row {
+  cursor: pointer;
+  transition: background 0.12s;
 }
+.pp-row:hover td { background: #f8fafc; }
+.pp-row:last-child td { border-bottom: none; }
 
-.w-16 {
-  width: 4rem;
-}
-.text-right {
-  text-align: right;
-}
-.font-medium {
-  font-weight: 600;
-  color: #0f172a;
-}
+.td-id { color: #94a3b8; font-size: 0.78rem; font-weight: 600; }
+.td-cat { color: #64748b; }
+.td-price { font-weight: 700; color: #0f172a; }
+.currency { font-size: 0.72rem; font-weight: 500; color: #94a3b8; }
+.td-qty { color: #475569; font-weight: 500; }
 
-.product-cell {
+.pp-product-cell {
   display: flex;
   align-items: center;
-  gap: 1rem;
+  gap: 0.75rem;
 }
 
-.product-image {
-  width: 40px;
-  height: 40px;
-  background-color: #f1f5f9;
-  border-radius: 8px;
+.pp-product-thumb {
+  width: 36px;
+  height: 36px;
+  border-radius: 9px;
+  background: linear-gradient(135deg, rgba(0,123,255,0.1), rgba(99,102,241,0.1));
+  color: #007bff;
   display: flex;
   align-items: center;
   justify-content: center;
-  color: #94a3b8;
+  flex-shrink: 0;
 }
 
-.placeholder-icon {
-  width: 20px;
-  height: 20px;
-}
-
-.product-name {
-  font-weight: 500;
-  color: #0f172a;
-}
-
-/* Status Badges */
-.status-badge {
-  padding: 0.25rem 0.6rem;
-  border-radius: 9999px;
-  font-size: 0.75rem;
+.pp-product-name {
   font-weight: 600;
+  color: #0f172a;
+  font-size: 0.875rem;
+}
+
+.pp-status {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.25rem 0.7rem;
+  border-radius: 100px;
+  font-size: 0.72rem;
+  font-weight: 700;
   white-space: nowrap;
 }
-
-.status-badge.in-stock {
-  background-color: #dcfce7;
-  color: #16a34a;
+.pp-status-active {
+  background: rgba(16,185,129,0.1);
+  color: #059669;
+  border: 1px solid rgba(16,185,129,0.2);
 }
-.status-badge.low-stock {
-  background-color: #fef3c7;
-  color: #d97706;
-}
-.status-badge.out-of-stock {
-  background-color: #fee2e2;
+.pp-status-inactive {
+  background: #fef2f2;
   color: #dc2626;
+  border: 1px solid #fecaca;
 }
 
-/* Actions */
-.actions-cell {
+.pp-actions-cell {
   display: flex;
   justify-content: flex-end;
-  gap: 0.5rem;
+  gap: 0.35rem;
 }
 
-.action-btn {
-  width: 32px;
-  height: 32px;
+.pp-act-btn {
+  width: 30px;
+  height: 30px;
   display: flex;
   align-items: center;
   justify-content: center;
-  border: 1px solid #e2e8f0;
-  background: white;
-  border-radius: 6px;
+  border: 1.5px solid #e2e8f0;
+  background: #fff;
+  border-radius: 8px;
   color: #64748b;
   cursor: pointer;
-  transition: all 0.1s;
+  transition: all 0.15s;
 }
-
-.action-btn:hover {
+.pp-act-btn:hover {
   background: #f1f5f9;
-  color: #0f172a;
-  border-color: #cbd5e1;
+  color: #007bff;
+  border-color: rgba(0,123,255,0.3);
 }
-
-.action-btn.delete:hover {
+.pp-act-del:hover {
   background: #fef2f2;
   color: #dc2626;
   border-color: #fecaca;
 }
 
-.empty-state {
-  text-align: center;
-  padding: 3rem;
-  color: #64748b;
-}
-
-/* Pagination */
-.pagination-footer {
-  padding: 1rem 1.5rem;
+/* ─── Empty ─────────────────────────────────────── */
+.pp-empty { text-align: center; padding: 3rem; }
+.pp-empty-inner {
   display: flex;
+  flex-direction: column;
   align-items: center;
-  justify-content: space-between;
-  flex-wrap: wrap;
-  gap: 1rem;
+  gap: 0.6rem;
+  color: #94a3b8;
 }
-
-.pagination-info {
-  font-size: 0.85rem;
-  color: #64748b;
-}
-
-.pagination-controls {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-}
-
-.page-btn {
-  width: 32px;
-  height: 32px;
+.pp-empty-icon {
+  width: 56px; height: 56px;
+  border-radius: 14px;
+  background: #f1f5f9;
   display: flex;
   align-items: center;
   justify-content: center;
-  border: 1px solid #e2e8f0;
-  background: white;
-  border-radius: 6px;
-  cursor: pointer;
-  color: #64748b;
+  color: #cbd5e1;
 }
+.pp-empty p { font-size: 0.875rem; margin: 0; }
 
-.page-btn:disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
-}
-
-.page-btn:not(:disabled):hover {
-  background: #f8fafc;
-  color: #0f172a;
-}
-
-.current-page {
-  font-size: 0.85rem;
-  font-weight: 500;
-  color: #0f172a;
-  margin: 0 0.5rem;
-}
-
-/* Responsive */
-@media (max-width: 768px) {
-  .toolbar-card {
-    flex-direction: column;
-    align-items: stretch;
-  }
-
-  .filters {
-    justify-content: space-between;
-  }
-
-  .filter-select {
-    width: 100%;
-  }
-
-  .data-table th,
-  .data-table td {
-    padding: 0.65rem 0.75rem;
-    font-size: 0.8125rem;
-  }
-
-  .pagination-footer {
-    justify-content: center;
-    flex-direction: column;
-  }
-}
-
-/* Modal Styles */
-.modal-overlay {
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background-color: rgba(15, 23, 42, 0.5);
+/* ─── Pagination ────────────────────────────────── */
+.pp-pagination {
   display: flex;
   align-items: center;
-  justify-content: center;
-  z-index: 100;
-  padding: 1rem;
-  backdrop-filter: blur(2px);
-}
-
-.modal-content {
-  width: 100%;
-  max-width: 600px;
-  max-height: 90vh;
-  display: flex;
-  flex-direction: column;
-  overflow: hidden;
-}
-
-/* Product Detail Modal */
-.modal-detail {
-  max-width: 560px;
-}
-
-.detail-header {
-  padding: 1.5rem 1.5rem 1.25rem;
-  border-bottom: 1px solid #e2e8f0;
-  display: flex;
-  align-items: flex-start;
   justify-content: space-between;
-  gap: 1rem;
-  background: linear-gradient(180deg, #f8fafc 0%, #fff 100%);
-}
-
-.detail-hero {
-  display: flex;
-  align-items: center;
-  gap: 1.25rem;
-  min-width: 0;
-}
-
-.detail-hero-icon {
-  width: 56px;
-  height: 56px;
-  border-radius: 12px;
-  background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
-  color: white;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  flex-shrink: 0;
-}
-
-.detail-hero .icon-hero {
-  width: 28px;
-  height: 28px;
-}
-
-.detail-hero-text {
-  min-width: 0;
-}
-
-.detail-title {
-  margin: 0 0 0.25rem 0;
-  font-size: 1.35rem;
-  font-weight: 700;
-  color: #0f172a;
-  line-height: 1.3;
-  word-break: break-word;
-}
-
-.detail-meta {
-  margin: 0 0 0.5rem 0;
-  font-size: 0.9rem;
-  color: #64748b;
-}
-
-.detail-body {
-  padding: 1.25rem 1.5rem;
-  overflow-y: auto;
-}
-
-.detail-section {
-  margin-bottom: 1.5rem;
-}
-
-.detail-section:last-child {
-  margin-bottom: 0;
-}
-
-.detail-section-title {
-  margin: 0 0 0.75rem 0;
-  font-size: 0.7rem;
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.08em;
-  color: #94a3b8;
-}
-
-.detail-section .product-detail-grid {
-  gap: 1rem;
-}
-
-/* Add/Edit Product Modal */
-.modal-form {
-  max-width: 560px;
-}
-
-.form-header h2 {
-  font-size: 1.25rem;
-}
-
-.form-body {
-  padding: 1.25rem 1.5rem;
-  overflow-y: auto;
-}
-
-.form-section {
-  margin-bottom: 1.5rem;
-}
-
-.form-section:last-child {
-  margin-bottom: 0;
-}
-
-.form-section-title {
-  margin: 0 0 0.75rem 0;
-  font-size: 0.7rem;
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.08em;
-  color: #94a3b8;
-}
-
-.form-grid {
-  gap: 1rem;
-}
-
-.form-section .data-group {
-  display: flex;
-  flex-direction: column;
-  gap: 0.35rem;
-}
-
-.form-section .data-group label {
-  font-size: 0.8rem;
-  font-weight: 600;
-  color: #475569;
-}
-
-.modal-header {
-  padding: 1.5rem;
-  border-bottom: 1px solid #f1f5f9;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-}
-
-.modal-header h2 {
-  margin: 0;
-  font-size: 1.25rem;
-  color: #0f172a;
-}
-
-.close-btn {
-  background: none;
-  border: none;
-  font-size: 1.5rem;
-  color: #64748b;
-  cursor: pointer;
-  line-height: 1;
-}
-
-.close-btn:hover {
-  color: #0f172a;
-}
-
-.modal-body {
-  padding: 1.5rem;
-  overflow-y: auto;
-}
-
-.product-detail-grid {
-  display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 1.5rem;
-}
-
-.product-detail-grid .col-span-2,
-.form-grid .col-span-2 {
-  grid-column: span 2;
-}
-
-.detail-group {
-  display: flex;
-  flex-direction: column;
-  gap: 0.25rem;
-}
-
-.detail-group label {
-  font-size: 0.8rem;
-  text-transform: uppercase;
-  color: #94a3b8;
-  font-weight: 600;
-  letter-spacing: 0.05em;
-}
-
-.detail-group p {
-  margin: 0;
-  color: #1e293b;
-  font-size: 1rem;
-}
-
-.detail-group .highlight {
-  color: #2563eb;
-  font-size: 1.1rem;
-}
-
-.detail-group .mono-text {
-  font-family: 'Courier New', Courier, monospace;
-}
-
-.detail-group .text-subtle {
-  color: #64748b;
-}
-
-.description-text {
-  background: #f8fafc;
-  padding: 1rem;
-  border-radius: 8px;
-  border: 1px solid #e2e8f0;
-  font-size: 0.95rem !important;
-  color: #475569 !important;
-}
-
-.modal-footer {
-  padding: 1rem 1.5rem;
+  padding: 0.9rem 1.25rem;
   border-top: 1px solid #f1f5f9;
-  display: flex;
-  justify-content: flex-end;
+  flex-wrap: wrap;
   gap: 0.75rem;
 }
 
-/* Delete Modals & Buttons */
-.header-actions {
-  display: flex;
-  gap: 1rem;
-  align-items: center;
+.pp-page-info {
+  font-size: 0.8rem;
+  color: #94a3b8;
+  font-weight: 500;
 }
 
-.btn-danger {
-  background-color: #fef2f2;
-  color: #dc2626;
-}
-
-.btn-danger:hover {
-  background-color: #fee2e2;
-}
-
-.btn-secondary {
-  background-color: #f1f5f9;
-  color: #475569;
-}
-
-.btn-secondary:hover {
-  background-color: #e2e8f0;
-  color: #0f172a;
-}
-
-.delete-modal {
-  max-width: 400px;
-}
-
-.text-center {
-  text-align: center;
-}
-
-.justify-center {
-  justify-content: center;
-  gap: 1rem;
-}
-
-.warning-icon-wrapper {
-  background-color: #fef2f2;
-  width: 64px;
-  height: 64px;
-  border-radius: 50%;
+.pp-page-controls {
   display: flex;
   align-items: center;
-  justify-content: center;
-  margin: 0 auto 1.5rem;
+  gap: 0.4rem;
 }
 
-.icon-xl {
-  width: 32px;
-  height: 32px;
-}
-
-.text-danger {
-  color: #dc2626;
-}
-
-.modal-title {
-  margin: 0 0 0.5rem 0;
-  font-size: 1.25rem;
-  color: #0f172a;
-}
-
-.modal-text {
-  margin: 0;
-  color: #64748b;
-  line-height: 1.5;
-}
-
-/* Form Elements */
-.premium-input {
-  width: 100%;
-  padding: 0.75rem 1rem;
-  border: 1px solid #e2e8f0;
+.pp-page-btn {
+  width: 30px;
+  height: 30px;
+  border: 1.5px solid #e2e8f0;
+  background: #fff;
   border-radius: 8px;
-  font-size: 0.95rem;
-  outline: none;
-  color: #0f172a;
-  transition: all 0.2s;
-  background-color: white;
-  box-sizing: border-box;
-}
-
-.premium-input:focus {
-  border-color: #2563eb;
-  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
-}
-
-.premium-input.select {
-  appearance: none;
-  background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%236B7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3e%3c/svg%3e");
-  background-position: right 0.5rem center;
-  background-repeat: no-repeat;
-  background-size: 1.5em 1.5em;
-  padding-right: 2.5rem;
-}
-
-textarea.premium-input {
-  resize: vertical;
-  min-height: 80px;
-}
-
-/* Toggle Switch */
-.toggle-group {
   display: flex;
-  flex-direction: row;
-  justify-content: space-between;
   align-items: center;
-}
-
-.toggle-switch {
-  width: 44px;
-  height: 24px;
-  background-color: #e2e8f0;
-  border-radius: 9999px;
-  position: relative;
+  justify-content: center;
   cursor: pointer;
-  transition: background-color 0.2s;
+  color: #64748b;
+  transition: all 0.15s;
+}
+.pp-page-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+.pp-page-btn:not(:disabled):hover {
+  background: #f8fafc;
+  border-color: #007bff;
+  color: #007bff;
 }
 
-.toggle-switch.active {
-  background-color: #2563eb;
+.pp-page-num {
+  min-width: 32px;
+  height: 30px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(0,123,255,0.08);
+  border: 1px solid rgba(0,123,255,0.2);
+  border-radius: 8px;
+  font-size: 0.82rem;
+  font-weight: 700;
+  color: #007bff;
+  padding: 0 0.5rem;
 }
 
-.toggle-knob {
-  width: 20px;
-  height: 20px;
-  background-color: white;
-  border-radius: 50%;
-  position: absolute;
-  top: 2px;
-  left: 2px;
-  transition: transform 0.2s;
-  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
-}
-
-.toggle-switch.active .toggle-knob {
-  transform: translateX(20px);
-}
-
-/* ── Skeleton loaders ── */
+/* ─── Skeleton ──────────────────────────────────── */
 @keyframes shimmer {
-  0% {
-    background-position: -400px 0;
-  }
-  100% {
-    background-position: 400px 0;
-  }
+  0% { background-position: -400px 0; }
+  100% { background-position: 400px 0; }
 }
-
 .skel {
   border-radius: 6px;
-  background: linear-gradient(90deg, #e2e8f0 25%, #f1f5f9 50%, #e2e8f0 75%);
+  background: linear-gradient(90deg, #f1f5f9 25%, #e2e8f0 50%, #f1f5f9 75%);
   background-size: 400px 100%;
   animation: shimmer 1.4s infinite linear;
 }
+.skel-row td { border-bottom: 1px solid #f8fafc; }
+.skel-check { width: 15px; height: 15px; border-radius: 3px; }
+.skel-img { width: 36px; height: 36px; border-radius: 9px; flex-shrink: 0; }
+.skel-name { width: 130px; height: 13px; }
+.skel-cat { width: 72px; height: 12px; }
+.skel-price { width: 96px; height: 12px; }
+.skel-qty { width: 40px; height: 12px; }
+.skel-badge { width: 58px; height: 20px; border-radius: 100px; }
+.skel-act { width: 30px; height: 30px; border-radius: 8px; }
 
-.skel-row td {
-  border-bottom: 1px solid #f1f5f9;
+/* ─── Modal ─────────────────────────────────────── */
+.pp-modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(15,23,42,0.45);
+  backdrop-filter: blur(4px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1rem;
+  z-index: 9000;
 }
-.skel-check {
-  width: 16px;
-  height: 16px;
-  border-radius: 3px;
+
+.pp-modal {
+  background: #fff;
+  border-radius: 18px;
+  padding: 2rem 1.75rem 1.5rem;
+  width: 100%;
+  max-width: 380px;
+  text-align: center;
+  box-shadow: 0 20px 60px rgba(0,0,0,0.15);
 }
-.skel-img {
-  width: 40px;
-  height: 40px;
-  border-radius: 8px;
-  flex-shrink: 0;
+
+.pp-modal-icon {
+  width: 52px;
+  height: 52px;
+  border-radius: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto 1.25rem;
 }
-.skel-name {
-  width: 140px;
-  height: 14px;
+.del-icon {
+  background: #fef2f2;
+  color: #dc2626;
 }
-.skel-cat {
-  width: 80px;
-  height: 13px;
+
+.pp-modal-title {
+  margin: 0 0 0.5rem;
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: #0f172a;
 }
-.skel-price {
-  width: 100px;
-  height: 13px;
+
+.pp-modal-text {
+  margin: 0 0 1.5rem;
+  font-size: 0.875rem;
+  color: #64748b;
+  line-height: 1.55;
 }
-.skel-sku {
-  width: 70px;
-  height: 13px;
+
+.pp-modal-actions {
+  display: flex;
+  justify-content: center;
+  gap: 0.6rem;
 }
-.skel-badge-xs {
-  width: 60px;
-  height: 20px;
-  border-radius: 9999px;
+
+/* Transition */
+.modal-fade-enter-active,
+.modal-fade-leave-active {
+  transition: all 0.2s cubic-bezier(0.4,0,0.2,1);
 }
-.skel-action {
-  width: 28px;
-  height: 28px;
-  border-radius: 6px;
+.modal-fade-enter-from,
+.modal-fade-leave-to {
+  opacity: 0;
+  transform: scale(0.96);
+}
+
+/* ─── Responsive ────────────────────────────────── */
+@media (max-width: 768px) {
+  .pp-hero { padding: 1.25rem; }
+  .pp-title { font-size: 1.3rem; }
+  .pp-toolbar { flex-direction: column; align-items: stretch; }
+  .pp-search-wrap { min-width: 0; }
+  .pp-filters { flex-wrap: wrap; }
+  .pp-filter-select { min-width: 90px; }
+  .pp-pagination { justify-content: center; flex-direction: column; align-items: center; }
+}
+
+@media (max-width: 640px) {
+  .pp-table th,
+  .pp-table td { padding: 0.7rem 0.85rem; }
+  .pp-modal-actions { flex-direction: column-reverse; gap: 0.5rem; }
+  .pp-modal-actions .pp-btn-ghost,
+  .pp-modal-actions .pp-btn-danger { width: 100%; justify-content: center; }
 }
 </style>

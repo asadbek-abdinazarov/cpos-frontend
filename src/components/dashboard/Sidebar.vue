@@ -6,7 +6,6 @@ import {
   TrendingUp,
   Package,
   ShoppingBag,
-  Scale,
   X,
   LogOut,
   Users,
@@ -32,7 +31,6 @@ const { showNotification } = useNotification()
 const menuItems = [
   { name: 'dashboard.sidebar.analytics', path: '/dashboard/analytics', icon: TrendingUp },
   { name: 'dashboard.sidebar.products', path: '/dashboard/products', icon: Package },
-  { name: 'dashboard.sidebar.scales', path: '/dashboard/scales', icon: Scale },
   { name: 'dashboard.sidebar.sales', path: '/dashboard/sales', icon: ShoppingBag },
   { name: 'dashboard.sidebar.cashiers', path: '/dashboard/cashiers', icon: Users },
 ]
@@ -99,9 +97,6 @@ const handleLogout = async () => {
     <!-- ─── Logo ──────────────────────────────────── -->
     <div class="sidebar-header">
       <router-link to="/" class="logo-link">
-        <div class="logo-icon">
-          <span class="logo-dot"></span>
-        </div>
         <img src="/logo-nav.svg" alt="CPOS" class="logo-img" />
       </router-link>
       <button class="close-btn" @click="$emit('close')">
@@ -211,6 +206,11 @@ const handleLogout = async () => {
   align-items: center;
   gap: 10px;
   text-decoration: none;
+  cursor: pointer;
+}
+
+.logo-link * {
+  pointer-events: none;
 }
 
 .logo-icon {
@@ -233,7 +233,7 @@ const handleLogout = async () => {
 }
 
 .logo-img {
-  height: 26px;
+  height: 36px;
   width: auto;
 }
 

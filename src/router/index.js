@@ -59,11 +59,6 @@ const router = createRouter({
           component: () => import('../views/ProductFormView.vue'),
         },
         {
-          path: 'scales',
-          name: 'scales',
-          component: () => import('../views/ScalesView.vue'),
-        },
-        {
           path: 'sales',
           name: 'sales',
           component: () => import('../views/SalesView.vue'),
@@ -79,6 +74,11 @@ const router = createRouter({
           component: () => import('../views/SettingsView.vue'),
         },
       ],
+    },
+    {
+      path: '/:pathMatch(.*)*',
+      name: 'notFound',
+      component: () => import('../views/NotFoundView.vue'),
     },
   ],
 })
