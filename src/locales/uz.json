@@ -267,9 +267,11 @@
     "sidebar": {
       "analytics": "Analitika",
       "products": "Mahsulotlar",
+      "categories": "Kategoriyalar",
       "scales": "Tarozilar",
       "sales": "Sotuvlar",
       "cashiers": "Kassirlar",
+      "pos": "Kassir terminali",
       "settings": "Sozlamalar"
     },
     "header": {

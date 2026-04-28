@@ -32,7 +32,11 @@ const closeSidebar = () => {
       <DashboardHeader @toggle-sidebar="toggleSidebar" />
       
       <main class="page-content">
-        <RouterView />
+        <RouterView v-slot="{ Component }">
+          <Transition name="page-fade" mode="out-in">
+            <component :is="Component" />
+          </Transition>
+        </RouterView>
       </main>
     </div>
   </div>
@@ -85,6 +89,24 @@ const closeSidebar = () => {
   z-index: 45; /* Below sidebar (50) but above everything else */
   opacity: 0;
   transition: opacity 0.3s ease;
+}
+
+.page-fade-enter-active {
+  transition: opacity 0.2s ease, transform 0.2s ease;
+}
+
+.page-fade-leave-active {
+  transition: opacity 0.15s ease, transform 0.15s ease;
+}
+
+.page-fade-enter-from {
+  opacity: 0;
+  transform: translateY(14px);
+}
+
+.page-fade-leave-to {
+  opacity: 0;
+  transform: translateY(-6px);
 }
 
 @media (max-width: 1024px) {

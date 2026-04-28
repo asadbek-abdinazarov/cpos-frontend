@@ -8,6 +8,7 @@ import {
 } from '@/services/api'
 import { useNotification } from '@/composables/useNotification'
 import { useI18n } from 'vue-i18n'
+import { useDelayedLoading } from '@/composables/useDelayedLoading'
 
 export function useProductList() {
   const router = useRouter()
@@ -15,7 +16,7 @@ export function useProductList() {
   const { t } = useI18n()
 
   const products = ref([])
-  const loading = ref(false)
+  const { loading, showSkeleton, startLoading, stopLoading } = useDelayedLoading()
   const totalElements = ref(0)
   const totalPages = ref(1)
 
@@ -66,7 +67,7 @@ export function useProductList() {
   }
 
   const fetchProducts = async () => {
-    loading.value = true
+    startLoading()
     try {
       const params = {
         page: currentPage.value - 1,
@@ -97,7 +98,7 @@ export function useProductList() {
     } catch (error) {
       console.error(error)
     } finally {
-      loading.value = false
+      stopLoading()
     }
   }
 
@@ -240,6 +241,7 @@ export function useProductList() {
   return {
     products,
     loading,
+    showSkeleton,
     totalElements,
     totalPages,
     searchQuery,

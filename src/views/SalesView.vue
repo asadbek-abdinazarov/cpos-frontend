@@ -1,6 +1,7 @@
 <script setup>
 import { ref, watch, onMounted } from 'vue'
 import { getSalesHistories } from '@/services/api'
+import { useDelayedLoading } from '@/composables/useDelayedLoading'
 import {
   Search,
   ShoppingBag,
@@ -16,7 +17,7 @@ import {
 } from 'lucide-vue-next'
 
 const sales = ref([])
-const loading = ref(false)
+const { loading, showSkeleton, startLoading, stopLoading } = useDelayedLoading()
 const currentPage = ref(1)
 const itemsPerPage = ref(10)
 const totalElements = ref(0)
@@ -34,7 +35,7 @@ watch(searchQuery, (val) => {
 })
 
 const fetchSales = async () => {
-  loading.value = true
+  startLoading()
   try {
     const params = {
       page: currentPage.value - 1,
@@ -53,7 +54,7 @@ const fetchSales = async () => {
   } catch (error) {
     console.error('Failed to load sales:', error)
   } finally {
-    loading.value = false
+    stopLoading()
   }
 }
 
@@ -139,7 +140,7 @@ onMounted(fetchSales)
           <tbody>
 
             <!-- Skeleton -->
-            <template v-if="loading">
+            <template v-if="showSkeleton">
               <tr v-for="n in itemsPerPage" :key="n" class="skel-row">
                 <td><div class="skel skel-toggle"></div></td>
                 <td><div class="skel" style="width:110px;height:13px"></div></td>

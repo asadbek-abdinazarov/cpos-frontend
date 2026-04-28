@@ -5,8 +5,8 @@ import { useRouter } from 'vue-router'
 import { goToHomeSection } from '@/composables/useHomeSectionNav'
 import { ArrowRight } from 'lucide-vue-next'
 import terminalImg from '@/assets/images/terminal.png'
-import printerImg  from '@/assets/images/printer.png'
-import scannerImg  from '@/assets/images/scanner.png'
+import printerImg from '@/assets/images/printer.png'
+import scannerImg from '@/assets/images/scanner.png'
 
 const { t } = useI18n()
 const router = useRouter()
@@ -21,7 +21,7 @@ const products = computed(() => [
     price: '$499',
     image: terminalImg,
     badge: 'Bestseller',
-    badgeColor: '#007BFF'
+    badgeColor: '#007BFF',
   },
   {
     id: 2,
@@ -30,7 +30,7 @@ const products = computed(() => [
     price: '$120',
     image: printerImg,
     badge: 'Tez yetkazish',
-    badgeColor: '#10B981'
+    badgeColor: '#10B981',
   },
   {
     id: 3,
@@ -39,8 +39,8 @@ const products = computed(() => [
     price: '$85',
     image: scannerImg,
     badge: 'Eng ixcham',
-    badgeColor: '#6366F1'
-  }
+    badgeColor: '#6366F1',
+  },
 ])
 </script>
 
@@ -68,9 +68,6 @@ const products = computed(() => [
           :data-aos-delay="(product.id - 1) * 100"
         >
           <div class="image-area">
-            <span class="product-badge" :style="{ background: `${product.badgeColor}18`, color: product.badgeColor }">
-              {{ product.badge }}
-            </span>
             <img :src="product.image" :alt="product.title" class="product-img" loading="lazy" />
           </div>
           <div class="product-info">
@@ -120,7 +117,7 @@ const products = computed(() => [
   display: inline-block;
   background: rgba(0, 123, 255, 0.08);
   border: 1px solid rgba(0, 123, 255, 0.15);
-  color: #007BFF;
+  color: #007bff;
   font-size: 0.78rem;
   font-weight: 700;
   letter-spacing: 0.08em;
@@ -133,14 +130,14 @@ const products = computed(() => [
 .section-title {
   font-size: clamp(2rem, 3.5vw, 2.75rem);
   font-weight: 800;
-  color: #0F172A;
+  color: #0f172a;
   letter-spacing: -0.02em;
   margin: 0;
 }
 
 .section-sub {
   font-size: 1.05rem;
-  color: #64748B;
+  color: #64748b;
   max-width: 480px;
   line-height: 1.7;
   margin: 0;
@@ -150,7 +147,7 @@ const products = computed(() => [
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  color: #007BFF;
+  color: #007bff;
   font-weight: 600;
   font-size: 0.9rem;
   text-decoration: none;
@@ -175,8 +172,8 @@ const products = computed(() => [
 }
 
 .product-card {
-  background: #F8FAFC;
-  border: 1px solid #E2E8F0;
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
   border-radius: 20px;
   overflow: hidden;
   transition: all 0.3s ease;
@@ -187,28 +184,16 @@ const products = computed(() => [
 .product-card:hover {
   transform: translateY(-6px);
   box-shadow: 0 20px 50px rgba(0, 0, 0, 0.08);
-  border-color: #CBD5E1;
+  border-color: #cbd5e1;
 }
 
 .image-area {
-  background: #F1F5F9;
+  background: #f1f5f9;
   border-radius: 14px;
   margin: 1rem 1rem 0;
   height: 210px;
   position: relative;
   overflow: hidden;
-}
-
-.product-badge {
-  position: absolute;
-  top: 12px;
-  left: 12px;
-  font-size: 0.7rem;
-  font-weight: 700;
-  padding: 4px 10px;
-  border-radius: 100px;
-  letter-spacing: 0.02em;
-  z-index: 1;
 }
 
 .product-img {
@@ -237,13 +222,13 @@ const products = computed(() => [
 .product-title {
   font-size: 1.1rem;
   font-weight: 700;
-  color: #0F172A;
+  color: #0f172a;
   margin-bottom: 0.5rem;
 }
 
 .product-desc {
   font-size: 0.875rem;
-  color: #64748B;
+  color: #64748b;
   line-height: 1.6;
   flex: 1;
   margin-bottom: 1.5rem;
@@ -263,17 +248,17 @@ const products = computed(() => [
 
 .price-from {
   font-size: 0.75rem;
-  color: #94A3B8;
+  color: #94a3b8;
 }
 
 .product-price {
   font-size: 1.4rem;
   font-weight: 800;
-  color: #0F172A;
+  color: #0f172a;
 }
 
 .btn-quote {
-  background: #0F172A;
+  background: #0f172a;
   color: #fff;
   border: none;
   padding: 0.6rem 1.25rem;
@@ -285,14 +270,18 @@ const products = computed(() => [
 }
 
 .btn-quote:hover {
-  background: #1E293B;
+  background: #1e293b;
   transform: translateY(-1px);
   box-shadow: 0 4px 12px rgba(15, 23, 42, 0.2);
 }
 
 @media (max-width: 900px) {
-  .product-grid { grid-template-columns: repeat(2, 1fr); }
-  .hardware-section { padding: 5rem 0; }
+  .product-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  .hardware-section {
+    padding: 5rem 0;
+  }
 }
 
 @media (max-width: 600px) {
@@ -301,10 +290,17 @@ const products = computed(() => [
     align-items: flex-start;
   }
 
-  .view-all-link { align-self: stretch; justify-content: center; }
+  .view-all-link {
+    align-self: stretch;
+    justify-content: center;
+  }
 
-  .product-grid { grid-template-columns: 1fr; }
+  .product-grid {
+    grid-template-columns: 1fr;
+  }
 
-  .section-title { font-size: 2rem; }
+  .section-title {
+    font-size: 2rem;
+  }
 }
 </style>

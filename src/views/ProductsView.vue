@@ -16,6 +16,7 @@ import { useProductList } from '@/composables/useProductList'
 
 const {
   loading,
+  showSkeleton,
   totalElements,
   totalPages,
   searchQuery,
@@ -137,7 +138,7 @@ const {
           </thead>
           <tbody>
             <!-- Skeleton -->
-            <template v-if="loading">
+            <template v-if="showSkeleton">
               <tr v-for="n in itemsPerPage" :key="n" class="skel-row">
                 <td><div class="skel skel-check"></div></td>
                 <td><div class="skel" style="width:28px;height:12px"></div></td>

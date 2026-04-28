@@ -270,9 +270,11 @@
     "sidebar": {
       "analytics": "Аналитика",
       "products": "Товары",
+      "categories": "Категории",
       "scales": "Весы",
       "sales": "Продажи",
       "cashiers": "Кассиры",
+      "pos": "Терминал кассира",
       "settings": "Настройки"
     },
     "header": {

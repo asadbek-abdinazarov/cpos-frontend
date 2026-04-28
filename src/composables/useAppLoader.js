@@ -9,8 +9,8 @@ export async function enterDashboard(navigate) {
     getUserProfile().catch(() => {}),
     new Promise((r) => setTimeout(r, 1000)),
   ])
+  await navigate()
   isLoading.value = false
-  navigate()
 }
 
 export function useAppLoader() {

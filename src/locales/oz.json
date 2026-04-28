@@ -270,9 +270,11 @@
     "sidebar": {
       "analytics": "Аналитика",
       "products": "Маҳсулотлар",
+      "categories": "Категориялар",
       "scales": "Тарозилар",
       "sales": "Сотувлар",
       "cashiers": "Кассирлар",
+      "pos": "Кассир терминали",
       "settings": "Созламалар"
     },
     "header": {

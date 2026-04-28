@@ -1,5 +1,6 @@
 <script setup>
 import { ref, onMounted } from 'vue'
+import { useDelayedLoading } from '@/composables/useDelayedLoading'
 import {
   Users,
   Plus,
@@ -15,7 +16,7 @@ import { useI18n } from 'vue-i18n'
 const { showNotification } = useNotification()
 const { t } = useI18n()
 
-const loading = ref(false)
+const { loading, showSkeleton, startLoading, stopLoading } = useDelayedLoading()
 const cashiers = ref([])
 const totalElements = ref(0)
 const totalPages = ref(1)
@@ -23,7 +24,7 @@ const currentPage = ref(1)
 const itemsPerPage = ref(10)
 
 const fetchCashiers = async () => {
-  loading.value = true
+  startLoading()
   try {
     const res = await getCashiers({
       page: currentPage.value - 1,
@@ -38,7 +39,7 @@ const fetchCashiers = async () => {
   } catch {
     showNotification({ type: 'error', message: 'Kassirlarni yuklashda xatolik!' })
   } finally {
-    loading.value = false
+    stopLoading()
   }
 }
 
@@ -138,7 +139,7 @@ onMounted(fetchCashiers)
           <tbody>
 
             <!-- Skeleton -->
-            <template v-if="loading">
+            <template v-if="showSkeleton">
               <tr v-for="n in itemsPerPage" :key="n" class="skel-row">
                 <td><div class="skel" style="width:28px;height:12px"></div></td>
                 <td>

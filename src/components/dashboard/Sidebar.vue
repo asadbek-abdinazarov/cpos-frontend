@@ -6,6 +6,7 @@ import {
   TrendingUp,
   Package,
   ShoppingBag,
+  LayoutGrid,
   X,
   LogOut,
   Users,
@@ -31,6 +32,7 @@ const { showNotification } = useNotification()
 const menuItems = [
   { name: 'dashboard.sidebar.analytics', path: '/dashboard/analytics', icon: TrendingUp },
   { name: 'dashboard.sidebar.products', path: '/dashboard/products', icon: Package },
+  { name: 'dashboard.sidebar.categories', path: '/dashboard/categories', icon: LayoutGrid },
   { name: 'dashboard.sidebar.sales', path: '/dashboard/sales', icon: ShoppingBag },
   { name: 'dashboard.sidebar.cashiers', path: '/dashboard/cashiers', icon: Users },
 ]

@@ -247,6 +247,18 @@ export function getCategories() {
   return api.get('web/categories')
 }
 
+export function createCategory(data) {
+  return api.post('web/categories', data)
+}
+
+export function updateCategory(id, data) {
+  return api.patch(`web/categories/${id}`, data)
+}
+
+export function deleteCategory(id) {
+  return api.delete(`web/categories/${id}`)
+}
+
 export function createProduct(data) {
   return api.post('web/products', data)
 }
