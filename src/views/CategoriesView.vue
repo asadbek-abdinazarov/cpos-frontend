@@ -1,5 +1,6 @@
 <script setup>
 import { ref, onMounted } from 'vue'
+import { useI18n } from 'vue-i18n'
 import { useDelayedLoading } from '@/composables/useDelayedLoading'
 import {
   LayoutGrid,
@@ -14,6 +15,7 @@ import { getCategories, createCategory, updateCategory, deleteCategory } from '@
 import { useNotification } from '@/composables/useNotification'
 
 const { showNotification } = useNotification()
+const { t } = useI18n()
 
 const categories = ref([])
 const { loading, showSkeleton, startLoading, stopLoading } = useDelayedLoading()
@@ -26,7 +28,7 @@ const fetchCategories = async () => {
       categories.value = res.data.data
     }
   } catch {
-    showNotification({ type: 'error', message: 'Kategoriyalarni yuklashda xatolik!' })
+    showNotification({ type: 'error', message: t('dashboard.categories.error_load') })
   } finally {
     stopLoading()
   }
@@ -58,20 +60,20 @@ const handleSubmit = async () => {
     if (editingId.value) {
       const res = await updateCategory(editingId.value, form.value)
       if (res.data?.success) {
-        showNotification({ type: 'success', message: 'Kategoriya yangilandi' })
+        showNotification({ type: 'success', message: t('dashboard.categories.updated') })
         closeModal()
         await fetchCategories()
       }
     } else {
       const res = await createCategory(form.value)
       if (res.data?.success) {
-        showNotification({ type: 'success', message: 'Kategoriya qoʻshildi' })
+        showNotification({ type: 'success', message: t('dashboard.categories.created') })
         closeModal()
         await fetchCategories()
       }
     }
   } catch {
-    showNotification({ type: 'error', message: 'Xatolik yuz berdi' })
+    showNotification({ type: 'error', message: t('dashboard.categories.error_save') })
   } finally {
     isSubmitting.value = false
   }
@@ -96,12 +98,12 @@ const executeDelete = async () => {
   try {
     const res = await deleteCategory(deletingId.value)
     if (res.data?.success) {
-      showNotification({ type: 'success', message: 'Kategoriya oʻchirildi' })
+      showNotification({ type: 'success', message: t('dashboard.categories.deleted') })
       closeDeleteModal()
       await fetchCategories()
     }
   } catch {
-    showNotification({ type: 'error', message: 'Oʻchirishda xatolik yuz berdi' })
+    showNotification({ type: 'error', message: t('dashboard.categories.error_delete') })
   } finally {
     isDeleting.value = false
   }
@@ -122,14 +124,14 @@ onMounted(fetchCategories)
         <div class="cat-hero-left">
           <div class="cat-badge">
             <LayoutGrid :size="11" />
-            Kategoriyalar
+            {{ $t('dashboard.categories.title') }}
           </div>
-          <h1 class="cat-title">Kategoriyalar</h1>
-          <p class="cat-subtitle">Mahsulot kategoriyalarini boshqarish va tartibga solish</p>
+          <h1 class="cat-title">{{ $t('dashboard.categories.title') }}</h1>
+          <p class="cat-subtitle">{{ $t('dashboard.categories.subtitle') }}</p>
         </div>
         <button class="cat-btn-primary" @click="openCreate">
           <Plus :size="15" />
-          Yangi kategoriya
+          {{ $t('dashboard.categories.add') }}
         </button>
       </div>
     </div>
@@ -140,10 +142,10 @@ onMounted(fetchCategories)
         <table class="cat-table">
           <thead>
             <tr>
-              <th>ID</th>
-              <th>Nomi</th>
-              <th>Mahsulotlar</th>
-              <th class="th-actions">Harakatlar</th>
+              <th>{{ $t('dashboard.table.id') }}</th>
+              <th>{{ $t('dashboard.categories.col_name') }}</th>
+              <th>{{ $t('dashboard.categories.col_products') }}</th>
+              <th class="th-actions">{{ $t('dashboard.categories.col_actions') }}</th>
             </tr>
           </thead>
           <tbody>
@@ -187,10 +189,10 @@ onMounted(fetchCategories)
               </td>
               <td>
                 <div class="cat-actions">
-                  <button class="cat-act-btn cat-act-edit" title="Tahrirlash" @click="openEdit(cat)">
+                  <button class="cat-act-btn cat-act-edit" :title="$t('dashboard.categories.btn_edit')" @click="openEdit(cat)">
                     <Pencil :size="14" />
                   </button>
-                  <button class="cat-act-btn cat-act-del" title="Oʻchirish" @click="confirmDelete(cat)">
+                  <button class="cat-act-btn cat-act-del" :title="$t('dashboard.categories.btn_delete')" @click="confirmDelete(cat)">
                     <Trash2 :size="14" />
                   </button>
                 </div>
@@ -202,9 +204,9 @@ onMounted(fetchCategories)
               <td colspan="4" class="cat-empty">
                 <div class="cat-empty-inner">
                   <div class="cat-empty-icon"><LayoutGrid :size="28" /></div>
-                  <p>Hozircha kategoriyalar yoʻq</p>
+                  <p>{{ $t('dashboard.categories.empty') }}</p>
                   <button class="cat-btn-primary" @click="openCreate">
-                    <Plus :size="14" /> Birinchisini qoʻshish
+                    <Plus :size="14" /> {{ $t('dashboard.categories.add_first') }}
                   </button>
                 </div>
               </td>
@@ -216,7 +218,7 @@ onMounted(fetchCategories)
 
       <!-- Footer info -->
       <div class="cat-footer" v-if="!loading && categories.length > 0">
-        <span class="cat-total">Jami {{ categories.length }} ta kategoriya</span>
+        <span class="cat-total">{{ $t('dashboard.categories.total', { count: categories.length }) }}</span>
       </div>
     </div>
 
@@ -231,10 +233,10 @@ onMounted(fetchCategories)
               </div>
               <div>
                 <h2 class="cat-modal-title">
-                  {{ editingId ? 'Kategoriyani tahrirlash' : 'Yangi kategoriya' }}
+                  {{ editingId ? $t('dashboard.categories.modal_edit_title') : $t('dashboard.categories.modal_create_title') }}
                 </h2>
                 <p class="cat-modal-sub">
-                  {{ editingId ? 'Kategoriya nomini yangilang' : 'Yangi kategoriya nomini kiriting' }}
+                  {{ editingId ? $t('dashboard.categories.modal_edit_subtitle') : $t('dashboard.categories.modal_create_subtitle') }}
                 </p>
               </div>
               <button class="cat-close-btn" @click="closeModal">
@@ -243,22 +245,22 @@ onMounted(fetchCategories)
             </div>
             <form @submit.prevent="handleSubmit" class="cat-modal-form">
               <div class="cat-form-group">
-                <label>Kategoriya nomi</label>
+                <label>{{ $t('dashboard.categories.field_name') }}</label>
                 <input
                   v-model="form.name"
                   type="text"
                   required
-                  placeholder="Masalan: Ichimliklar"
+                  :placeholder="$t('dashboard.categories.field_placeholder')"
                   autofocus
                 />
               </div>
               <div class="cat-modal-footer">
                 <button type="button" class="cat-btn-ghost" @click="closeModal" :disabled="isSubmitting">
-                  Bekor qilish
+                  {{ $t('dashboard.categories.btn_cancel') }}
                 </button>
                 <button type="submit" class="cat-btn-primary" :disabled="isSubmitting">
                   <span v-if="isSubmitting" class="cat-spinner"></span>
-                  {{ editingId ? 'Saqlash' : 'Yaratish' }}
+                  {{ editingId ? $t('dashboard.categories.btn_save') : $t('dashboard.categories.btn_create') }}
                 </button>
               </div>
             </form>
@@ -275,18 +277,15 @@ onMounted(fetchCategories)
             <div class="cat-del-icon">
               <AlertTriangle :size="24" />
             </div>
-            <h2 class="cat-modal-title" style="text-align:center">Kategoriyani oʻchirish</h2>
-            <p class="cat-del-text">
-              <strong>{{ deletingName }}</strong> kategoriyasi oʻchiriladi.
-              Bu amalni bekor qilib boʻlmaydi.
-            </p>
+            <h2 class="cat-modal-title" style="text-align:center">{{ $t('dashboard.categories.delete_title') }}</h2>
+            <p class="cat-del-text" v-html="$t('dashboard.categories.delete_text', { name: deletingName })"></p>
             <div class="cat-modal-footer" style="justify-content:center">
               <button class="cat-btn-ghost" @click="closeDeleteModal" :disabled="isDeleting">
-                Bekor qilish
+                {{ $t('dashboard.categories.btn_cancel') }}
               </button>
               <button class="cat-btn-danger" @click="executeDelete" :disabled="isDeleting">
                 <span v-if="isDeleting" class="cat-spinner cat-spinner--red"></span>
-                Oʻchirish
+                {{ $t('dashboard.categories.btn_delete') }}
               </button>
             </div>
           </div>
@@ -759,9 +758,45 @@ onMounted(fetchCategories)
 
 /* ─── Modal transition ──────────────────────────── */
 .modal-fade-enter-active,
-.modal-fade-leave-active { transition: all 0.2s cubic-bezier(0.4,0,0.2,1); }
+.modal-fade-leave-active {
+  transition:
+    opacity 0.22s cubic-bezier(0.4, 0, 0.2, 1),
+    background-color 0.22s cubic-bezier(0.4, 0, 0.2, 1),
+    backdrop-filter 0.22s cubic-bezier(0.4, 0, 0.2, 1);
+  will-change: opacity, background-color, backdrop-filter;
+}
+
+.modal-fade-enter-active .cat-modal,
+.modal-fade-leave-active .cat-modal {
+  transition:
+    transform 0.22s cubic-bezier(0.4, 0, 0.2, 1),
+    opacity 0.22s cubic-bezier(0.4, 0, 0.2, 1),
+    box-shadow 0.22s cubic-bezier(0.4, 0, 0.2, 1);
+  will-change: transform, opacity, box-shadow;
+}
+
 .modal-fade-enter-from,
-.modal-fade-leave-to { opacity: 0; transform: scale(0.96); }
+.modal-fade-leave-to {
+  opacity: 0;
+  background: rgba(15, 23, 42, 0);
+  backdrop-filter: blur(0px);
+}
+
+.modal-fade-enter-from .cat-modal,
+.modal-fade-leave-to .cat-modal {
+  opacity: 0;
+  transform: translateY(10px) scale(0.98);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .modal-fade-enter-active,
+  .modal-fade-leave-active,
+  .modal-fade-enter-active .cat-modal,
+  .modal-fade-leave-active .cat-modal {
+    transition: none;
+  }
+}
 
 /* ─── Responsive ────────────────────────────────── */
 @media (max-width: 768px) {

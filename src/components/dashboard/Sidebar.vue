@@ -37,7 +37,7 @@ const menuItems = [
   { name: 'dashboard.sidebar.cashiers', path: '/dashboard/cashiers', icon: Users },
 ]
 
-const isActive = (path) => route.path === path
+const isActive = (path) => route.path === path || route.path.startsWith(path + '/')
 
 const userData = ref({
   username: '',
@@ -108,7 +108,7 @@ const handleLogout = async () => {
 
     <!-- ─── Nav ───────────────────────────────────── -->
     <nav class="sidebar-nav">
-      <span class="nav-section-label">Menyu</span>
+      <span class="nav-section-label">{{ t('dashboard.sidebar.menu_label') }}</span>
       <router-link
         v-for="item in menuItems"
         :key="item.path"
@@ -136,7 +136,6 @@ const handleLogout = async () => {
         <div class="user-avatar">{{ initials }}</div>
         <div class="user-info">
           <span class="user-name">{{ fullName }}</span>
-          <span class="user-role">{{ userData.roles[0] || 'User' }}</span>
         </div>
         <Settings :size="15" class="user-settings-icon" />
       </router-link>

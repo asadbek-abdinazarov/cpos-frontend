@@ -8,7 +8,6 @@ const { showNotification } = useNotification()
 const t = i18n.global.t
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080/api/v1/'
-//https://cpos-backend-uf77.onrender.com/api/v1/
 
 const api = axios.create({
   baseURL: API_BASE_URL,
@@ -267,7 +266,6 @@ export function updateProduct(id, data) {
   return api.patch(`web/products/${id}`, data)
 }
 
-
 export function getSalesHistories(params) {
   return api.get('web/sale/my/histories', { params })
 }
@@ -284,6 +282,26 @@ export function getSalesByCategory(params) {
   return api.get('web/statistics/sales-by-category', { params })
 }
 
+export function getHourlySales(params) {
+  return api.get('web/statistics/hourly-sales', { params })
+}
+
+export function getPaymentMethods(params) {
+  return api.get('web/statistics/payment-methods', { params })
+}
+
+export function getTopProducts(params) {
+  return api.get('web/statistics/top-products', { params })
+}
+
+export function exportStatistics(params, signal) {
+  return api.get('web/statistics/export', {
+    params,
+    responseType: 'blob',
+    signal,
+  })
+}
+
 export function updatePassword(data) {
   return api.put('web/users/password', data)
 }
@@ -298,6 +316,10 @@ export function getNotifications(params) {
 
 export function markNotificationAsRead(id) {
   return api.post(`web/notifications/${id}/read`)
+}
+
+export function getSubscriptionPlans() {
+  return api.get('web/subscription/plans')
 }
 
 export function generateBarcode() {

@@ -134,6 +134,27 @@
     "annual": "Год",
     "save": "Скидка 20%",
     "popular": "ПОПУЛЯРНЫЙ",
+    "free": "Бесплатно",
+    "unlimited": "Без ограничений",
+    "per_month": "UZS / мес",
+    "per_year": "UZS / год",
+    "trial_days": "Пробный период: {days} дн.",
+    "loading": "Загрузка тарифов...",
+    "load_error": "Не удалось загрузить тарифы. Попробуйте позже.",
+    "cta_start": "Начать",
+    "cta_contact": "Связаться с отделом продаж",
+    "features_with_limit": "{feature}: {limit}",
+    "features": {
+      "CUSTOM_INTEGRATIONS": "Пользовательские интеграции",
+      "PRIORITY_SUPPORT": "Приоритетная поддержка",
+      "REPORTS_ACCESS": "Доступ к отчетам",
+      "MAX_CASHIERS": "Кассиры",
+      "MULTI_CASHIER": "Несколько кассиров",
+      "MAX_PRODUCTS": "Товары",
+      "MAX_CATEGORIES": "Категории",
+      "API_ACCESS": "Доступ к API",
+      "EXPORT_ACCESS": "Экспорт (CSV/XLSX)"
+    },
     "plans": {
       "starter": {
         "name": "Стартовый",
@@ -275,14 +296,18 @@
       "sales": "Продажи",
       "cashiers": "Кассиры",
       "pos": "Терминал кассира",
-      "settings": "Настройки"
+      "settings": "Настройки",
+      "menu_label": "Меню"
     },
     "header": {
       "search": "Поиск...",
       "notifications": "Уведомления",
       "mark_all_read": "Отметить все как прочитанные",
       "no_notifications": "Нет уведомлений",
-      "profile": "Профиль"
+      "new": "новых",
+      "loading": "Загрузка…",
+      "profile": "Профиль",
+      "live_data": "Данные в реальном времени"
     },
     "table": {
       "id": "ID",
@@ -399,6 +424,68 @@
         "updating": "Обновление..."
       }
     },
+    "categories": {
+      "title": "Категории",
+      "subtitle": "Управление и организация категорий товаров",
+      "add": "Новая категория",
+      "empty": "Категорий пока нет",
+      "add_first": "Добавить первую",
+      "total": "Всего {count} категорий",
+      "col_name": "Название",
+      "col_products": "Товары",
+      "col_actions": "Действия",
+      "modal_create_title": "Новая категория",
+      "modal_create_subtitle": "Введите название новой категории",
+      "modal_edit_title": "Редактировать категорию",
+      "modal_edit_subtitle": "Обновите название категории",
+      "field_name": "Название категории",
+      "field_placeholder": "Например: Напитки",
+      "btn_save": "Сохранить",
+      "btn_create": "Создать",
+      "btn_cancel": "Отмена",
+      "btn_delete": "Удалить",
+      "btn_edit": "Редактировать",
+      "delete_title": "Удалить категорию",
+      "delete_text": "Категория {name} будет удалена. Это действие нельзя отменить.",
+      "created": "Категория добавлена",
+      "updated": "Категория обновлена",
+      "deleted": "Категория удалена",
+      "error_load": "Ошибка при загрузке категорий!",
+      "error_save": "Произошла ошибка",
+      "error_delete": "Ошибка при удалении"
+    },
+    "cashiers": {
+      "subtitle": "Управление кассирами, активация и добавление новых",
+      "add": "Добавить кассира",
+      "empty": "Кассиров пока нет",
+      "col_name": "Имя кассира",
+      "col_username": "Имя пользователя",
+      "col_phone": "Телефон",
+      "col_status": "Статус",
+      "col_apikey": "API Ключ",
+      "col_actions": "Действия",
+      "status_active": "Активен",
+      "status_inactive": "Неактивен",
+      "activate": "Активировать",
+      "deactivate": "Деактивировать",
+      "toggled": "Статус кассира изменён на {status}",
+      "toggle_error": "Не удалось изменить статус",
+      "modal_title": "Добавить кассира",
+      "field_first_name": "Имя",
+      "field_last_name": "Фамилия",
+      "field_username": "Имя пользователя",
+      "field_phone": "Телефон",
+      "field_password": "Пароль",
+      "ph_first_name": "Например: Иван",
+      "ph_last_name": "Например: Иванов",
+      "ph_username": "ivan_cashier",
+      "ph_phone": "+998901234567",
+      "ph_password": "Введите пароль",
+      "btn_cancel": "Отмена",
+      "btn_create": "Создать",
+      "created": "Новый кассир добавлен",
+      "create_error": "Ошибка при добавлении кассира"
+    },
     "scales": {
       "title": "Управление весами",
       "subtitle": "Управление и мониторинг подключенных весов",
@@ -413,18 +500,37 @@
       "title": "История продаж",
       "subtitle": "Просмотр и мониторинг всех транзакций",
       "search_placeholder": "Поиск продаж...",
-      "search_btn": "Поиск"
+      "search_btn": "Поиск",
+      "empty": "Продаж пока нет",
+      "status": {
+        "completed": "Завершено",
+        "cancelled": "Отменено",
+        "pending": "В ожидании"
+      },
+      "payment": {
+        "cash": "Наличные",
+        "card": "Карта",
+        "transfer": "Перевод"
+      },
+      "details": "Товары",
+      "discount": "Скидка",
+      "paid": "Оплачено",
+      "change": "Сдача"
     },
     "settings": {
       "title": "Настройки",
       "subtitle": "Управление аккаунтом и настройками магазина",
+      "profile_settings": "Профиль и настройки",
+      "menus_label": "Разделы",
+      "security_banner": "Перед изменением пароля введите текущий пароль",
       "tabs": {
         "personal": "Линчые данные",
         "organization": "Организация",
         "shop": "Магазин",
         "warehouse": "Склад",
         "security": "Безопасность",
-        "notifications": "Уведомления"
+        "notifications": "Уведомления",
+        "subscription": "Подписка"
       },
       "personal": {
         "title": "Личные данные",
@@ -470,7 +576,43 @@
         "edit": "Редактировать",
         "save": "Сохранить",
         "cancel": "Отмена"
+      },
+      "subscription": {
+        "title": "Данные подписки",
+        "desc": "Просмотрите текущий план и статус подписки.",
+        "current_plan": "Текущий план",
+        "status": "Статус",
+        "plan_name": "Название плана",
+        "end_date": "Дата окончания",
+        "days_remaining": "Дней осталось",
+        "is_trial": "Пробный период",
+        "is_expired": "Истёк",
+        "yes": "Да",
+        "no": "Нет",
+        "trial_ends": "действует до",
+        "expired_label": "Истёкший",
+        "active_label": "Активный",
+        "days_left_label": "дн. осталось"
       }
     }
+  },
+  "help": {
+    "title": "Центр помощи",
+    "subtitle": "Быстрые подсказки и описание разделов приложения",
+    "features_label": "Основные разделы",
+    "shortcuts_label": "Горячие клавиши",
+    "products_desc": "Добавление и управление товарами",
+    "sales_desc": "История продаж и расчёты",
+    "analytics_desc": "Статистика и графики",
+    "categories_desc": "Категории товаров",
+    "cashiers_desc": "Управление аккаунтами кассиров",
+    "settings_desc": "Профиль и настройки",
+    "shortcut_analytics": "Страница аналитики",
+    "shortcut_products": "Страница товаров",
+    "shortcut_sales": "Страница продаж",
+    "shortcut_close": "Закрыть модальное окно",
+    "contact_title": "Возникла проблема?",
+    "contact_sub": "Наша команда поддержки готова помочь",
+    "contact_btn": "Обратиться"
   }
 }

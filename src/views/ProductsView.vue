@@ -6,13 +6,12 @@ import {
   Edit,
   Trash2,
   Eye,
-  ChevronLeft,
-  ChevronRight,
   Package,
   AlertTriangle,
   SlidersHorizontal,
 } from 'lucide-vue-next'
 import { useProductList } from '@/composables/useProductList'
+import BasePagination from '@/components/dashboard/BasePagination.vue'
 
 const {
   loading,
@@ -45,7 +44,15 @@ const {
   confirmBatchDelete,
   closeBatchDeleteModal,
   executeBatchDelete,
+  fetchProducts,
+  pushFiltersToQuery,
 } = useProductList()
+
+const goToPage = (page) => {
+  currentPage.value = page
+  pushFiltersToQuery()
+  fetchProducts()
+}
 </script>
 
 <template>
@@ -221,21 +228,13 @@ const {
       </div>
 
       <!-- Pagination -->
-      <div class="pp-pagination">
-        <span class="pp-page-info">
-          {{ (currentPage - 1) * itemsPerPage + 1 }}–{{ Math.min(currentPage * itemsPerPage, totalElements) }}
-          / {{ totalElements }}
-        </span>
-        <div class="pp-page-controls">
-          <button class="pp-page-btn" @click="prevPage" :disabled="currentPage === 1">
-            <ChevronLeft :size="15" />
-          </button>
-          <span class="pp-page-num">{{ currentPage }}</span>
-          <button class="pp-page-btn" @click="nextPage" :disabled="currentPage === totalPages">
-            <ChevronRight :size="15" />
-          </button>
-        </div>
-      </div>
+      <BasePagination
+        :current-page="currentPage"
+        :total-pages="totalPages"
+        :total-elements="totalElements"
+        :items-per-page="itemsPerPage"
+        @page-change="goToPage"
+      />
     </div>
 
     <!-- ─── Single delete modal ──────────────────── -->
@@ -699,64 +698,6 @@ const {
 }
 .pp-empty p { font-size: 0.875rem; margin: 0; }
 
-/* ─── Pagination ────────────────────────────────── */
-.pp-pagination {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 0.9rem 1.25rem;
-  border-top: 1px solid #f1f5f9;
-  flex-wrap: wrap;
-  gap: 0.75rem;
-}
-
-.pp-page-info {
-  font-size: 0.8rem;
-  color: #94a3b8;
-  font-weight: 500;
-}
-
-.pp-page-controls {
-  display: flex;
-  align-items: center;
-  gap: 0.4rem;
-}
-
-.pp-page-btn {
-  width: 30px;
-  height: 30px;
-  border: 1.5px solid #e2e8f0;
-  background: #fff;
-  border-radius: 8px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-  color: #64748b;
-  transition: all 0.15s;
-}
-.pp-page-btn:disabled { opacity: 0.4; cursor: not-allowed; }
-.pp-page-btn:not(:disabled):hover {
-  background: #f8fafc;
-  border-color: #007bff;
-  color: #007bff;
-}
-
-.pp-page-num {
-  min-width: 32px;
-  height: 30px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background: rgba(0,123,255,0.08);
-  border: 1px solid rgba(0,123,255,0.2);
-  border-radius: 8px;
-  font-size: 0.82rem;
-  font-weight: 700;
-  color: #007bff;
-  padding: 0 0.5rem;
-}
-
 /* ─── Skeleton ──────────────────────────────────── */
 @keyframes shimmer {
   0% { background-position: -400px 0; }
@@ -854,7 +795,6 @@ const {
   .pp-search-wrap { min-width: 0; }
   .pp-filters { flex-wrap: wrap; }
   .pp-filter-select { min-width: 90px; }
-  .pp-pagination { justify-content: center; flex-direction: column; align-items: center; }
 }
 
 @media (max-width: 640px) {

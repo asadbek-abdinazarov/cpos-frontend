@@ -1,24 +1,55 @@
-import { ref, computed, watch, onMounted } from 'vue'
+import { ref, watch, onMounted } from 'vue'
 import { useI18n } from 'vue-i18n'
-import { DollarSign, BarChart2, Sigma, Percent } from 'lucide-vue-next'
-import { getStatistics, getSalesTrend, getSalesByCategory } from '@/services/api'
+import {
+  DollarSign,
+  BarChart2,
+  Sigma,
+  Percent,
+  Banknote,
+  CreditCard,
+  Smartphone,
+} from 'lucide-vue-next'
+import {
+  getStatistics,
+  getSalesTrend,
+  getSalesByCategory,
+  getHourlySales,
+  getPaymentMethods,
+  getTopProducts,
+  exportStatistics,
+} from '@/services/api'
+import { getApiLocaleTag } from '@/utils/localeApi'
 
 const DEFAULT_CATEGORY_COLORS = ['#3b82f6', '#a855f7', '#10b981', '#f59e0b', '#ef4444', '#6b7280']
+
+const PAYMENT_META = {
+  CASH: { icon: Banknote, color: '#10b981' },
+  CARD: { icon: CreditCard, color: '#3b82f6' },
+  TRANSFER: { icon: Smartphone, color: '#8b5cf6' },
+}
 
 export function useAnalyticsCharts() {
   const { t } = useI18n()
 
+  // ─── Date range ─────────────────────────────────
   const dateRange = ref(null)
+
+  // ─── Loading states ──────────────────────────────
   const statsLoading = ref(true)
   const salesTrendLoading = ref(true)
   const categorySalesLoading = ref(true)
+  const hourlyLoading = ref(true)
+  const paymentLoading = ref(true)
+  const topProductsLoading = ref(true)
+  const downloadLoading = ref(false)
+
+  // ─── Metrics ─────────────────────────────────────
   const totalCategoryRevenue = ref(0)
 
   const metrics = ref([
     {
       title: 'dashboard.analytics.total_revenue',
       value: null,
-      sub: null,
       icon: DollarSign,
       iconColor: 'text-blue-600',
       bg: 'bg-blue-100',
@@ -26,7 +57,6 @@ export function useAnalyticsCharts() {
     {
       title: 'dashboard.analytics.total_cost',
       value: null,
-      sub: null,
       icon: BarChart2,
       iconColor: 'text-red-600',
       bg: 'bg-red-100',
@@ -34,7 +64,6 @@ export function useAnalyticsCharts() {
     {
       title: 'dashboard.analytics.total_sum',
       value: null,
-      sub: null,
       icon: Sigma,
       iconColor: 'text-indigo-600',
       bg: 'bg-indigo-100',
@@ -42,17 +71,22 @@ export function useAnalyticsCharts() {
     {
       title: 'dashboard.analytics.conversion_rate',
       value: null,
-      sub: null,
       icon: Percent,
       iconColor: 'text-emerald-600',
       bg: 'bg-emerald-100',
     },
   ])
 
+  // ─── Helpers ─────────────────────────────────────
   const fmt = (n) => (n ?? 0).toLocaleString('uz-UZ')
 
   const getApiParams = () => {
-    if (dateRange.value && dateRange.value.length === 2 && dateRange.value[0] && dateRange.value[1]) {
+    if (
+      dateRange.value &&
+      dateRange.value.length === 2 &&
+      dateRange.value[0] &&
+      dateRange.value[1]
+    ) {
       return {
         fromDate: dateRange.value[0].toISOString(),
         toDate: dateRange.value[1].toISOString(),
@@ -69,87 +103,8 @@ export function useAnalyticsCharts() {
     dateRange.value = [start, end]
   }
 
-  const categorySales = ref([
-    { name: 'Electronics', percentage: 45, color: '#3b82f6' },
-    { name: 'Fashion', percentage: 25, color: '#a855f7' },
-    { name: 'Home & Garden', percentage: 20, color: '#10b981' },
-    { name: 'Others', percentage: 10, color: '#9ca3af' },
-  ])
-
-  const barChartData = ref({
-    labels: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
-    datasets: [
-      {
-        label: 'Sales',
-        data: [120, 190, 150, 250, 220, 300, 280],
-        backgroundColor: '#3b82f6',
-        hoverBackgroundColor: '#2563eb',
-        borderRadius: 8,
-        borderSkipped: false,
-        barThickness: 'flex',
-        maxBarThickness: 40,
-      },
-    ],
-  })
-
-  const barChartOptions = ref({
-    responsive: true,
-    maintainAspectRatio: false,
-    plugins: {
-      legend: {
-        display: false,
-      },
-      tooltip: {
-        backgroundColor: 'rgba(15, 23, 42, 0.9)',
-        padding: 12,
-        cornerRadius: 8,
-        titleFont: { family: 'Inter, sans-serif', size: 13, weight: '600' },
-        bodyFont: { family: 'Inter, sans-serif', size: 12 },
-        callbacks: {
-          label: function (context) {
-            let label = context.dataset.label || ''
-            if (label) {
-              label += ': '
-            }
-            if (context.parsed.y !== null) {
-              label += context.parsed.y + ' orders'
-            }
-            return label
-          },
-        },
-      },
-    },
-    scales: {
-      y: {
-        beginAtZero: true,
-        grid: {
-          color: '#e2e8f0',
-          drawBorder: false,
-          borderDash: [5, 5],
-        },
-        ticks: {
-          color: '#64748b',
-          font: {
-            family: 'Inter, sans-serif',
-            size: 11,
-          },
-        },
-      },
-      x: {
-        grid: {
-          display: false,
-          drawBorder: false,
-        },
-        ticks: {
-          color: '#64748b',
-          font: {
-            family: 'Inter, sans-serif',
-            size: 12,
-          },
-        },
-      },
-    },
-  })
+  // ─── Category / Donut chart ───────────────────────
+  const categorySales = ref([])
 
   const donutChartData = ref({
     labels: [],
@@ -169,17 +124,13 @@ export function useAnalyticsCharts() {
     responsive: true,
     maintainAspectRatio: false,
     plugins: {
-      legend: {
-        display: false,
-      },
+      legend: { display: false },
       tooltip: {
         backgroundColor: '#0f172a',
         padding: 12,
         cornerRadius: 8,
         callbacks: {
-          label: function (context) {
-            return `${context.label}: ${context.parsed}%`
-          },
+          label: (ctx) => `${ctx.label}: ${ctx.parsed}%`,
         },
       },
     },
@@ -191,8 +142,107 @@ export function useAnalyticsCharts() {
     donutChartData.value.datasets[0].backgroundColor = categorySales.value.map((c) => c.color)
   }
 
-  syncDonutFromCategorySales()
+  // ─── Sales trend (bar) chart ──────────────────────
+  const barChartData = ref({
+    labels: [],
+    datasets: [
+      {
+        label: 'Sales',
+        data: [],
+        backgroundColor: '#3b82f6',
+        hoverBackgroundColor: '#2563eb',
+        borderRadius: 8,
+        borderSkipped: false,
+        barThickness: 'flex',
+        maxBarThickness: 40,
+      },
+    ],
+  })
 
+  const barChartOptions = ref({
+    responsive: true,
+    maintainAspectRatio: false,
+    plugins: {
+      legend: { display: false },
+      tooltip: {
+        backgroundColor: 'rgba(15, 23, 42, 0.9)',
+        padding: 12,
+        cornerRadius: 8,
+        titleFont: { family: 'Inter, sans-serif', size: 13, weight: '600' },
+        bodyFont: { family: 'Inter, sans-serif', size: 12 },
+        callbacks: {
+          label: (ctx) => ` ${ctx.parsed.y} ${t('dashboard.analytics.orders')}`,
+        },
+      },
+    },
+    scales: {
+      y: {
+        beginAtZero: true,
+        grid: { color: '#e2e8f0', drawBorder: false, borderDash: [5, 5] },
+        ticks: { color: '#64748b', font: { family: 'Inter, sans-serif', size: 11 } },
+      },
+      x: {
+        grid: { display: false, drawBorder: false },
+        ticks: { color: '#64748b', font: { family: 'Inter, sans-serif', size: 12 } },
+      },
+    },
+  })
+
+  // ─── Hourly chart ─────────────────────────────────
+  const peakHour = ref(null)
+
+  const hourlyChartData = ref({
+    labels: [],
+    datasets: [
+      {
+        label: t('dashboard.analytics.orders'),
+        data: [],
+        backgroundColor: [],
+        borderRadius: 6,
+        borderSkipped: false,
+        barThickness: 'flex',
+        maxBarThickness: 28,
+      },
+    ],
+  })
+
+  const hourlyChartOptions = ref({
+    responsive: true,
+    maintainAspectRatio: false,
+    plugins: {
+      legend: { display: false },
+      tooltip: {
+        backgroundColor: 'rgba(15, 23, 42, 0.9)',
+        padding: 10,
+        cornerRadius: 8,
+        titleFont: { size: 12, weight: '600' },
+        bodyFont: { size: 11 },
+        callbacks: {
+          title: (ctx) => `${ctx[0].label}:00`,
+          label: (ctx) => ` ${ctx.parsed.y} ${t('dashboard.analytics.orders')}`,
+        },
+      },
+    },
+    scales: {
+      y: {
+        beginAtZero: true,
+        grid: { color: '#e2e8f0', borderDash: [4, 4] },
+        ticks: { color: '#64748b', font: { size: 11 } },
+      },
+      x: {
+        grid: { display: false },
+        ticks: { color: '#64748b', font: { size: 11 } },
+      },
+    },
+  })
+
+  // ─── Payment methods ──────────────────────────────
+  const paymentMethods = ref([])
+
+  // ─── Top products ─────────────────────────────────
+  const topProducts = ref([])
+
+  // ─── Apply helpers ────────────────────────────────
   const applyStatsResult = (res) => {
     if (res.status !== 'fulfilled' || !res.value?.data?.success) return
     const d = res.value.data.data
@@ -213,19 +263,72 @@ export function useAnalyticsCharts() {
     if (res.status !== 'fulfilled' || !res.value?.data?.success || !res.value.data.data) return
     const data = res.value.data.data
     totalCategoryRevenue.value = data.totalRevenue || 0
-    const categories = data.categories || []
-    categorySales.value = categories.map((cat, index) => ({
+    categorySales.value = (data.categories || []).map((cat, i) => ({
       name: cat.name,
       percentage: cat.percentage,
-      color: DEFAULT_CATEGORY_COLORS[index % DEFAULT_CATEGORY_COLORS.length],
+      color: DEFAULT_CATEGORY_COLORS[i % DEFAULT_CATEGORY_COLORS.length],
     }))
     syncDonutFromCategorySales()
   }
 
+  const applyHourlyResult = (res) => {
+    if (res.status !== 'fulfilled' || !res.value?.data?.success || !res.value.data.data) return
+    const data = res.value.data.data
+    const hours = data.hours || []
+
+    peakHour.value = data.peakHour ?? null
+
+    const maxCount = Math.max(...hours.map((h) => h.count), 1)
+
+    hourlyChartData.value.labels = hours.map((h) => String(h.hour).padStart(2, '0'))
+    hourlyChartData.value.datasets[0].data = hours.map((h) => h.count)
+    hourlyChartData.value.datasets[0].backgroundColor = hours.map((h) => {
+      const ratio = h.count / maxCount
+      const alpha = 0.15 + ratio * 0.85
+      return h.hour === data.peakHour ? '#007bff' : `rgba(0,123,255,${alpha.toFixed(2)})`
+    })
+  }
+
+  const applyPaymentResult = (res) => {
+    if (res.status !== 'fulfilled' || !res.value?.data?.success || !res.value.data.data) return
+    const data = res.value.data.data
+    paymentMethods.value = (data.methods || []).map((m) => {
+      const meta = PAYMENT_META[m.type] || PAYMENT_META.CASH
+      return {
+        type: m.type,
+        name: t(`dashboard.sales.payment.${m.type.toLowerCase()}`),
+        icon: meta.icon,
+        color: meta.color,
+        percentage: m.percentage,
+        amount: m.amount,
+        count: m.count,
+      }
+    })
+  }
+
+  const applyTopProductsResult = (res) => {
+    if (res.status !== 'fulfilled' || !res.value?.data?.success || !res.value.data.data) return
+    const data = res.value.data.data
+    topProducts.value = (data.products || []).map((p) => ({
+      rank: p.rank,
+      id: p.productId,
+      name: p.productName,
+      category: p.categoryName,
+      sales: p.soldCount,
+      revenue: p.revenue,
+      trend: p.trendPercent > 0 ? 'up' : p.trendPercent < 0 ? 'down' : 'neutral',
+      trendPct: p.trendPercent,
+    }))
+  }
+
+  // ─── Main fetch ───────────────────────────────────
   const fetchStatistics = async () => {
     statsLoading.value = true
     salesTrendLoading.value = true
     categorySalesLoading.value = true
+    hourlyLoading.value = true
+    paymentLoading.value = true
+    topProductsLoading.value = true
 
     const params = getApiParams()
 
@@ -233,29 +336,78 @@ export function useAnalyticsCharts() {
       getStatistics(params),
       getSalesTrend(params),
       getSalesByCategory(params),
+      getHourlySales(params),
+      getPaymentMethods(params),
+      getTopProducts({ ...params, limit: 5 }),
     ])
 
-    const [statsRes, trendRes, catRes] = settled
+    const [statsRes, trendRes, catRes, hourlyRes, paymentRes, topRes] = settled
 
     applyStatsResult(statsRes)
     statsLoading.value = false
-    if (statsRes.status === 'rejected') console.error('Failed to load main statistics', statsRes.reason)
-
     applyTrendResult(trendRes)
     salesTrendLoading.value = false
-    if (trendRes.status === 'rejected') console.error('Failed to load sales trend', trendRes.reason)
-
     applyCategoryResult(catRes)
     categorySalesLoading.value = false
-    if (catRes.status === 'rejected') console.error('Failed to load category sales', catRes.reason)
+    applyHourlyResult(hourlyRes)
+    hourlyLoading.value = false
+    applyPaymentResult(paymentRes)
+    paymentLoading.value = false
+    applyTopProductsResult(topRes)
+    topProductsLoading.value = false
+
+    if (statsRes.status === 'rejected') console.error('statistics/my failed', statsRes.reason)
+    if (trendRes.status === 'rejected')
+      console.error('statistics/sales-trend failed', trendRes.reason)
+    if (catRes.status === 'rejected')
+      console.error('statistics/sales-by-category failed', catRes.reason)
+    if (hourlyRes.status === 'rejected')
+      console.error('statistics/hourly-sales failed', hourlyRes.reason)
+    if (paymentRes.status === 'rejected')
+      console.error('statistics/payment-methods failed', paymentRes.reason)
+    if (topRes.status === 'rejected') console.error('statistics/top-products failed', topRes.reason)
   }
 
+  // ─── Export / Download ────────────────────────────
+  const downloadReport = async (format = 'xlsx') => {
+    if (downloadLoading.value) return
+    downloadLoading.value = true
+    try {
+      const params = {
+        ...getApiParams(),
+        format,
+        lang: getApiLocaleTag(),
+      }
+      const res = await exportStatistics(params)
+      const blob = new Blob([res.data], {
+        type:
+          format === 'csv'
+            ? 'text/csv;charset=utf-8;'
+            : 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+      })
+      const url = URL.createObjectURL(blob)
+      const link = document.createElement('a')
+      const p = getApiParams()
+      const from = p.fromDate ? p.fromDate.slice(0, 10) : 'start'
+      const to = p.toDate ? p.toDate.slice(0, 10) : 'end'
+      link.href = url
+      link.download = `hisobot_${from}_${to}.${format}`
+      document.body.appendChild(link)
+      link.click()
+      document.body.removeChild(link)
+      URL.revokeObjectURL(url)
+    } catch (e) {
+      console.error('Export failed:', e)
+    } finally {
+      downloadLoading.value = false
+    }
+  }
+
+  // ─── Watcher ──────────────────────────────────────
   watch(dateRange, (val) => {
     const isComplete = Array.isArray(val) && val.length === 2 && val[0] && val[1]
     const isCleared = !val || (Array.isArray(val) && val.length === 0)
-    if (isComplete || isCleared) {
-      fetchStatistics()
-    }
+    if (isComplete || isCleared) fetchStatistics()
   })
 
   onMounted(() => {
@@ -264,17 +416,31 @@ export function useAnalyticsCharts() {
 
   return {
     dateRange,
+    // loading
     statsLoading,
     salesTrendLoading,
     categorySalesLoading,
+    hourlyLoading,
+    paymentLoading,
+    topProductsLoading,
+    downloadLoading,
+    // data
     totalCategoryRevenue,
     metrics,
-    fmt,
+    peakHour,
+    paymentMethods,
+    topProducts,
+    // chart data/options
     barChartData,
     barChartOptions,
     donutChartData,
     donutChartOptions,
     categorySales,
+    hourlyChartData,
+    hourlyChartOptions,
+    // helpers / actions
+    fmt,
     fetchStatistics,
+    downloadReport,
   }
 }

@@ -46,7 +46,6 @@ const handleLogin = async () => {
       localStorage.setItem('username', data.data.username)
       localStorage.setItem('userId', data.data.userId)
       showNotification({ type: 'success', message: t('auth.login_success') })
-      loading.value = false
       await enterDashboard(() => router.push('/dashboard'))
     } else {
       showNotification({ type: 'error', message: data.message || t('auth.login_error') })

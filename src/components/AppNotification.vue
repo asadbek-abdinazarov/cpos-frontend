@@ -85,6 +85,11 @@ const { notification, closeNotification } = useNotification()
   color: #007bff;
 }
 
+.notif--warning .notif-icon-wrap {
+  background: rgba(234, 179, 8, 0.1);
+  color: #ca8a04;
+}
+
 /* ─── Top accent line ───────────────── */
 .notif::before {
   content: '';
@@ -101,9 +106,10 @@ const { notification, closeNotification } = useNotification()
   overflow: hidden;
 }
 
-.notif--success::before { background: linear-gradient(90deg, #10b981, #34d399); }
-.notif--error::before   { background: linear-gradient(90deg, #ef4444, #f87171); }
-.notif--info::before    { background: linear-gradient(90deg, #007bff, #6366f1); }
+.notif--success::before  { background: linear-gradient(90deg, #10b981, #34d399); }
+.notif--error::before    { background: linear-gradient(90deg, #ef4444, #f87171); }
+.notif--info::before     { background: linear-gradient(90deg, #007bff, #6366f1); }
+.notif--warning::before  { background: linear-gradient(90deg, #f59e0b, #fbbf24); }
 
 /* ─── Message ───────────────────────── */
 .notif-message {

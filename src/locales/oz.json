@@ -134,6 +134,27 @@
     "annual": "Йиллик",
     "save": "20% тежанг",
     "popular": "ОММАБОП",
+    "free": "Бепул",
+    "unlimited": "Чексиз",
+    "per_month": "UZS / ой",
+    "per_year": "UZS / йил",
+    "trial_days": "{days} кун синов",
+    "loading": "Тарифлар юкланмоқда...",
+    "load_error": "Тарифларни юклаб бўлмади. Кейинроқ қайта уриниб кўринг.",
+    "cta_start": "Бошлаш",
+    "cta_contact": "Сотув бўлими билан боғланиш",
+    "features_with_limit": "{feature}: {limit}",
+    "features": {
+      "CUSTOM_INTEGRATIONS": "Махсус интеграциялар",
+      "PRIORITY_SUPPORT": "Устувор техник ёрдам",
+      "REPORTS_ACCESS": "Ҳисоботларга кириш",
+      "MAX_CASHIERS": "Кассирлар",
+      "MULTI_CASHIER": "Кўп кассир",
+      "MAX_PRODUCTS": "Маҳсулотлар",
+      "MAX_CATEGORIES": "Категориялар",
+      "API_ACCESS": "API кириш",
+      "EXPORT_ACCESS": "Экспорт (CSV/XLSX)"
+    },
     "plans": {
       "starter": {
         "name": "Бошланғич",
@@ -275,14 +296,18 @@
       "sales": "Сотувлар",
       "cashiers": "Кассирлар",
       "pos": "Кассир терминали",
-      "settings": "Созламалар"
+      "settings": "Созламалар",
+      "menu_label": "Менью"
     },
     "header": {
       "search": "Қидириш...",
       "notifications": "Билдиришномалар",
       "mark_all_read": "Барчасини ўқилган деб белгилаш",
       "no_notifications": "Билдиришномалар йўқ",
-      "profile": "Профил"
+      "new": "янги",
+      "loading": "Юкланмоқда…",
+      "profile": "Профил",
+      "live_data": "Жонли маълумот"
     },
     "table": {
       "id": "ID",
@@ -399,6 +424,68 @@
         "updating": "Янгиланмоқда..."
       }
     },
+    "categories": {
+      "title": "Категориялар",
+      "subtitle": "Маҳсулот категорияларини бошқариш ва тартибга солиш",
+      "add": "Янги категория",
+      "empty": "Ҳозирча категориялар йўқ",
+      "add_first": "Биринчисини қўшиш",
+      "total": "Жами {count} та категория",
+      "col_name": "Номи",
+      "col_products": "Маҳсулотлар",
+      "col_actions": "Амаллар",
+      "modal_create_title": "Янги категория",
+      "modal_create_subtitle": "Янги категория номини киритинг",
+      "modal_edit_title": "Категорияни таҳрирлаш",
+      "modal_edit_subtitle": "Категория номини янгиланг",
+      "field_name": "Категория номи",
+      "field_placeholder": "Масалан: Ичимликлар",
+      "btn_save": "Сақлаш",
+      "btn_create": "Яратиш",
+      "btn_cancel": "Бекор қилиш",
+      "btn_delete": "Ўчириш",
+      "btn_edit": "Таҳрирлаш",
+      "delete_title": "Категорияни ўчириш",
+      "delete_text": "{name} категорияси ўчирилади. Бу амални бекор қилиб бўлмайди.",
+      "created": "Категория қўшилди",
+      "updated": "Категория янгиланди",
+      "deleted": "Категория ўчирилди",
+      "error_load": "Категорияларни юклашда хатолик!",
+      "error_save": "Хатолик юз берди",
+      "error_delete": "Ўчиришда хатолик юз берди"
+    },
+    "cashiers": {
+      "subtitle": "Барча кассирларни бошқариш, фаоллаштириш ва янги қўшиш",
+      "add": "Янги кассир қўшиш",
+      "empty": "Ҳозирча кассирлар йўқ",
+      "col_name": "Кассир исми",
+      "col_username": "Фойдаланувчи номи",
+      "col_phone": "Телефон",
+      "col_status": "Ҳолати",
+      "col_apikey": "API Калит",
+      "col_actions": "Амаллар",
+      "status_active": "Фаол",
+      "status_inactive": "Нофаол",
+      "activate": "Фаоллаштириш",
+      "deactivate": "Фаолиятни тўхтатиш",
+      "toggled": "Кассир ҳолати {status} қилинди",
+      "toggle_error": "Ҳолатни ўзгартириб бўлмади",
+      "modal_title": "Янги кассир қўшиш",
+      "field_first_name": "Исм",
+      "field_last_name": "Фамилия",
+      "field_username": "Фойдаланувчи номи",
+      "field_phone": "Телефон рақам",
+      "field_password": "Парол",
+      "ph_first_name": "Масалан: Али",
+      "ph_last_name": "Масалан: Валиев",
+      "ph_username": "ali_cashier",
+      "ph_phone": "+998901234567",
+      "ph_password": "Парол киритинг",
+      "btn_cancel": "Бекор қилиш",
+      "btn_create": "Яратиш",
+      "created": "Янги кассир қўшилди",
+      "create_error": "Кассир қўшишда хатолик юз берди"
+    },
     "scales": {
       "title": "Тарозиларни бошқариш",
       "subtitle": "Уланган тарозиларни бошқариш ва кузатиш",
@@ -413,18 +500,37 @@
       "title": "Сотувлар тарихи",
       "subtitle": "Барча сотув транзакцияларини кўриш ва кузатиш",
       "search_placeholder": "Сотувларни қидириш...",
-      "search_btn": "Қидириш"
+      "search_btn": "Қидириш",
+      "empty": "Ҳозирча сотувлар йўқ",
+      "status": {
+        "completed": "Якунланди",
+        "cancelled": "Бекор қилинди",
+        "pending": "Кутилмоқда"
+      },
+      "payment": {
+        "cash": "Нақд",
+        "card": "Карта",
+        "transfer": "Ўтказма"
+      },
+      "details": "Маҳсулотлар",
+      "discount": "Чегирма",
+      "paid": "Тўланган",
+      "change": "Қайтим"
     },
     "settings": {
       "title": "Созламалар",
       "subtitle": "Ҳисоб ва дўкон созламаларини бошқариш",
+      "profile_settings": "Профил ва Созламалар",
+      "menus_label": "Менюлар",
+      "security_banner": "Паролни ўзгартиришдан олдин жорий паролингизни киритинг",
       "tabs": {
         "personal": "Шахсий Маълумотлар",
         "organization": "Ташкилот",
         "shop": "Дўкон",
         "warehouse": "Омбор",
         "security": "Хавфсизлик",
-        "notifications": "Билдиришномалар"
+        "notifications": "Билдиришномалар",
+        "subscription": "Обуна"
       },
       "personal": {
         "title": "Шахсий Маълумотлар",
@@ -470,7 +576,43 @@
         "edit": "Таҳрирлаш",
         "save": "Сақлаш",
         "cancel": "Бекор қилиш"
+      },
+      "subscription": {
+        "title": "Обуна Маълумотлари",
+        "desc": "Жорий режа ва обуна ҳолатини кузатинг.",
+        "current_plan": "Жорий Режа",
+        "status": "Ҳолат",
+        "plan_name": "Режа номи",
+        "end_date": "Тугаш санаси",
+        "days_remaining": "Кун қолди",
+        "is_trial": "Синов муддати",
+        "is_expired": "Муддати ўтган",
+        "yes": "Ҳа",
+        "no": "Йўқ",
+        "trial_ends": "гача амал қилади",
+        "expired_label": "Муддати тугаган",
+        "active_label": "Фаол",
+        "days_left_label": "кун қолди"
       }
     }
+  },
+  "help": {
+    "title": "Ёрдам Маркази",
+    "subtitle": "Тез кўрсатмалар ва дастур бўлимлари ҳақида маълумот",
+    "features_label": "Асосий бўлимлар",
+    "shortcuts_label": "Тезкор тугмалар",
+    "products_desc": "Маҳсулот қўшиш ва бошқариш",
+    "sales_desc": "Сотув тарихи ва ҳисоб-китоб",
+    "analytics_desc": "Статистика ва графиклар",
+    "categories_desc": "Маҳсулот категориялари",
+    "cashiers_desc": "Кассир ҳисобларини бошқариш",
+    "settings_desc": "Профил ва созламалар",
+    "shortcut_analytics": "Статистика саҳифаси",
+    "shortcut_products": "Маҳсулотлар саҳифаси",
+    "shortcut_sales": "Сотувлар саҳифаси",
+    "shortcut_close": "Модални ёпиш",
+    "contact_title": "Муаммога дуч келдингизми?",
+    "contact_sub": "Бизнинг қўллаб-қувватлаш жамоамиз ёрдам беради",
+    "contact_btn": "Мурожаат"
   }
 }

@@ -1,7 +1,9 @@
 <script setup>
 import { ref, watch, onMounted } from 'vue'
+import { useI18n } from 'vue-i18n'
 import { getSalesHistories } from '@/services/api'
 import { useDelayedLoading } from '@/composables/useDelayedLoading'
+import BasePagination from '@/components/dashboard/BasePagination.vue'
 import {
   Search,
   ShoppingBag,
@@ -11,10 +13,10 @@ import {
   ChevronDown,
   ChevronUp,
   User,
-  ChevronLeft,
-  ChevronRight,
   Package,
 } from 'lucide-vue-next'
+
+const { t } = useI18n()
 
 const sales = ref([])
 const { loading, showSkeleton, startLoading, stopLoading } = useDelayedLoading()
@@ -63,6 +65,10 @@ const prevPage = () => {
 }
 const nextPage = () => {
   if (currentPage.value < totalPages.value) { currentPage.value++; fetchSales() }
+}
+const goToPage = (page) => {
+  currentPage.value = page
+  fetchSales()
 }
 
 const toggleRow = (uuid) => {
@@ -158,7 +164,7 @@ onMounted(fetchSales)
                 <td colspan="7" class="sl-empty">
                   <div class="sl-empty-inner">
                     <div class="sl-empty-icon"><ShoppingBag :size="28" /></div>
-                    <p>Hozircha sotuvlar yoʻq</p>
+                    <p>{{ $t('dashboard.sales.empty') }}</p>
                   </div>
                 </td>
               </tr>
@@ -191,14 +197,18 @@ onMounted(fetchSales)
                     class="sl-status"
                     :class="sale.status === 'COMPLETED' ? 'sl-status-ok' : 'sl-status-err'"
                   >
-                    {{ sale.status === 'COMPLETED' ? 'Yakunlandi' : sale.status }}
+                    {{ sale.status === 'COMPLETED'
+                      ? $t('dashboard.sales.status.completed')
+                      : sale.status === 'CANCELLED'
+                        ? $t('dashboard.sales.status.cancelled')
+                        : sale.status }}
                   </span>
                 </td>
                 <td>
                   <div class="sl-payment">
                     <Banknote v-if="sale.paymentType === 'CASH'" :size="14" class="sl-ico-cash" />
                     <CreditCard v-else :size="14" class="sl-ico-card" />
-                    <span>{{ sale.paymentType === 'CASH' ? 'Naqd' : 'Karta' }}</span>
+                    <span>{{ sale.paymentType === 'CASH' ? $t('dashboard.sales.payment.cash') : $t('dashboard.sales.payment.card') }}</span>
                   </div>
                 </td>
                 <td class="td-right sl-amount">{{ formatCurrency(sale.totalAmount) }}</td>
@@ -219,17 +229,17 @@ onMounted(fetchSales)
                     <div class="sl-summary-row">
                       <div class="sl-summary-head">
                         <Package :size="14" class="sl-row-ico" />
-                        Mahsulotlar
+                        {{ $t('dashboard.sales.details') }}
                       </div>
                       <div class="sl-summary-chips">
                         <span v-if="sale.discountAmount > 0" class="sl-chip sl-chip-red">
-                          Chegirma: {{ formatCurrency(sale.discountAmount) }}
+                          {{ $t('dashboard.sales.discount') }}: {{ formatCurrency(sale.discountAmount) }}
                         </span>
                         <span class="sl-chip sl-chip-green">
-                          Toʻlangan: {{ formatCurrency(sale.paidAmount) }}
+                          {{ $t('dashboard.sales.paid') }}: {{ formatCurrency(sale.paidAmount) }}
                         </span>
                         <span v-if="sale.changeAmount > 0" class="sl-chip sl-chip-orange">
-                          Qaytim: {{ formatCurrency(sale.changeAmount) }}
+                          {{ $t('dashboard.sales.change') }}: {{ formatCurrency(sale.changeAmount) }}
                         </span>
                       </div>
                     </div>
@@ -271,21 +281,14 @@ onMounted(fetchSales)
       </div>
 
       <!-- Pagination -->
-      <div class="sl-pagination" v-if="!loading && sales.length > 0">
-        <span class="sl-page-info">
-          {{ (currentPage - 1) * itemsPerPage + 1 }}–{{ Math.min(currentPage * itemsPerPage, totalElements) }}
-          / {{ totalElements }}
-        </span>
-        <div class="sl-page-controls">
-          <button class="sl-page-btn" @click="prevPage" :disabled="currentPage === 1">
-            <ChevronLeft :size="15" />
-          </button>
-          <span class="sl-page-num">{{ currentPage }}</span>
-          <button class="sl-page-btn" @click="nextPage" :disabled="currentPage === totalPages">
-            <ChevronRight :size="15" />
-          </button>
-        </div>
-      </div>
+      <BasePagination
+        v-if="!loading && sales.length > 0"
+        :current-page="currentPage"
+        :total-pages="totalPages"
+        :total-elements="totalElements"
+        :items-per-page="itemsPerPage"
+        @page-change="goToPage"
+      />
     </div>
 
   </div>
@@ -688,62 +691,6 @@ onMounted(fetchSales)
 }
 .sl-empty p { font-size: 0.875rem; margin: 0; }
 
-/* ─── Pagination ────────────────────────────────── */
-.sl-pagination {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 0.9rem 1.25rem;
-  border-top: 1px solid #f1f5f9;
-  flex-wrap: wrap;
-  gap: 0.75rem;
-}
-
-.sl-page-info {
-  font-size: 0.8rem;
-  color: #94a3b8;
-  font-weight: 500;
-}
-
-.sl-page-controls {
-  display: flex;
-  align-items: center;
-  gap: 0.4rem;
-}
-
-.sl-page-btn {
-  width: 30px; height: 30px;
-  border: 1.5px solid #e2e8f0;
-  background: #fff;
-  border-radius: 8px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-  color: #64748b;
-  transition: all 0.15s;
-}
-.sl-page-btn:disabled { opacity: 0.4; cursor: not-allowed; }
-.sl-page-btn:not(:disabled):hover {
-  background: #f8fafc;
-  border-color: #007bff;
-  color: #007bff;
-}
-
-.sl-page-num {
-  min-width: 32px; height: 30px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background: rgba(0,123,255,0.08);
-  border: 1px solid rgba(0,123,255,0.2);
-  border-radius: 8px;
-  font-size: 0.82rem;
-  font-weight: 700;
-  color: #007bff;
-  padding: 0 0.5rem;
-}
-
 /* ─── Skeleton ──────────────────────────────────── */
 @keyframes shimmer {
   0%   { background-position: -400px 0; }
@@ -766,7 +713,6 @@ onMounted(fetchSales)
   .sl-toolbar  { flex-direction: column; align-items: stretch; }
   .sl-search-wrap { flex-direction: column; }
   .sl-search-btn  { width: 100%; justify-content: center; text-align: center; }
-  .sl-pagination  { flex-direction: column; align-items: center; }
   .sl-summary-row { flex-direction: column; align-items: flex-start; }
   .sl-table th,
   .sl-table td  { padding: 0.7rem 0.85rem; }

@@ -134,12 +134,37 @@
     "annual": "Yillik",
     "save": "20% tejang",
     "popular": "OMMABOP",
+    "free": "Bepul",
+    "unlimited": "Cheksiz",
+    "per_month": "UZS / oy",
+    "per_year": "UZS / yil",
+    "trial_days": "{days} kun sinov",
+    "loading": "Tariflar yuklanmoqda...",
+    "load_error": "Tariflarni yuklab bo'lmadi. Keyinroq qayta urinib ko'ring.",
+    "cta_start": "Boshlash",
+    "cta_contact": "Sotuv bo'limi bilan bog'lanish",
+    "features_with_limit": "{feature}: {limit}",
+    "features": {
+      "CUSTOM_INTEGRATIONS": "Maxsus integratsiyalar",
+      "PRIORITY_SUPPORT": "Ustuvor texnik yordam",
+      "REPORTS_ACCESS": "Hisobotlarga kirish",
+      "MAX_CASHIERS": "Kassirlar",
+      "MULTI_CASHIER": "Ko'p kassir",
+      "MAX_PRODUCTS": "Mahsulotlar",
+      "MAX_CATEGORIES": "Kategoriyalar",
+      "API_ACCESS": "API kirish",
+      "EXPORT_ACCESS": "Eksport (CSV/XLSX)"
+    },
     "plans": {
       "starter": {
         "name": "Boshlang'ich",
         "desc": "Endi ish boshlagan kichik do'konlar uchun.",
         "btn": "Boshlash",
-        "features": ["1 Kassa", "Asosiy hisobotlar", "500 tagacha mahsulot"]
+        "features": [
+          "1 Kassa",
+          "Asosiy hisobotlar",
+          "500 tagacha mahsulot"
+        ]
       },
       "growth": {
         "name": "O'sish",
@@ -166,7 +191,6 @@
       }
     }
   },
-
   "faq": {
     "title": "Ko'p so'raladigan savollar",
     "subtitle": "Sizni qiziqtirgan savollarga javoblar.",
@@ -272,14 +296,18 @@
       "sales": "Sotuvlar",
       "cashiers": "Kassirlar",
       "pos": "Kassir terminali",
-      "settings": "Sozlamalar"
+      "settings": "Sozlamalar",
+      "menu_label": "Menyu"
     },
     "header": {
       "search": "Qidirish...",
       "notifications": "Bildirishnomalar",
       "mark_all_read": "Barchasini o'qilgan deb belgilash",
       "no_notifications": "Bildirishnomalar yo'q",
-      "profile": "Profil"
+      "new": "yangi",
+      "loading": "Yuklanmoqda…",
+      "profile": "Profil",
+      "live_data": "Jonli ma'lumot"
     },
     "table": {
       "id": "ID",
@@ -396,6 +424,68 @@
         "updating": "Yangilanmoqda..."
       }
     },
+    "categories": {
+      "title": "Kategoriyalar",
+      "subtitle": "Mahsulot kategoriyalarini boshqarish va tartibga solish",
+      "add": "Yangi kategoriya",
+      "empty": "Hozircha kategoriyalar yo'q",
+      "add_first": "Birinchisini qo'shish",
+      "total": "Jami {count} ta kategoriya",
+      "col_name": "Nomi",
+      "col_products": "Mahsulotlar",
+      "col_actions": "Harakatlar",
+      "modal_create_title": "Yangi kategoriya",
+      "modal_create_subtitle": "Yangi kategoriya nomini kiriting",
+      "modal_edit_title": "Kategoriyani tahrirlash",
+      "modal_edit_subtitle": "Kategoriya nomini yangilang",
+      "field_name": "Kategoriya nomi",
+      "field_placeholder": "Masalan: Ichimliklar",
+      "btn_save": "Saqlash",
+      "btn_create": "Yaratish",
+      "btn_cancel": "Bekor qilish",
+      "btn_delete": "O'chirish",
+      "btn_edit": "Tahrirlash",
+      "delete_title": "Kategoriyani o'chirish",
+      "delete_text": "{name} kategoriyasi o'chiriladi. Bu amalni bekor qilib bo'lmaydi.",
+      "created": "Kategoriya qo'shildi",
+      "updated": "Kategoriya yangilandi",
+      "deleted": "Kategoriya o'chirildi",
+      "error_load": "Kategoriyalarni yuklashda xatolik!",
+      "error_save": "Xatolik yuz berdi",
+      "error_delete": "O'chirishda xatolik yuz berdi"
+    },
+    "cashiers": {
+      "subtitle": "Barcha kassirlarni boshqarish, faollashtirish va yangi qo'shish",
+      "add": "Yangi kassir qo'shish",
+      "empty": "Hozircha kassirlar yo'q",
+      "col_name": "Kassir ismi",
+      "col_username": "Username",
+      "col_phone": "Telefon",
+      "col_status": "Holati",
+      "col_apikey": "API Kalit",
+      "col_actions": "Harakatlar",
+      "status_active": "Faol",
+      "status_inactive": "Nofaol",
+      "activate": "Faollashtirish",
+      "deactivate": "Faoliyatni to'xtatish",
+      "toggled": "Kassir holati {status} qilindi",
+      "toggle_error": "Holatni o'zgartirib bo'lmadi",
+      "modal_title": "Yangi kassir qo'shish",
+      "field_first_name": "Ism",
+      "field_last_name": "Familiya",
+      "field_username": "Foydalanuvchi nomi",
+      "field_phone": "Telefon raqam",
+      "field_password": "Parol",
+      "ph_first_name": "Masalan: Ali",
+      "ph_last_name": "Masalan: Valiyev",
+      "ph_username": "ali_cashier",
+      "ph_phone": "+998901234567",
+      "ph_password": "Parol kiriting",
+      "btn_cancel": "Bekor qilish",
+      "btn_create": "Yaratish",
+      "created": "Yangi kassir qo'shildi",
+      "create_error": "Kassir qo'shishda xatolik yuz berdi"
+    },
     "scales": {
       "title": "Tarozilarni boshqarish",
       "subtitle": "Ulangan tarozilarni boshqarish va kuzatish",
@@ -410,7 +500,22 @@
       "title": "Sotuvlar tarixi",
       "subtitle": "Barcha sotuv tranzaksiyalarini ko'rish va kuzatish",
       "search_placeholder": "Sotuvlarni qidirish...",
-      "search_btn": "Qidirish"
+      "search_btn": "Qidirish",
+      "empty": "Hozircha sotuvlar yo'q",
+      "status": {
+        "completed": "Yakunlandi",
+        "cancelled": "Bekor qilindi",
+        "pending": "Kutilmoqda"
+      },
+      "payment": {
+        "cash": "Naqd",
+        "card": "Karta",
+        "transfer": "O'tkazma"
+      },
+      "details": "Mahsulotlar",
+      "discount": "Chegirma",
+      "paid": "To'langan",
+      "change": "Qaytim"
     },
     "settings": {
       "title": "Sozlamalar",
@@ -421,7 +526,8 @@
         "shop": "Do'kon",
         "warehouse": "Ombor",
         "security": "Xavfsizlik",
-        "notifications": "Bildirishnomalar"
+        "notifications": "Bildirishnomalar",
+        "subscription": "Obuna"
       },
       "personal": {
         "title": "Shaxsiy Ma'lumotlar",
@@ -463,11 +569,50 @@
         "update_password_btn": "Parolni Yangilash",
         "updating": "Yangilanmoqda..."
       },
+      "profile_settings": "Profil va Sozlamalar",
+      "menus_label": "Menyular",
+      "security_banner": "Parolni o'zgartirishdan oldin joriy parolingizni kiriting",
       "buttons": {
         "edit": "Tahrirlash",
         "save": "Saqlash",
         "cancel": "Bekor qilish"
+      },
+      "subscription": {
+        "title": "Obuna Ma'lumotlari",
+        "desc": "Joriy reja va obuna holatini kuzating.",
+        "current_plan": "Joriy Reja",
+        "status": "Holat",
+        "plan_name": "Reja nomi",
+        "end_date": "Tugash sanasi",
+        "days_remaining": "Kun qoldi",
+        "is_trial": "Sinov muddati",
+        "is_expired": "Muddati o'tgan",
+        "yes": "Ha",
+        "no": "Yo'q",
+        "trial_ends": "gacha amal qiladi",
+        "expired_label": "Muddati tugagan",
+        "active_label": "Faol",
+        "days_left_label": "kun qoldi"
       }
     }
+  },
+  "help": {
+    "title": "Yordam Markazi",
+    "subtitle": "Tez ko'rsatmalar va dastur bo'limlari haqida ma'lumot",
+    "features_label": "Asosiy bo'limlar",
+    "shortcuts_label": "Tezkor tugmalar",
+    "products_desc": "Mahsulot qo'shish va boshqarish",
+    "sales_desc": "Sotuv tarixi va hisob-kitob",
+    "analytics_desc": "Statistika va grafiklar",
+    "categories_desc": "Mahsulot kategoriyalari",
+    "cashiers_desc": "Kassir hisoblarini boshqarish",
+    "settings_desc": "Profil va sozlamalar",
+    "shortcut_analytics": "Statistika sahifasi",
+    "shortcut_products": "Mahsulotlar sahifasi",
+    "shortcut_sales": "Sotuvlar sahifasi",
+    "shortcut_close": "Modalni yopish",
+    "contact_title": "Muammoga duch keldingizmi?",
+    "contact_sub": "Bizning qo'llab-quvvatlash jamoamiz yordam beradi",
+    "contact_btn": "Murojaat"
   }
 }

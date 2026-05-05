@@ -187,14 +187,15 @@ onUnmounted(() => {
   width: 100%;
   z-index: 1000;
   padding: 1rem 0;
+  background: rgba(255, 255, 255, 0.92);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border-bottom: 1px solid transparent;
   transition: all 0.3s ease;
 }
 
 .navbar-scrolled {
-  background: rgba(255, 255, 255, 0.92);
-  backdrop-filter: blur(16px);
-  -webkit-backdrop-filter: blur(16px);
-  border-bottom: 1px solid rgba(0, 0, 0, 0.06);
+  border-bottom-color: rgba(0, 0, 0, 0.06);
   box-shadow: 0 1px 20px rgba(0, 0, 0, 0.06);
   padding: 0.75rem 0;
 }
@@ -261,6 +262,7 @@ onUnmounted(() => {
 .nav-link:hover::after {
   width: 100%;
 }
+
 
 /* Right actions */
 .desktop-actions {

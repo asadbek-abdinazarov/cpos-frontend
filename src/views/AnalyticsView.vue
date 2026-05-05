@@ -1,5 +1,6 @@
 <script setup>
 import '@/plugins/chart.js'
+import { ref, onMounted, onUnmounted } from 'vue'
 import { Download, RefreshCw, TrendingUp } from 'lucide-vue-next'
 import { VueDatePicker } from '@vuepic/vue-datepicker'
 import '@vuepic/vue-datepicker/dist/main.css'
@@ -21,17 +22,48 @@ const {
   donutChartOptions,
   categorySales,
   fetchStatistics,
+  // YANGI:
+  hourlyLoading,
+  paymentLoading,
+  topProductsLoading,
+  downloadLoading,
+  peakHour,
+  paymentMethods,
+  topProducts,
+  hourlyChartData,
+  hourlyChartOptions,
+  downloadReport,
 } = useAnalyticsCharts()
+
+// Export dropdown
+const showExportMenu = ref(false)
+const exportWrapRef = ref(null)
+
+const handleDownload = async (format) => {
+  showExportMenu.value = false
+  await downloadReport(format)
+}
+
+const onClickOutside = (e) => {
+  if (exportWrapRef.value && !exportWrapRef.value.contains(e.target)) {
+    showExportMenu.value = false
+  }
+}
+
+onMounted(() => document.addEventListener('click', onClickOutside))
+onUnmounted(() => document.removeEventListener('click', onClickOutside))
 </script>
 
 <template>
   <div class="analytics-page">
     <!-- ─── Hero Header ─────────────────────────── -->
     <div class="analytics-hero">
-      <div class="bg-grid"></div>
-      <div class="bg-blob blob-1"></div>
-      <div class="bg-blob blob-2"></div>
-      <div class="bg-blob blob-3"></div>
+      <div class="hero-bg-clip" aria-hidden="true">
+        <div class="bg-grid"></div>
+        <div class="bg-blob blob-1"></div>
+        <div class="bg-blob blob-2"></div>
+        <div class="bg-blob blob-3"></div>
+      </div>
 
       <div class="hero-inner">
         <div class="hero-text">
@@ -60,19 +92,43 @@ const {
           <button type="button" class="btn btn-icon-only" @click="fetchStatistics" title="Yangilash">
             <RefreshCw class="icon-sm" />
           </button>
-          <button type="button" class="btn btn-outline">
-            <Download class="icon-sm" />
-            <span class="btn-label">{{ $t('dashboard.analytics.download_report') }}</span>
-          </button>
+          <div class="export-wrap" ref="exportWrapRef">
+            <button
+              type="button"
+              class="btn btn-outline"
+              :disabled="downloadLoading"
+              @click="showExportMenu = !showExportMenu"
+            >
+              <Download class="icon-sm" :class="{ 'spin-once': downloadLoading }" />
+              <span class="btn-label">
+                {{ downloadLoading ? 'Yuklanmoqda...' : $t('dashboard.analytics.download_report') }}
+              </span>
+            </button>
+
+            <Transition name="dropdown">
+              <div v-if="showExportMenu" class="export-dropdown">
+                <button class="export-opt" @click="handleDownload('xlsx')">
+                  <span class="export-icon xlsx-icon">XLS</span>
+                  <div class="export-opt-text">
+                    <span class="export-opt-name">Excel (.xlsx)</span>
+                    <span class="export-opt-sub">Microsoft Excel formati</span>
+                  </div>
+                </button>
+                <button class="export-opt" @click="handleDownload('csv')">
+                  <span class="export-icon csv-icon">CSV</span>
+                  <div class="export-opt-text">
+                    <span class="export-opt-name">CSV (.csv)</span>
+                    <span class="export-opt-sub">Vergul bilan ajratilgan</span>
+                  </div>
+                </button>
+              </div>
+            </Transition>
+          </div>
         </div>
       </div>
 
       <!-- Floating indicator -->
-      <div class="float-live">
-        <TrendingUp :size="13" color="#10b981" />
-        <span>Jonli ma'lumot</span>
-        <span class="live-dot"></span>
-      </div>
+      
     </div>
 
     <AnalyticsMetrics :metrics="metrics" :stats-loading="statsLoading" />
@@ -87,6 +143,14 @@ const {
       :donut-chart-data="donutChartData"
       :donut-chart-options="donutChartOptions"
       :category-sales="categorySales"
+      :hourly-loading="hourlyLoading"
+      :payment-loading="paymentLoading"
+      :top-products-loading="topProductsLoading"
+      :peak-hour="peakHour"
+      :hourly-chart-data="hourlyChartData"
+      :hourly-chart-options="hourlyChartOptions"
+      :payment-methods="paymentMethods"
+      :top-products="topProducts"
     />
   </div>
 </template>
@@ -104,9 +168,17 @@ const {
   background: #fff;
   border-radius: 20px;
   border: 1px solid #e2e8f0;
-  overflow: hidden;
   padding: 2rem 2rem 1.75rem;
   box-shadow: 0 1px 8px rgba(0, 0, 0, 0.04);
+}
+
+.hero-bg-clip {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  border-radius: 20px;
+  pointer-events: none;
+  z-index: 0;
 }
 
 .bg-grid {
@@ -117,7 +189,6 @@ const {
     linear-gradient(90deg, rgba(0, 123, 255, 0.04) 1px, transparent 1px);
   background-size: 32px 32px;
   pointer-events: none;
-  z-index: 0;
 }
 
 .bg-blob {
@@ -125,7 +196,6 @@ const {
   border-radius: 50%;
   filter: blur(60px);
   pointer-events: none;
-  z-index: 0;
 }
 
 .blob-1 {
@@ -230,6 +300,8 @@ const {
 
 .date-picker-wrapper {
   width: 340px;
+  min-width: 0;
+  flex: 1 1 200px;
   --dp-font-family: inherit;
   --dp-border-radius: 10px;
   --dp-border-color: #e2e8f0;
@@ -344,8 +416,7 @@ const {
 
   .date-picker-wrapper {
     width: 100%;
-    flex: 1;
-    min-width: 0;
+    flex: 1 1 auto;
   }
 
   .float-live {
@@ -370,5 +441,105 @@ const {
   .btn-icon-only {
     display: none;
   }
+}
+
+/* ─── Export dropdown ───────────────────────────── */
+.export-wrap {
+  position: relative;
+}
+
+.export-dropdown {
+  position: absolute;
+  top: calc(100% + 8px);
+  right: 0;
+  background: #fff;
+  border: 1px solid #e2e8f0;
+  border-radius: 14px;
+  box-shadow: 0 4px 6px -1px rgba(0,0,0,0.07), 0 20px 40px -8px rgba(0,0,0,0.12);
+  padding: 0.5rem;
+  z-index: 50;
+  min-width: 210px;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.export-opt {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.65rem 0.75rem;
+  border-radius: 10px;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  text-align: left;
+  width: 100%;
+  transition: background 0.15s;
+  font-family: inherit;
+}
+
+.export-opt:hover {
+  background: #f8fafc;
+}
+
+.export-icon {
+  width: 34px;
+  height: 34px;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.62rem;
+  font-weight: 800;
+  flex-shrink: 0;
+  letter-spacing: 0.02em;
+}
+
+.xlsx-icon {
+  background: rgba(16, 185, 129, 0.1);
+  color: #059669;
+  border: 1px solid rgba(16, 185, 129, 0.2);
+}
+
+.csv-icon {
+  background: rgba(249, 115, 22, 0.1);
+  color: #ea580c;
+  border: 1px solid rgba(249, 115, 22, 0.2);
+}
+
+.export-opt-text {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+}
+
+.export-opt-name {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: #0f172a;
+}
+
+.export-opt-sub {
+  font-size: 0.72rem;
+  color: #94a3b8;
+}
+
+.dropdown-enter-active,
+.dropdown-leave-active {
+  transition: all 0.18s cubic-bezier(0.4, 0, 0.2, 1);
+}
+.dropdown-enter-from,
+.dropdown-leave-to {
+  opacity: 0;
+  transform: translateY(-6px) scale(0.97);
+}
+
+@keyframes spin-once {
+  from { transform: rotate(0deg); }
+  to   { transform: rotate(360deg); }
+}
+.spin-once {
+  animation: spin-once 1s linear infinite;
 }
 </style>

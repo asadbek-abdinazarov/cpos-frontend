@@ -1,10 +1,10 @@
 <script setup>
 import { Bar, Doughnut } from 'vue-chartjs'
 import { MoreVertical, TrendingUp, TrendingDown, Minus, CreditCard, Banknote, Smartphone, Clock, Package } from 'lucide-vue-next'
-import { ref } from 'vue'
 
 defineProps({
   fmt: { type: Function, required: true },
+  // mavjud
   salesTrendLoading: Boolean,
   categorySalesLoading: Boolean,
   totalCategoryRevenue: [Number, String],
@@ -13,74 +13,15 @@ defineProps({
   donutChartData: Object,
   donutChartOptions: Object,
   categorySales: Array,
-})
-
-// ─── Top Products ──────────────────────────────────
-const topProducts = ref([
-  { rank: 1, name: 'Dona non', category: 'Non-kunji', sales: 342, revenue: 4104000, trend: 'up' },
-  { rank: 2, name: 'Kofe latte', category: 'Ichimlik', sales: 218, revenue: 3924000, trend: 'up' },
-  { rank: 3, name: 'T-shirt L', category: 'Kiyim', sales: 156, revenue: 13260000, trend: 'down' },
-  { rank: 4, name: 'Smartfon case', category: 'Aksesuar', sales: 134, revenue: 2010000, trend: 'up' },
-  { rank: 5, name: 'Limon sharbat', category: 'Ichimlik', sales: 98, revenue: 980000, trend: 'neutral' },
-])
-
-// ─── Payment Methods ───────────────────────────────
-const paymentMethods = ref([
-  { name: 'Naqd pul', icon: Banknote, percentage: 45, amount: 12500000, color: '#10b981' },
-  { name: 'Plastik karta', icon: CreditCard, percentage: 38, amount: 10640000, color: '#3b82f6' },
-  { name: "Online to'lov", icon: Smartphone, percentage: 17, amount: 4760000, color: '#8b5cf6' },
-])
-
-// ─── Hourly Sales ──────────────────────────────────
-const hourlyChartData = ref({
-  labels: ['08', '09', '10', '11', '12', '13', '14', '15', '16', '17', '18', '19', '20', '21'],
-  datasets: [
-    {
-      label: 'Buyurtmalar',
-      data: [12, 28, 45, 67, 89, 95, 78, 54, 43, 52, 71, 68, 45, 23],
-      backgroundColor: [
-        'rgba(0,123,255,0.25)', 'rgba(0,123,255,0.35)', 'rgba(0,123,255,0.55)',
-        'rgba(0,123,255,0.7)', 'rgba(0,123,255,0.85)', '#007bff',
-        'rgba(0,123,255,0.8)', 'rgba(0,123,255,0.55)', 'rgba(0,123,255,0.45)',
-        'rgba(0,123,255,0.55)', 'rgba(0,123,255,0.75)', 'rgba(0,123,255,0.7)',
-        'rgba(0,123,255,0.5)', 'rgba(0,123,255,0.3)',
-      ],
-      borderRadius: 6,
-      borderSkipped: false,
-      barThickness: 'flex',
-      maxBarThickness: 28,
-    },
-  ],
-})
-
-const hourlyChartOptions = ref({
-  responsive: true,
-  maintainAspectRatio: false,
-  plugins: {
-    legend: { display: false },
-    tooltip: {
-      backgroundColor: 'rgba(15, 23, 42, 0.9)',
-      padding: 10,
-      cornerRadius: 8,
-      titleFont: { size: 12, weight: '600' },
-      bodyFont: { size: 11 },
-      callbacks: {
-        title: (ctx) => `${ctx[0].label}:00`,
-        label: (ctx) => ` ${ctx.parsed.y} ta buyurtma`,
-      },
-    },
-  },
-  scales: {
-    y: {
-      beginAtZero: true,
-      grid: { color: '#e2e8f0', borderDash: [4, 4] },
-      ticks: { color: '#64748b', font: { size: 11 } },
-    },
-    x: {
-      grid: { display: false },
-      ticks: { color: '#64748b', font: { size: 11 } },
-    },
-  },
+  // YANGI
+  hourlyLoading: Boolean,
+  paymentLoading: Boolean,
+  topProductsLoading: Boolean,
+  peakHour: { type: Number, default: null },
+  hourlyChartData: Object,
+  hourlyChartOptions: Object,
+  paymentMethods: { type: Array, default: () => [] },
+  topProducts: { type: Array, default: () => [] },
 })
 </script>
 
@@ -146,10 +87,15 @@ const hourlyChartOptions = ref({
           </div>
           <h3>Eng faol soatlar</h3>
         </div>
-        <span class="peak-badge">Cho'qqi: 13:00</span>
+        <span v-if="peakHour !== null" class="peak-badge">
+          Cho'qqi: {{ String(peakHour).padStart(2, '0') }}:00
+        </span>
       </div>
       <div class="chart-container" style="height: 200px">
-        <Bar :data="hourlyChartData" :options="hourlyChartOptions" />
+        <template v-if="hourlyLoading">
+          <div class="skel" style="width: 100%; height: 100%; border-radius: 8px"></div>
+        </template>
+        <Bar v-else :data="hourlyChartData" :options="hourlyChartOptions" />
       </div>
     </div>
 
@@ -164,26 +110,41 @@ const hourlyChartOptions = ref({
         </div>
       </div>
       <div class="payments-body">
-        <div v-for="method in paymentMethods" :key="method.name" class="payment-item">
-          <div class="payment-top">
-            <div class="payment-label">
-              <div class="payment-icon-wrap" :style="{ background: method.color + '18' }">
-                <component :is="method.icon" :size="14" :color="method.color" />
+        <!-- Loading skeleton -->
+        <template v-if="paymentLoading">
+          <div v-for="n in 3" :key="n" class="payment-item">
+            <div class="payment-top">
+              <div class="skel" style="width:120px;height:14px;border-radius:6px"></div>
+              <div class="skel" style="width:40px;height:14px;border-radius:6px"></div>
+            </div>
+            <div class="skel" style="width:100%;height:7px;border-radius:100px;margin:4px 0"></div>
+            <div class="skel" style="width:80px;height:11px;border-radius:5px"></div>
+          </div>
+        </template>
+
+        <!-- Data -->
+        <template v-else>
+          <div v-for="method in paymentMethods" :key="method.name" class="payment-item">
+            <div class="payment-top">
+              <div class="payment-label">
+                <div class="payment-icon-wrap" :style="{ background: method.color + '18' }">
+                  <component :is="method.icon" :size="14" :color="method.color" />
+                </div>
+                <span class="payment-name">{{ method.name }}</span>
               </div>
-              <span class="payment-name">{{ method.name }}</span>
+              <div class="payment-right">
+                <span class="payment-pct" :style="{ color: method.color }">{{ method.percentage }}%</span>
+              </div>
             </div>
-            <div class="payment-right">
-              <span class="payment-pct" :style="{ color: method.color }">{{ method.percentage }}%</span>
+            <div class="progress-track">
+              <div
+                class="progress-fill"
+                :style="{ width: method.percentage + '%', background: method.color }"
+              ></div>
             </div>
+            <span class="payment-amount">{{ fmt(method.amount) }} UZS</span>
           </div>
-          <div class="progress-track">
-            <div
-              class="progress-fill"
-              :style="{ width: method.percentage + '%', background: method.color }"
-            ></div>
-          </div>
-          <span class="payment-amount">{{ fmt(method.amount) }} UZS</span>
-        </div>
+        </template>
       </div>
     </div>
   </div>
@@ -197,7 +158,6 @@ const hourlyChartOptions = ref({
         </div>
         <h3>Top 5 mahsulotlar</h3>
       </div>
-      <span class="period-label">So'nggi 7 kun</span>
     </div>
     <div class="products-table">
       <div class="table-head">
@@ -207,25 +167,42 @@ const hourlyChartOptions = ref({
         <span class="col-right">Daromad</span>
         <span class="col-center">Trend</span>
       </div>
-      <div v-for="p in topProducts" :key="p.rank" class="table-row">
-        <span class="rank-num">{{ p.rank }}</span>
-        <div class="product-info">
-          <div class="product-avatar">{{ p.name[0] }}</div>
-          <div>
-            <div class="product-name">{{ p.name }}</div>
-            <div class="product-cat">{{ p.category }}</div>
+      <template v-if="topProductsLoading">
+        <div v-for="n in 5" :key="n" class="table-row">
+          <div class="skel" style="width:20px;height:14px;border-radius:4px"></div>
+          <div class="product-info">
+            <div class="skel" style="width:34px;height:34px;border-radius:9px"></div>
+            <div style="display:flex;flex-direction:column;gap:4px">
+              <div class="skel" style="width:100px;height:13px;border-radius:4px"></div>
+              <div class="skel" style="width:60px;height:10px;border-radius:4px"></div>
+            </div>
           </div>
+          <div class="skel col-center" style="width:50px;height:13px;border-radius:4px;margin:0 auto"></div>
+          <div class="skel col-right" style="width:90px;height:13px;border-radius:4px;margin-left:auto"></div>
+          <div class="skel col-center" style="width:26px;height:26px;border-radius:7px;margin:0 auto"></div>
         </div>
-        <span class="col-center sales-count">{{ p.sales }} ta</span>
-        <span class="col-right revenue-val">{{ fmt(p.revenue) }} UZS</span>
-        <span class="col-center">
-          <span class="trend-badge" :class="p.trend">
-            <TrendingUp v-if="p.trend === 'up'" :size="12" />
-            <TrendingDown v-else-if="p.trend === 'down'" :size="12" />
-            <Minus v-else :size="12" />
+      </template>
+      <template v-else>
+        <div v-for="p in topProducts" :key="p.rank" class="table-row">
+          <span class="rank-num">{{ p.rank }}</span>
+          <div class="product-info">
+            <div class="product-avatar">{{ p.name[0] }}</div>
+            <div>
+              <div class="product-name">{{ p.name }}</div>
+              <div class="product-cat">{{ p.category }}</div>
+            </div>
+          </div>
+          <span class="col-center sales-count">{{ p.sales }} ta</span>
+          <span class="col-right revenue-val">{{ fmt(p.revenue) }} UZS</span>
+          <span class="col-center">
+            <span class="trend-badge" :class="p.trend">
+              <TrendingUp v-if="p.trend === 'up'" :size="12" />
+              <TrendingDown v-else-if="p.trend === 'down'" :size="12" />
+              <Minus v-else :size="12" />
+            </span>
           </span>
-        </span>
-      </div>
+        </div>
+      </template>
     </div>
   </div>
 </template>

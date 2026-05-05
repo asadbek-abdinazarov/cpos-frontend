@@ -1,0 +1,3 @@
+- [Project overview](project_overview.md) — Vue 3 + Vite SPA, no TypeScript (plain JS), cookie+localStorage auth hybrid
+- [Feedback: notification type warning](feedback_notification_warning.md) — `warning` type is used in the codebase; AppNotification must style it
+- [Feedback: settings save is local-only](feedback_settings_save.md) — SettingsView personal/org/shop save has no API call; changes lost on reload

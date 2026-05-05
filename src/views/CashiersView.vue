@@ -1,12 +1,11 @@
 <script setup>
 import { ref, onMounted } from 'vue'
 import { useDelayedLoading } from '@/composables/useDelayedLoading'
+import BasePagination from '@/components/dashboard/BasePagination.vue'
 import {
   Users,
   Plus,
   Power,
-  ChevronLeft,
-  ChevronRight,
   X,
 } from 'lucide-vue-next'
 import { getCashiers, createCashier, toggleCashierStatus } from '@/services/api'
@@ -49,6 +48,10 @@ const nextPage = () => {
 const prevPage = () => {
   if (currentPage.value > 1) { currentPage.value--; fetchCashiers() }
 }
+const goToPage = (page) => {
+  currentPage.value = page
+  fetchCashiers()
+}
 
 const handleToggleStatus = async (cashier) => {
   try {
@@ -57,11 +60,13 @@ const handleToggleStatus = async (cashier) => {
       cashier.isActive = !cashier.isActive
       showNotification({
         type: 'success',
-        message: `Kassir holati ${cashier.isActive ? 'faol' : 'nofaol'} qilindi`,
+        message: t('dashboard.cashiers.toggled', {
+          status: t(cashier.isActive ? 'dashboard.cashiers.status_active' : 'dashboard.cashiers.status_inactive'),
+        }),
       })
     }
   } catch {
-    showNotification({ type: 'error', message: 'Holatni oʻzgartirib boʻlmadi' })
+    showNotification({ type: 'error', message: t('dashboard.cashiers.toggle_error') })
   }
 }
 
@@ -80,13 +85,13 @@ const handleCreateCashier = async () => {
   try {
     const res = await createCashier(newCashier.value)
     if (res.data?.success) {
-      showNotification({ type: 'success', message: 'Yangi kassir qoʻshildi' })
+      showNotification({ type: 'success', message: t('dashboard.cashiers.created') })
       closeCreateModal()
       currentPage.value = 1
       await fetchCashiers()
     }
   } catch {
-    showNotification({ type: 'error', message: 'Kassir qoshishda xatolik yuz berdi' })
+    showNotification({ type: 'error', message: t('dashboard.cashiers.create_error') })
   } finally {
     isSubmitting.value = false
   }
@@ -107,15 +112,15 @@ onMounted(fetchCashiers)
         <div class="cs-hero-left">
           <div class="cs-badge">
             <Users :size="11" />
-            {{ t('dashboard.sidebar.cashiers') || 'Kassirlar' }}
+            {{ t('dashboard.sidebar.cashiers') }}
           </div>
-          <h1 class="cs-title">{{ t('dashboard.sidebar.cashiers') || 'Kassirlar' }}</h1>
-          <p class="cs-subtitle">Barcha kassirlarni boshqarish, faollashtirish va yangi qoʻshish</p>
+          <h1 class="cs-title">{{ t('dashboard.sidebar.cashiers') }}</h1>
+          <p class="cs-subtitle">{{ $t('dashboard.cashiers.subtitle') }}</p>
         </div>
         <div class="cs-hero-actions">
           <button class="cs-btn-primary" @click="openCreateModal">
             <Plus :size="15" />
-            Yangi kassir qoʻshish
+            {{ $t('dashboard.cashiers.add') }}
           </button>
         </div>
       </div>
@@ -128,12 +133,12 @@ onMounted(fetchCashiers)
           <thead>
             <tr>
               <th>ID</th>
-              <th>Kassir ismi</th>
-              <th>Username</th>
-              <th>Telefon</th>
-              <th>Holati</th>
-              <th>API Kalit</th>
-              <th class="th-actions">Harakatlar</th>
+              <th>{{ $t('dashboard.cashiers.col_name') }}</th>
+              <th>{{ $t('dashboard.cashiers.col_username') }}</th>
+              <th>{{ $t('dashboard.cashiers.col_phone') }}</th>
+              <th>{{ $t('dashboard.cashiers.col_status') }}</th>
+              <th>{{ $t('dashboard.cashiers.col_apikey') }}</th>
+              <th class="th-actions">{{ $t('dashboard.cashiers.col_actions') }}</th>
             </tr>
           </thead>
           <tbody>
@@ -166,7 +171,7 @@ onMounted(fetchCashiers)
               <td>
                 <div class="cs-user-cell">
                   <div class="cs-avatar">
-                    {{ cashier.firstName.charAt(0) }}{{ cashier.lastName.charAt(0) }}
+                    {{ cashier.firstName?.[0] ?? '' }}{{ cashier.lastName?.[0] ?? '' }}
                   </div>
                   <span class="cs-fullname">{{ cashier.firstName }} {{ cashier.lastName }}</span>
                 </div>
@@ -175,7 +180,7 @@ onMounted(fetchCashiers)
               <td class="td-phone">{{ cashier.phone }}</td>
               <td>
                 <span class="cs-status" :class="cashier.isActive ? 'cs-status-active' : 'cs-status-inactive'">
-                  {{ cashier.isActive ? 'Faol' : 'Nofaol' }}
+                  {{ cashier.isActive ? $t('dashboard.cashiers.status_active') : $t('dashboard.cashiers.status_inactive') }}
                 </span>
               </td>
               <td class="td-apikey">
@@ -188,7 +193,7 @@ onMounted(fetchCashiers)
                   <button
                     class="cs-act-btn"
                     :class="cashier.isActive ? 'cs-act-off' : 'cs-act-on'"
-                    :title="cashier.isActive ? 'Faoliyatni toʻxtatish' : 'Faollashtirish'"
+                    :title="cashier.isActive ? $t('dashboard.cashiers.deactivate') : $t('dashboard.cashiers.activate')"
                     @click="handleToggleStatus(cashier)"
                   >
                     <Power :size="14" />
@@ -202,7 +207,7 @@ onMounted(fetchCashiers)
               <td colspan="7" class="cs-empty">
                 <div class="cs-empty-inner">
                   <div class="cs-empty-icon"><Users :size="28" /></div>
-                  <p>Hozircha kassirlar yoʻq</p>
+                  <p>{{ $t('dashboard.cashiers.empty') }}</p>
                 </div>
               </td>
             </tr>
@@ -212,21 +217,13 @@ onMounted(fetchCashiers)
       </div>
 
       <!-- Pagination -->
-      <div class="cs-pagination">
-        <span class="cs-page-info">
-          {{ (currentPage - 1) * itemsPerPage + (cashiers.length > 0 ? 1 : 0) }}–{{ Math.min(currentPage * itemsPerPage, totalElements) }}
-          / {{ totalElements }}
-        </span>
-        <div class="cs-page-controls">
-          <button class="cs-page-btn" @click="prevPage" :disabled="currentPage === 1">
-            <ChevronLeft :size="15" />
-          </button>
-          <span class="cs-page-num">{{ currentPage }}</span>
-          <button class="cs-page-btn" @click="nextPage" :disabled="currentPage === totalPages">
-            <ChevronRight :size="15" />
-          </button>
-        </div>
-      </div>
+      <BasePagination
+        :current-page="currentPage"
+        :total-pages="totalPages"
+        :total-elements="totalElements"
+        :items-per-page="itemsPerPage"
+        @page-change="goToPage"
+      />
     </div>
 
     <!-- ─── Create Modal ─────────────────────────────── -->
@@ -238,7 +235,7 @@ onMounted(fetchCashiers)
               <div class="cs-modal-icon-wrap">
                 <Users :size="22" />
               </div>
-              <h2 class="cs-modal-title">Yangi kassir qoʻshish</h2>
+              <h2 class="cs-modal-title">{{ $t('dashboard.cashiers.modal_title') }}</h2>
               <button class="cs-close-btn" @click="closeCreateModal">
                 <X :size="16" />
               </button>
@@ -247,34 +244,34 @@ onMounted(fetchCashiers)
             <form @submit.prevent="handleCreateCashier" class="cs-modal-form">
               <div class="cs-form-row">
                 <div class="cs-form-group">
-                  <label>Ism</label>
-                  <input v-model="newCashier.firstName" type="text" required placeholder="Masalan: Ali" />
+                  <label>{{ $t('dashboard.cashiers.field_first_name') }}</label>
+                  <input v-model="newCashier.firstName" type="text" required :placeholder="$t('dashboard.cashiers.ph_first_name')" />
                 </div>
                 <div class="cs-form-group">
-                  <label>Familiya</label>
-                  <input v-model="newCashier.lastName" type="text" required placeholder="Masalan: Valiyev" />
+                  <label>{{ $t('dashboard.cashiers.field_last_name') }}</label>
+                  <input v-model="newCashier.lastName" type="text" required :placeholder="$t('dashboard.cashiers.ph_last_name')" />
                 </div>
               </div>
               <div class="cs-form-group">
-                <label>Foydalanuvchi nomi</label>
-                <input v-model="newCashier.username" type="text" required placeholder="ali_cashier" />
+                <label>{{ $t('dashboard.cashiers.field_username') }}</label>
+                <input v-model="newCashier.username" type="text" required :placeholder="$t('dashboard.cashiers.ph_username')" />
               </div>
               <div class="cs-form-group">
-                <label>Telefon raqam</label>
-                <input v-model="newCashier.phone" type="text" required placeholder="+998901234567" />
+                <label>{{ $t('dashboard.cashiers.field_phone') }}</label>
+                <input v-model="newCashier.phone" type="text" required :placeholder="$t('dashboard.cashiers.ph_phone')" />
               </div>
               <div class="cs-form-group">
-                <label>Parol</label>
-                <input v-model="newCashier.password" type="password" required placeholder="Parol kiriting" />
+                <label>{{ $t('dashboard.cashiers.field_password') }}</label>
+                <input v-model="newCashier.password" type="password" required :placeholder="$t('dashboard.cashiers.ph_password')" />
               </div>
 
               <div class="cs-modal-footer">
                 <button type="button" class="cs-btn-ghost" @click="closeCreateModal" :disabled="isSubmitting">
-                  Bekor qilish
+                  {{ $t('dashboard.cashiers.btn_cancel') }}
                 </button>
                 <button type="submit" class="cs-btn-primary" :disabled="isSubmitting">
                   <span v-if="isSubmitting" class="cs-spinner"></span>
-                  Yaratish
+                  {{ $t('dashboard.cashiers.btn_create') }}
                 </button>
               </div>
             </form>
@@ -583,64 +580,6 @@ onMounted(fetchCashiers)
 }
 .cs-empty p { font-size: 0.875rem; margin: 0; }
 
-/* ─── Pagination ────────────────────────────────── */
-.cs-pagination {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 0.9rem 1.25rem;
-  border-top: 1px solid #f1f5f9;
-  flex-wrap: wrap;
-  gap: 0.75rem;
-}
-
-.cs-page-info {
-  font-size: 0.8rem;
-  color: #94a3b8;
-  font-weight: 500;
-}
-
-.cs-page-controls {
-  display: flex;
-  align-items: center;
-  gap: 0.4rem;
-}
-
-.cs-page-btn {
-  width: 30px;
-  height: 30px;
-  border: 1.5px solid #e2e8f0;
-  background: #fff;
-  border-radius: 8px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-  color: #64748b;
-  transition: all 0.15s;
-}
-.cs-page-btn:disabled { opacity: 0.4; cursor: not-allowed; }
-.cs-page-btn:not(:disabled):hover {
-  background: #f8fafc;
-  border-color: #007bff;
-  color: #007bff;
-}
-
-.cs-page-num {
-  min-width: 32px;
-  height: 30px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background: rgba(0,123,255,0.08);
-  border: 1px solid rgba(0,123,255,0.2);
-  border-radius: 8px;
-  font-size: 0.82rem;
-  font-weight: 700;
-  color: #007bff;
-  padding: 0 0.5rem;
-}
-
 /* ─── Skeleton ──────────────────────────────────── */
 @keyframes shimmer {
   0%   { background-position: -400px 0; }
@@ -787,15 +726,50 @@ onMounted(fetchCashiers)
 
 /* ─── Modal transition ──────────────────────────── */
 .modal-fade-enter-active,
-.modal-fade-leave-active { transition: all 0.2s cubic-bezier(0.4,0,0.2,1); }
+.modal-fade-leave-active {
+  transition:
+    opacity 0.22s cubic-bezier(0.4, 0, 0.2, 1),
+    background-color 0.22s cubic-bezier(0.4, 0, 0.2, 1),
+    backdrop-filter 0.22s cubic-bezier(0.4, 0, 0.2, 1);
+  will-change: opacity, background-color, backdrop-filter;
+}
+
+.modal-fade-enter-active .cs-modal,
+.modal-fade-leave-active .cs-modal {
+  transition:
+    transform 0.22s cubic-bezier(0.4, 0, 0.2, 1),
+    opacity 0.22s cubic-bezier(0.4, 0, 0.2, 1),
+    box-shadow 0.22s cubic-bezier(0.4, 0, 0.2, 1);
+  will-change: transform, opacity, box-shadow;
+}
+
 .modal-fade-enter-from,
-.modal-fade-leave-to { opacity: 0; transform: scale(0.96); }
+.modal-fade-leave-to {
+  opacity: 0;
+  background: rgba(15, 23, 42, 0);
+  backdrop-filter: blur(0px);
+}
+
+.modal-fade-enter-from .cs-modal,
+.modal-fade-leave-to .cs-modal {
+  opacity: 0;
+  transform: translateY(10px) scale(0.98);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .modal-fade-enter-active,
+  .modal-fade-leave-active,
+  .modal-fade-enter-active .cs-modal,
+  .modal-fade-leave-active .cs-modal {
+    transition: none;
+  }
+}
 
 /* ─── Responsive ────────────────────────────────── */
 @media (max-width: 768px) {
   .cs-hero { padding: 1.25rem; }
   .cs-title { font-size: 1.3rem; }
-  .cs-pagination { justify-content: center; flex-direction: column; align-items: center; }
 }
 @media (max-width: 640px) {
   .cs-table th,

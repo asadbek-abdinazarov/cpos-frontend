@@ -1,11 +1,6 @@
 import { ref, computed, watch, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
-import {
-  getProducts,
-  getCategories,
-  deleteProduct,
-  deleteProductsBatch,
-} from '@/services/api'
+import { getProducts, getCategories, deleteProduct, deleteProductsBatch } from '@/services/api'
 import { useNotification } from '@/composables/useNotification'
 import { useI18n } from 'vue-i18n'
 import { useDelayedLoading } from '@/composables/useDelayedLoading'
@@ -24,12 +19,12 @@ export function useProductList() {
   const selectedCategory = ref('All')
   const selectedStatus = ref('All')
 
-  const categories = ref([{ id: 'All', name: computed(() => t('dashboard.products.status.all')) }])
-  const statuses = [
-    { value: 'All', label: computed(() => t('dashboard.products.status.all')) },
-    { value: 'Active', label: computed(() => t('dashboard.products.status.active')) },
-    { value: 'Inactive', label: computed(() => t('dashboard.products.status.inactive')) },
-  ]
+  const categories = ref([{ id: 'All', name: t('dashboard.products.status.all') }])
+  const statuses = computed(() => [
+    { value: 'All', label: t('dashboard.products.status.all') },
+    { value: 'Active', label: t('dashboard.products.status.active') },
+    { value: 'Inactive', label: t('dashboard.products.status.inactive') },
+  ])
 
   const fetchCategories = async () => {
     try {
@@ -37,7 +32,7 @@ export function useProductList() {
       if (res.data && res.data.success) {
         const fetchedCategories = res.data.data.map((c) => ({ id: c.id, name: c.name }))
         categories.value = [
-          { id: 'All', name: computed(() => t('dashboard.products.status.all')) },
+          { id: 'All', name: t('dashboard.products.status.all') },
           ...fetchedCategories,
         ]
       }
@@ -192,13 +187,12 @@ export function useProductList() {
 
   const executeDelete = async () => {
     if (!productToDelete.value) return
+    const deletedId = productToDelete.value.id
     try {
-      const res = await deleteProduct(productToDelete.value.id)
+      const res = await deleteProduct(deletedId)
       if (res.data && res.data.success) {
         showNotification({ type: 'success', message: 'Product deleted successfully' })
-        selectedProductIds.value = selectedProductIds.value.filter(
-          (id) => id !== productToDelete.value.id,
-        )
+        selectedProductIds.value = selectedProductIds.value.filter((id) => id !== deletedId)
         await fetchProducts()
       }
     } catch (err) {
@@ -253,6 +247,8 @@ export function useProductList() {
     itemsPerPage,
     filteredProducts,
     onSearchSubmit,
+    fetchProducts,
+    pushFiltersToQuery,
     nextPage,
     prevPage,
     goToProductDetail,
