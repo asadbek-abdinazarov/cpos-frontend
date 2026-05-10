@@ -97,6 +97,7 @@ const handleLogout = async () => {
 <template>
   <aside class="sidebar" :class="{ open: isOpen }">
     <!-- ─── Logo ──────────────────────────────────── -->
+
     <div class="sidebar-header">
       <router-link to="/" class="logo-link">
         <img src="/logo-nav.svg" alt="CPOS" class="logo-img" />
