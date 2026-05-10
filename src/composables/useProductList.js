@@ -36,8 +36,8 @@ export function useProductList() {
           ...fetchedCategories,
         ]
       }
-    } catch (error) {
-      console.error('Failed to load categories', error)
+    } catch {
+      // category load failure is non-critical; list falls back to "All"
     }
   }
 
@@ -90,8 +90,8 @@ export function useProductList() {
         totalPages.value = res.data.data.page.totalPages === 0 ? 1 : res.data.data.page.totalPages
         totalElements.value = res.data.data.page.totalElements
       }
-    } catch (error) {
-      console.error(error)
+    } catch {
+      // error shown by global API interceptor
     } finally {
       stopLoading()
     }
@@ -191,12 +191,12 @@ export function useProductList() {
     try {
       const res = await deleteProduct(deletedId)
       if (res.data && res.data.success) {
-        showNotification({ type: 'success', message: 'Product deleted successfully' })
+        showNotification({ type: 'success', message: t('dashboard.products.deleted_success') })
         selectedProductIds.value = selectedProductIds.value.filter((id) => id !== deletedId)
         await fetchProducts()
       }
-    } catch (err) {
-      console.error(err)
+    } catch {
+      // error shown by global API interceptor
     } finally {
       closeDeleteModal()
     }
@@ -220,13 +220,13 @@ export function useProductList() {
       if (res.data && res.data.success) {
         showNotification({
           type: 'success',
-          message: `${selectedProductIds.value.length} products deleted successfully`,
+          message: t('dashboard.products.batch_delete_success', { count: selectedProductIds.value.length }),
         })
         selectedProductIds.value = []
         await fetchProducts()
       }
-    } catch (err) {
-      console.error(err)
+    } catch {
+      // error shown by global API interceptor
     } finally {
       closeBatchDeleteModal()
     }

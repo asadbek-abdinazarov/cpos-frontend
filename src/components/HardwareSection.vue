@@ -20,7 +20,7 @@ const products = computed(() => [
     description: t('hardware.products.terminal.desc'),
     price: '$499',
     image: terminalImg,
-    badge: 'Bestseller',
+    badge: t('hardware.badge.bestseller'),
     badgeColor: '#007BFF',
   },
   {
@@ -29,7 +29,7 @@ const products = computed(() => [
     description: t('hardware.products.printer.desc'),
     price: '$120',
     image: printerImg,
-    badge: 'Tez yetkazish',
+    badge: t('hardware.badge.fast_delivery'),
     badgeColor: '#10B981',
   },
   {
@@ -38,7 +38,7 @@ const products = computed(() => [
     description: t('hardware.products.scanner.desc'),
     price: '$85',
     image: scannerImg,
-    badge: 'Eng ixcham',
+    badge: t('hardware.badge.compact'),
     badgeColor: '#6366F1',
   },
 ])
@@ -49,7 +49,7 @@ const products = computed(() => [
     <div class="section-container">
       <div class="section-head" data-aos="fade-up">
         <div class="head-left">
-          <span class="section-tag">Uskunalar</span>
+          <span class="section-tag">{{ t('hardware.section_tag') }}</span>
           <h2 class="section-title">{{ t('hardware.title') }}</h2>
           <p class="section-sub">{{ t('hardware.subtitle') }}</p>
         </div>
@@ -75,7 +75,7 @@ const products = computed(() => [
             <p class="product-desc">{{ product.description }}</p>
             <div class="product-footer">
               <div class="price-wrap">
-                <span class="price-from">dan</span>
+                <span class="price-from">{{ t('hardware.price_from') }}</span>
                 <span class="product-price">{{ product.price }}</span>
               </div>
               <button class="btn-quote">{{ t('hardware.request_quote') }}</button>

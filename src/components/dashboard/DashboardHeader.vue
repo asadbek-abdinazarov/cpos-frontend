@@ -35,7 +35,7 @@ const pageMeta = computed(() => {
   if (path.startsWith('/dashboard/cashiers'))
     return { title: t('dashboard.sidebar.cashiers'), icon: 'Users' }
   if (path.startsWith('/dashboard/settings'))
-    return { title: 'Sozlamalar', icon: 'Settings' }
+    return { title: t('dashboard.sidebar.settings'), icon: 'Settings' }
   return { title: 'Dashboard', icon: 'LayoutDashboard' }
 })
 
@@ -277,7 +277,7 @@ onUnmounted(() => {
                   <div class="notif-text">
                     <p class="notif-title">{{ item.subject }}</p>
                     <p class="notif-body-text">{{ item.body }}</p>
-                    <p class="notif-time">{{ new Date(item.createdAt).toLocaleString('uz-UZ') }}</p>
+                    <p class="notif-time">{{ item.createdAt ? new Date(item.createdAt).toLocaleString('uz-UZ') : '' }}</p>
                   </div>
                   <span v-if="!item.isRead" class="unread-dot"></span>
                 </li>
@@ -301,7 +301,7 @@ onUnmounted(() => {
   </header>
 
   <!-- ─── AI Advice Modal ─────────────────────── -->
-  <BaseModal v-model="showAiAdvice" title="AI Tavsiyalar" size="lg">
+  <BaseModal v-model="showAiAdvice" :title="t('dashboard.ai.title')" size="lg">
     <template #icon><Sparkles :size="20" /></template>
 
     <template #default>
@@ -310,7 +310,7 @@ onUnmounted(() => {
         <!-- Loading -->
         <div v-if="loadingAdvice" class="ai-state">
           <div class="ai-spinner"></div>
-          <span>AI tavsiyalari yuklanmoqda…</span>
+          <span>{{ t('dashboard.ai.loading') }}</span>
         </div>
 
         <template v-else>
@@ -323,10 +323,10 @@ onUnmounted(() => {
               </div>
               <div class="ai-hero-text">
                 <div class="ai-hero-row">
-                  <span class="ai-hero-label">Bugungi tavsiya</span>
+                  <span class="ai-hero-label">{{ t('dashboard.ai.today') }}</span>
                   <span class="ai-date-chip">{{ latestAdvice.adviceDate }}</span>
                   <span class="ai-sentiment-chip" :class="latestAdvice.isPositive ? 'pos' : 'neg'">
-                    {{ latestAdvice.isPositive ? '↑ Ijobiy' : '↓ Salbiy' }}
+                    {{ latestAdvice.isPositive ? t('dashboard.ai.positive') : t('dashboard.ai.negative') }}
                   </span>
                 </div>
                 <p class="ai-hero-summary">{{ latestAdvice.summary }}</p>
@@ -337,19 +337,19 @@ onUnmounted(() => {
           <!-- Metrics -->
           <div v-if="latestAdvice" class="ai-metrics">
             <div class="ai-metric">
-              <span class="ai-metric-label">Jami sotuv</span>
+              <span class="ai-metric-label">{{ t('dashboard.ai.total_sales') }}</span>
               <span class="ai-metric-val">{{ formatCurrency(latestAdvice.totalSales) }}</span>
             </div>
             <div class="ai-metric">
-              <span class="ai-metric-label">Yalpi foyda</span>
+              <span class="ai-metric-label">{{ t('dashboard.ai.gross_profit') }}</span>
               <span class="ai-metric-val">{{ formatCurrency(latestAdvice.grossProfit) }}</span>
             </div>
             <div class="ai-metric">
-              <span class="ai-metric-label">Tranzaksiyalar</span>
+              <span class="ai-metric-label">{{ t('dashboard.ai.transactions') }}</span>
               <span class="ai-metric-val">{{ latestAdvice.transactionCount }}</span>
             </div>
             <div class="ai-metric">
-              <span class="ai-metric-label">Foyda marjasi</span>
+              <span class="ai-metric-label">{{ t('dashboard.ai.profit_margin') }}</span>
               <span class="ai-metric-val">{{ formatPercent(latestAdvice.profitMargin) }}</span>
             </div>
           </div>
@@ -363,7 +363,7 @@ onUnmounted(() => {
               <div class="ai-bubble-header">
                 <span class="ai-bubble-name">CPOS AI</span>
                 <span class="ai-bubble-time">
-                  {{ new Date(latestAdvice.generatedAt).toLocaleString('uz-UZ') }}
+                  {{ latestAdvice.generatedAt ? new Date(latestAdvice.generatedAt).toLocaleString('uz-UZ') : '' }}
                 </span>
               </div>
               <p class="ai-bubble-text">{{ latestAdvice.advice }}</p>
@@ -373,14 +373,14 @@ onUnmounted(() => {
           <!-- No latest data -->
           <div v-if="!latestAdvice" class="ai-state">
             <Sparkles :size="32" color="#cbd5e1" />
-            <span>Hozircha tavsiya mavjud emas</span>
+            <span>{{ t('dashboard.ai.no_advice') }}</span>
           </div>
 
           <!-- History section -->
           <div class="ai-hist-section">
             <div class="ai-hist-label">
               <BarChart2 :size="13" />
-              Tavsiyalar tarixi
+              {{ t('dashboard.ai.history') }}
             </div>
 
             <div v-if="historyLoading" class="ai-state small">
@@ -388,7 +388,7 @@ onUnmounted(() => {
             </div>
 
             <div v-else-if="adviceHistory.length === 0" class="ai-state small">
-              <span>Tarix mavjud emas</span>
+              <span>{{ t('dashboard.ai.history_empty') }}</span>
             </div>
 
             <ul v-else class="ai-hist-list">

@@ -7,7 +7,7 @@ export async function enterDashboard(navigate) {
   isLoading.value = true
   await Promise.all([
     getUserProfile().catch(() => {}),
-    new Promise((r) => setTimeout(r, 1000)),
+    new Promise((r) => setTimeout(r, 300)),
   ])
   await navigate()
   isLoading.value = false

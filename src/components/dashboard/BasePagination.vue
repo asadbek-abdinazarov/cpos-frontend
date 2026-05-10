@@ -73,6 +73,8 @@ const goTo = (page) => {
           v-else
           class="bp-btn bp-btn-page"
           :class="{ 'bp-btn-active': page === currentPage }"
+          :aria-label="`${page}-sahifa`"
+          :aria-current="page === currentPage ? 'page' : undefined"
           @click="goTo(page)"
         >
           {{ page }}

@@ -36,7 +36,7 @@ const fetchCashiers = async () => {
       totalElements.value = res.data.data.page.totalElements
     }
   } catch {
-    showNotification({ type: 'error', message: 'Kassirlarni yuklashda xatolik!' })
+    showNotification({ type: 'error', message: t('dashboard.cashiers.fetch_error') })
   } finally {
     stopLoading()
   }

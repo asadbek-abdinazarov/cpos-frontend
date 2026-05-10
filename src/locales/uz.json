@@ -126,7 +126,14 @@
         "title": "Simsiz Skaner",
         "desc": "Uzoq batareya quvvatiga ega ergonomik 2D shtrix-kod skaneri."
       }
-    }
+    },
+    "price_from": "dan",
+    "badge": {
+      "bestseller": "Bestseller",
+      "fast_delivery": "Tez yetkazish",
+      "compact": "Eng ixcham"
+    },
+    "section_tag": "Uskunalar"
   },
   "pricing": {
     "title": "Oddiy va shaffof narxlar",
@@ -229,8 +236,13 @@
       "placeholder_name": "Ismingizni kiriting",
       "placeholder_phone": "+998 90 123 45 67",
       "placeholder_email": "email{'@'}example.com",
-      "placeholder_message": "Savolingiz yoki taklifingiz..."
-    }
+      "placeholder_message": "Savolingiz yoki taklifingiz...",
+      "submitting": "Yuborilmoqda..."
+    },
+    "address_label": "Manzil",
+    "phone_label": "Telefon",
+    "email_label": "Email",
+    "section_tag": "Aloqa"
   },
   "auth": {
     "welcome_back": "Xush kelibsiz",
@@ -341,7 +353,10 @@
       "view_details": "Batafsil ko'rish",
       "orders": "buyurtma",
       "sales": "sotuv",
-      "number_of_sales": "Sotishlar soni"
+      "number_of_sales": "Sotishlar soni",
+      "real_time": "Real-vaqt",
+      "hero_title": "Biznes",
+      "hero_title_2": "Analitikasi"
     },
     "products": {
       "title": "Mahsulotlar",
@@ -422,7 +437,8 @@
         "save": "Saqlash",
         "saving": "Saqlanmoqda...",
         "updating": "Yangilanmoqda..."
-      }
+      },
+      "batch_delete_success": "{count} ta mahsulot o'chirildi"
     },
     "categories": {
       "title": "Kategoriyalar",
@@ -484,7 +500,8 @@
       "btn_cancel": "Bekor qilish",
       "btn_create": "Yaratish",
       "created": "Yangi kassir qo'shildi",
-      "create_error": "Kassir qo'shishda xatolik yuz berdi"
+      "create_error": "Kassir qo'shishda xatolik yuz berdi",
+      "fetch_error": "Kassirlarni yuklashda xatolik"
     },
     "scales": {
       "title": "Tarozilarni boshqarish",
@@ -593,7 +610,25 @@
         "expired_label": "Muddati tugagan",
         "active_label": "Faol",
         "days_left_label": "kun qoldi"
-      }
+      },
+      "load_error": "Profil ma'lumotlarini yuklashda xatolik",
+      "password_required": "Iltimos, barcha parol maydonlarini to'ldiring",
+      "password_success": "Parol muvaffaqiyatli yangilandi",
+      "save_local": "O'zgarishlar saqlandi"
+    },
+    "ai": {
+      "title": "AI Tavsiyalar",
+      "loading": "AI tavsiyalari yuklanmoqda…",
+      "today": "Bugungi tavsiya",
+      "total_sales": "Jami sotuv",
+      "gross_profit": "Yalpi foyda",
+      "transactions": "Tranzaksiyalar",
+      "profit_margin": "Foyda marjasi",
+      "positive": "↑ Ijobiy",
+      "negative": "↓ Salbiy",
+      "no_advice": "Hozircha tavsiya mavjud emas",
+      "history": "Tavsiyalar tarixi",
+      "history_empty": "Tarix mavjud emas"
     }
   },
   "error": {

@@ -126,7 +126,14 @@
         "title": "Беспроводной сканер",
         "desc": "Эргономичный 2D сканер штрих-кодов с длительным временем работы."
       }
-    }
+    },
+    "price_from": "от",
+    "badge": {
+      "bestseller": "Бестселлер",
+      "fast_delivery": "Быстрая доставка",
+      "compact": "Самый компактный"
+    },
+    "section_tag": "Оборудование"
   },
   "pricing": {
     "title": "Простые и прозрачные цены",
@@ -229,8 +236,13 @@
       "placeholder_name": "Введите ваше имя",
       "placeholder_phone": "+998 90 123 45 67",
       "placeholder_email": "email{'@'}example.com",
-      "placeholder_message": "Ваш вопрос или предложение..."
-    }
+      "placeholder_message": "Ваш вопрос или предложение...",
+      "submitting": "Отправляется..."
+    },
+    "address_label": "Адрес",
+    "phone_label": "Телефон",
+    "email_label": "Email",
+    "section_tag": "Контакт"
   },
   "auth": {
     "welcome_back": "Добро пожаловать",
@@ -341,7 +353,10 @@
       "view_details": "Подробнее",
       "orders": "заказ",
       "sales": "продаж",
-      "number_of_sales": "Количество продаж"
+      "number_of_sales": "Количество продаж",
+      "real_time": "Реальное время",
+      "hero_title": "Бизнес",
+      "hero_title_2": "Аналитика"
     },
     "products": {
       "title": "Товары",
@@ -422,7 +437,8 @@
         "save": "Сохранить",
         "saving": "Сохранение...",
         "updating": "Обновление..."
-      }
+      },
+      "batch_delete_success": "Удалено {count} товаров"
     },
     "categories": {
       "title": "Категории",
@@ -484,7 +500,8 @@
       "btn_cancel": "Отмена",
       "btn_create": "Создать",
       "created": "Новый кассир добавлен",
-      "create_error": "Ошибка при добавлении кассира"
+      "create_error": "Ошибка при добавлении кассира",
+      "fetch_error": "Ошибка загрузки кассиров"
     },
     "scales": {
       "title": "Управление весами",
@@ -593,7 +610,25 @@
         "expired_label": "Истёкший",
         "active_label": "Активный",
         "days_left_label": "дн. осталось"
-      }
+      },
+      "load_error": "Ошибка загрузки данных профиля",
+      "password_required": "Пожалуйста, заполните все поля пароля",
+      "password_success": "Пароль успешно обновлён",
+      "save_local": "Изменения сохранены"
+    },
+    "ai": {
+      "title": "AI Советы",
+      "loading": "AI советы загружаются…",
+      "today": "Совет на сегодня",
+      "total_sales": "Общая выручка",
+      "gross_profit": "Валовая прибыль",
+      "transactions": "Транзакции",
+      "profit_margin": "Маржа прибыли",
+      "positive": "↑ Позитивно",
+      "negative": "↓ Негативно",
+      "no_advice": "Советов пока нет",
+      "history": "История советов",
+      "history_empty": "История пуста"
     }
   },
   "error": {

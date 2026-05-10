@@ -126,7 +126,14 @@
         "title": "Симсиз Сканер",
         "desc": "Узоқ батарея қувватига эга эргономик 2D штрих-код сканери."
       }
-    }
+    },
+    "price_from": "дан",
+    "badge": {
+      "bestseller": "Bestseller",
+      "fast_delivery": "Тез етказиш",
+      "compact": "Энг ихчам"
+    },
+    "section_tag": "Ускуналар"
   },
   "pricing": {
     "title": "Оддий ва шаффоф нархлар",
@@ -229,8 +236,13 @@
       "placeholder_name": "Исмингизни киритинг",
       "placeholder_phone": "+998 90 123 45 67",
       "placeholder_email": "email{'@'}example.com",
-      "placeholder_message": "Саволингиз ёки таклифингиз..."
-    }
+      "placeholder_message": "Саволингиз ёки таклифингиз...",
+      "submitting": "Юборилмоқда..."
+    },
+    "address_label": "Манзил",
+    "phone_label": "Телефон",
+    "email_label": "Email",
+    "section_tag": "Алоқа"
   },
   "auth": {
     "welcome_back": "Хуш келибсиз",
@@ -341,7 +353,10 @@
       "view_details": "Батафсил кўриш",
       "orders": "буюртма",
       "sales": "сотув",
-      "number_of_sales": "Сотишлар сони"
+      "number_of_sales": "Сотишлар сони",
+      "real_time": "Реал-вақт",
+      "hero_title": "Бизнес",
+      "hero_title_2": "Аналитикаси"
     },
     "products": {
       "title": "Маҳсулотлар",
@@ -422,7 +437,8 @@
         "save": "Сақлаш",
         "saving": "Сақланмоқда...",
         "updating": "Янгиланмоқда..."
-      }
+      },
+      "batch_delete_success": "{count} та маҳсулот ўчирилди"
     },
     "categories": {
       "title": "Категориялар",
@@ -484,7 +500,8 @@
       "btn_cancel": "Бекор қилиш",
       "btn_create": "Яратиш",
       "created": "Янги кассир қўшилди",
-      "create_error": "Кассир қўшишда хатолик юз берди"
+      "create_error": "Кассир қўшишда хатолик юз берди",
+      "fetch_error": "Кассирларни юклашда хатолик"
     },
     "scales": {
       "title": "Тарозиларни бошқариш",
@@ -593,7 +610,25 @@
         "expired_label": "Муддати тугаган",
         "active_label": "Фаол",
         "days_left_label": "кун қолди"
-      }
+      },
+      "load_error": "Профил маълумотларини юклашда хатолик",
+      "password_required": "Илтимос, барча парол майдонларини тўлдиринг",
+      "password_success": "Парол муваффақиятли янгиланди",
+      "save_local": "Ўзгаришлар сақланди"
+    },
+    "ai": {
+      "title": "AI Тавсиялар",
+      "loading": "AI тавсиялари юкланмоқда…",
+      "today": "Бугунги тавсия",
+      "total_sales": "Жами соtuв",
+      "gross_profit": "Ялпи фойда",
+      "transactions": "Трансакциялар",
+      "profit_margin": "Фойда маржаси",
+      "positive": "↑ Ижобий",
+      "negative": "↓ Салбий",
+      "no_advice": "Ҳозирча тавсия мавжуд эмас",
+      "history": "Тавсиялар тарихи",
+      "history_empty": "Тарих мавжуд эмас"
     }
   },
   "error": {

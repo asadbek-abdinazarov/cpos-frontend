@@ -151,9 +151,8 @@ const fetchProfile = async () => {
           : null,
       }
     }
-  } catch (error) {
-    console.error('Failed to fetch user profile:', error)
-    showNotification({ type: 'error', message: 'Failed to load profile data.' })
+  } catch {
+    showNotification({ type: 'error', message: t('dashboard.settings.load_error') })
   }
 }
 
@@ -173,10 +172,7 @@ const cancelEditing = () => {
 const saveChanges = () => {
   Object.assign(userData.value, editableUser.value)
   isEditing.value = false
-  showNotification({
-    type: 'info',
-    message: 'Changes saved locally. Server sync is not yet implemented.',
-  })
+  showNotification({ type: 'info', message: t('dashboard.settings.save_local') })
 }
 
 const securitySettings = ref({
@@ -196,7 +192,7 @@ const updateSecuritySettings = async () => {
     return
   }
   if (!securitySettings.value.currentPassword || !securitySettings.value.newPassword) {
-    showNotification({ type: 'warning', message: 'Please fill out missing password fields' })
+    showNotification({ type: 'warning', message: t('dashboard.settings.password_required') })
     return
   }
   SecurityLoading.value = true
@@ -207,13 +203,13 @@ const updateSecuritySettings = async () => {
       confirmNewPassword: securitySettings.value.confirmPassword,
     })
     if (res.data && res.data.success) {
-      showNotification({ type: 'success', message: 'Password updated successfully!' })
+      showNotification({ type: 'success', message: t('dashboard.settings.password_success') })
       securitySettings.value.currentPassword = ''
       securitySettings.value.newPassword = ''
       securitySettings.value.confirmPassword = ''
     }
-  } catch (error) {
-    console.error('Failed to update password:', error)
+  } catch {
+    // error shown by global API interceptor
   } finally {
     SecurityLoading.value = false
   }

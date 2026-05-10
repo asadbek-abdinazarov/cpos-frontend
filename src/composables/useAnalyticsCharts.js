@@ -356,16 +356,7 @@ export function useAnalyticsCharts() {
     applyTopProductsResult(topRes)
     topProductsLoading.value = false
 
-    if (statsRes.status === 'rejected') console.error('statistics/my failed', statsRes.reason)
-    if (trendRes.status === 'rejected')
-      console.error('statistics/sales-trend failed', trendRes.reason)
-    if (catRes.status === 'rejected')
-      console.error('statistics/sales-by-category failed', catRes.reason)
-    if (hourlyRes.status === 'rejected')
-      console.error('statistics/hourly-sales failed', hourlyRes.reason)
-    if (paymentRes.status === 'rejected')
-      console.error('statistics/payment-methods failed', paymentRes.reason)
-    if (topRes.status === 'rejected') console.error('statistics/top-products failed', topRes.reason)
+    // individual chart failures are handled silently — charts show empty state
   }
 
   // ─── Export / Download ────────────────────────────
@@ -396,8 +387,8 @@ export function useAnalyticsCharts() {
       link.click()
       document.body.removeChild(link)
       URL.revokeObjectURL(url)
-    } catch (e) {
-      console.error('Export failed:', e)
+    } catch {
+      // error shown by global API interceptor
     } finally {
       downloadLoading.value = false
     }

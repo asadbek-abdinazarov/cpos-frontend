@@ -112,11 +112,21 @@ onMounted(loadPlans)
         </div>
         <h2 class="ps__title">{{ t('pricing.title') }}</h2>
 
-        <div class="ps__toggle-wrap">
-          <button :class="['ps__tab', { 'ps__tab--on': !isAnnual }]" @click="isAnnual = false">
+        <div class="ps__toggle-wrap" role="tablist">
+          <button
+            role="tab"
+            :aria-selected="!isAnnual"
+            :class="['ps__tab', { 'ps__tab--on': !isAnnual }]"
+            @click="isAnnual = false"
+          >
             {{ t('pricing.monthly') }}
           </button>
-          <button :class="['ps__tab', { 'ps__tab--on': isAnnual }]" @click="isAnnual = true">
+          <button
+            role="tab"
+            :aria-selected="isAnnual"
+            :class="['ps__tab', { 'ps__tab--on': isAnnual }]"
+            @click="isAnnual = true"
+          >
             {{ t('pricing.annual') }}
             <span class="ps__save-chip">{{ t('pricing.save') }}</span>
           </button>

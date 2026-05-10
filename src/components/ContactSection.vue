@@ -4,7 +4,7 @@
       <div class="contact-card">
         <!-- Left info panel -->
         <div class="info-panel">
-          <span class="section-tag">Aloqa</span>
+          <span class="section-tag">{{ t('contact.section_tag') }}</span>
           <h2 class="contact-title">{{ t('contact.title') }}</h2>
           <p class="contact-sub">{{ t('contact.subtitle') }}</p>
 
@@ -14,7 +14,7 @@
                 <MapPin :size="18" :stroke-width="2" />
               </div>
               <div>
-                <div class="info-label">Manzil</div>
+                <div class="info-label">{{ t('contact.address_label') }}</div>
                 <div class="info-value">Tashkent, Uzbekistan</div>
               </div>
             </div>
@@ -23,7 +23,7 @@
                 <Phone :size="18" :stroke-width="2" />
               </div>
               <div>
-                <div class="info-label">Telefon</div>
+                <div class="info-label">{{ t('contact.phone_label') }}</div>
                 <a href="tel:+998901234567" class="info-value info-link">+998 90 123 45 67</a>
               </div>
             </div>
@@ -32,7 +32,7 @@
                 <Mail :size="18" :stroke-width="2" />
               </div>
               <div>
-                <div class="info-label">Email</div>
+                <div class="info-label">{{ t('contact.email_label') }}</div>
                 <a href="mailto:info@cpos.uz" class="info-value info-link">info@cpos.uz</a>
               </div>
             </div>
@@ -100,7 +100,7 @@
               <span v-if="!isSubmitting">{{ t('contact.form.submit') }}</span>
               <span v-else class="loading-text">
                 <span class="spinner"></span>
-                Yuborilmoqda...
+                {{ t('contact.form.submitting') }}
               </span>
             </button>
           </form>

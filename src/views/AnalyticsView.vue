@@ -69,11 +69,11 @@ onUnmounted(() => document.removeEventListener('click', onClickOutside))
         <div class="hero-text">
           <div class="badge-pill">
             <span class="badge-dot"></span>
-            {{ $t('dashboard.analytics.title') }} · Real-vaqt
+            {{ $t('dashboard.analytics.title') }} · {{ $t('dashboard.analytics.real_time') }}
           </div>
           <h1 class="hero-title">
-            Biznes
-            <span class="title-highlight">Analitikasi</span>
+            {{ $t('dashboard.analytics.hero_title') }}
+            <span class="title-highlight">{{ $t('dashboard.analytics.hero_title_2') }}</span>
           </h1>
           <p class="hero-subtitle">{{ $t('dashboard.analytics.overview') }}</p>
         </div>
