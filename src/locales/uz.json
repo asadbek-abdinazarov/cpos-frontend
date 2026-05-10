@@ -596,6 +596,11 @@
       }
     }
   },
+  "error": {
+    "ai": {
+      "no_advice_yet": "Bugun uchun AI tavsiya hali mavjud emas"
+    }
+  },
   "help": {
     "title": "Yordam Markazi",
     "subtitle": "Tez ko'rsatmalar va dastur bo'limlari haqida ma'lumot",

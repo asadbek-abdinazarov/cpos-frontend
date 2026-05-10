@@ -167,7 +167,8 @@ api.interceptors.response.use(
       if (error.response && error.response.data) {
         const data = error.response.data
         if (data.message && data.message !== 'Validation Failed') {
-          showNotification({ type: 'error', message: data.message })
+          const translated = t(data.message)
+          showNotification({ type: 'error', message: translated })
         }
         if (data.errors && typeof data.errors === 'object') {
           Object.values(data.errors).forEach((errText) => {
