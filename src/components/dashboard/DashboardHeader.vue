@@ -4,6 +4,7 @@ import {
   Bell, HelpCircle, Menu, CheckCheck, Inbox,
   Package, ShoppingCart, BarChart2, Users,
   LayoutGrid, Settings, Keyboard, Mail, ExternalLink,
+  Sparkles, ChevronLeft, ChevronRight,
 } from 'lucide-vue-next'
 import { useRoute } from 'vue-router'
 import { useI18n } from 'vue-i18n'
@@ -11,6 +12,8 @@ import {
   getUnreadNotificationCount,
   getNotifications,
   markNotificationAsRead,
+  getLatestAiAdvice,
+  getAiAdviceHistory,
 } from '@/services/api'
 import BaseModal from '@/components/BaseModal.vue'
 
@@ -113,6 +116,59 @@ function closeNotifications(e) {
   }
 }
 
+// ─── AI Advice ─────────────────────────────────────────────────────────────
+const showAiAdvice        = ref(false)
+const latestAdvice        = ref(null)
+const loadingAdvice       = ref(false)
+const adviceHistory       = ref([])
+const historyLoading      = ref(false)
+const historyPage         = ref(0)
+const historyTotalPages   = ref(0)
+const selectedHistoryItem = ref(null)
+
+async function fetchLatestAiAdvice() {
+  loadingAdvice.value = true
+  try {
+    const res = await getLatestAiAdvice()
+    if (res.data?.success) latestAdvice.value = res.data.data
+  } catch (err) { console.error(err) }
+  finally { loadingAdvice.value = false }
+}
+
+async function fetchAiAdviceHistory(page = 0) {
+  historyLoading.value = true
+  try {
+    const res = await getAiAdviceHistory({ page, size: 5 })
+    if (res.data?.success) {
+      adviceHistory.value = res.data.data.content
+      historyPage.value = res.data.data.pageNumber
+      historyTotalPages.value = res.data.data.totalPages
+    }
+  } catch (err) { console.error(err) }
+  finally { historyLoading.value = false }
+}
+
+async function openAiAdvice() {
+  showAiAdvice.value = true
+  selectedHistoryItem.value = null
+  await Promise.all([fetchLatestAiAdvice(), fetchAiAdviceHistory(0)])
+}
+
+function formatCurrency(val) {
+  if (val == null) return '—'
+  return new Intl.NumberFormat('uz-UZ').format(Math.round(val))
+}
+
+function formatPercent(val) {
+  if (val == null) return '—'
+  return val.toFixed(1) + '%'
+}
+
+function toggleHistoryItem(item) {
+  selectedHistoryItem.value = selectedHistoryItem.value?.id === item.id ? null : item
+}
+// ───────────────────────────────────────────────────────────────────────────
+
 onMounted(() => {
   fetchUnreadCount()
   document.addEventListener('click', closeNotifications)
@@ -147,6 +203,16 @@ onUnmounted(() => {
           </option>
         </select>
       </div>
+
+      <!-- AI Advice -->
+      <button
+        class="hdr-icon-btn ai-sparkle-btn"
+        :class="{ active: showAiAdvice }"
+        @click="openAiAdvice"
+        aria-label="AI Tavsiya"
+      >
+        <Sparkles :size="18" />
+      </button>
 
       <!-- Notifications -->
       <div class="notif-wrapper">
@@ -233,6 +299,146 @@ onUnmounted(() => {
 
     </div>
   </header>
+
+  <!-- ─── AI Advice Modal ─────────────────────── -->
+  <BaseModal v-model="showAiAdvice" title="AI Tavsiyalar" size="lg">
+    <template #icon><Sparkles :size="20" /></template>
+
+    <template #default>
+      <div class="ai-modal">
+
+        <!-- Loading -->
+        <div v-if="loadingAdvice" class="ai-state">
+          <div class="ai-spinner"></div>
+          <span>AI tavsiyalari yuklanmoqda…</span>
+        </div>
+
+        <template v-else>
+          <!-- Hero band -->
+          <div v-if="latestAdvice" class="ai-hero">
+            <div class="ai-hero-bg"></div>
+            <div class="ai-hero-inner">
+              <div class="ai-avatar">
+                <Sparkles :size="24" />
+              </div>
+              <div class="ai-hero-text">
+                <div class="ai-hero-row">
+                  <span class="ai-hero-label">Bugungi tavsiya</span>
+                  <span class="ai-date-chip">{{ latestAdvice.adviceDate }}</span>
+                  <span class="ai-sentiment-chip" :class="latestAdvice.isPositive ? 'pos' : 'neg'">
+                    {{ latestAdvice.isPositive ? '↑ Ijobiy' : '↓ Salbiy' }}
+                  </span>
+                </div>
+                <p class="ai-hero-summary">{{ latestAdvice.summary }}</p>
+              </div>
+            </div>
+          </div>
+
+          <!-- Metrics -->
+          <div v-if="latestAdvice" class="ai-metrics">
+            <div class="ai-metric">
+              <span class="ai-metric-label">Jami sotuv</span>
+              <span class="ai-metric-val">{{ formatCurrency(latestAdvice.totalSales) }}</span>
+            </div>
+            <div class="ai-metric">
+              <span class="ai-metric-label">Yalpi foyda</span>
+              <span class="ai-metric-val">{{ formatCurrency(latestAdvice.grossProfit) }}</span>
+            </div>
+            <div class="ai-metric">
+              <span class="ai-metric-label">Tranzaksiyalar</span>
+              <span class="ai-metric-val">{{ latestAdvice.transactionCount }}</span>
+            </div>
+            <div class="ai-metric">
+              <span class="ai-metric-label">Foyda marjasi</span>
+              <span class="ai-metric-val">{{ formatPercent(latestAdvice.profitMargin) }}</span>
+            </div>
+          </div>
+
+          <!-- Chat bubble -->
+          <div v-if="latestAdvice" class="ai-chat">
+            <div class="ai-chat-avatar">
+              <Sparkles :size="14" />
+            </div>
+            <div class="ai-bubble">
+              <div class="ai-bubble-header">
+                <span class="ai-bubble-name">CPOS AI</span>
+                <span class="ai-bubble-time">
+                  {{ new Date(latestAdvice.generatedAt).toLocaleString('uz-UZ') }}
+                </span>
+              </div>
+              <p class="ai-bubble-text">{{ latestAdvice.advice }}</p>
+            </div>
+          </div>
+
+          <!-- No latest data -->
+          <div v-if="!latestAdvice" class="ai-state">
+            <Sparkles :size="32" color="#cbd5e1" />
+            <span>Hozircha tavsiya mavjud emas</span>
+          </div>
+
+          <!-- History section -->
+          <div class="ai-hist-section">
+            <div class="ai-hist-label">
+              <BarChart2 :size="13" />
+              Tavsiyalar tarixi
+            </div>
+
+            <div v-if="historyLoading" class="ai-state small">
+              <div class="ai-spinner small"></div>
+            </div>
+
+            <div v-else-if="adviceHistory.length === 0" class="ai-state small">
+              <span>Tarix mavjud emas</span>
+            </div>
+
+            <ul v-else class="ai-hist-list">
+              <li
+                v-for="item in adviceHistory"
+                :key="item.id"
+                class="ai-hist-item"
+                :class="{ expanded: selectedHistoryItem?.id === item.id }"
+                @click="toggleHistoryItem(item)"
+              >
+                <div class="ai-hist-row">
+                  <span class="ai-hist-dot" :class="item.isPositive ? 'pos' : 'neg'"></span>
+                  <div class="ai-hist-info">
+                    <span class="ai-hist-date">{{ item.adviceDate }}</span>
+                    <p class="ai-hist-summary">{{ item.summary }}</p>
+                  </div>
+                  <span class="ai-hist-sentiment" :class="item.isPositive ? 'pos' : 'neg'">
+                    {{ item.isPositive ? '↑' : '↓' }}
+                  </span>
+                </div>
+                <div v-if="selectedHistoryItem?.id === item.id" class="ai-hist-detail">
+                  {{ item.advice }}
+                </div>
+              </li>
+            </ul>
+
+            <!-- Pagination -->
+            <div v-if="historyTotalPages > 1" class="ai-pagination">
+              <button
+                class="ai-page-btn"
+                :disabled="historyPage === 0"
+                @click.stop="fetchAiAdviceHistory(historyPage - 1)"
+              >
+                <ChevronLeft :size="14" />
+              </button>
+              <span class="ai-page-info">{{ historyPage + 1 }} / {{ historyTotalPages }}</span>
+              <button
+                class="ai-page-btn"
+                :disabled="historyPage >= historyTotalPages - 1"
+                @click.stop="fetchAiAdviceHistory(historyPage + 1)"
+              >
+                <ChevronRight :size="14" />
+              </button>
+            </div>
+          </div>
+        </template>
+
+      </div>
+    </template>
+  </BaseModal>
 
   <!-- ─── Help Modal ─────────────────────────── -->
   <BaseModal v-model="showHelp" size="lg">
@@ -702,6 +908,395 @@ onUnmounted(() => {
 
   .mark-all-text {
     display: none;
+  }
+}
+
+/* ─── AI Advice button ───────────────────────────── */
+.ai-sparkle-btn {
+  background: linear-gradient(135deg, rgba(99,102,241,0.08), rgba(139,92,246,0.08));
+  border-color: rgba(99,102,241,0.25);
+  color: #6366f1;
+}
+
+.ai-sparkle-btn:hover {
+  background: linear-gradient(135deg, rgba(99,102,241,0.15), rgba(139,92,246,0.15));
+  border-color: rgba(99,102,241,0.45);
+  color: #4f46e5;
+}
+
+.ai-sparkle-btn.active {
+  background: linear-gradient(135deg, rgba(99,102,241,0.18), rgba(139,92,246,0.18));
+  border-color: rgba(99,102,241,0.4);
+  color: #4f46e5;
+}
+
+/* ─── AI Advice Modal ────────────────────────────── */
+.ai-modal {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  padding-bottom: 0.25rem;
+}
+
+/* Loading / empty state */
+.ai-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.6rem;
+  padding: 2.5rem 1rem;
+  color: #94a3b8;
+  font-size: 0.85rem;
+}
+
+.ai-state.small {
+  padding: 1.25rem;
+}
+
+.ai-spinner {
+  width: 24px;
+  height: 24px;
+  border: 2.5px solid #e2e8f0;
+  border-top-color: #6366f1;
+  border-radius: 50%;
+  animation: spin 0.7s linear infinite;
+}
+
+.ai-spinner.small {
+  width: 18px;
+  height: 18px;
+}
+
+/* Hero band */
+.ai-hero {
+  position: relative;
+  border-radius: 14px;
+  overflow: hidden;
+  background: linear-gradient(135deg, #0a0f1e 0%, #12103a 100%);
+  border: 1px solid rgba(99,102,241,0.2);
+}
+
+.ai-hero-bg {
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(circle at 90% 50%, rgba(99,102,241,0.28) 0%, transparent 60%),
+    radial-gradient(circle at 10% 80%, rgba(139,92,246,0.15) 0%, transparent 50%);
+  pointer-events: none;
+}
+
+.ai-hero-inner {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  align-items: flex-start;
+  gap: 1rem;
+  padding: 1.25rem 1.4rem;
+}
+
+.ai-avatar {
+  width: 48px;
+  height: 48px;
+  border-radius: 13px;
+  background: linear-gradient(135deg, rgba(99,102,241,0.35), rgba(139,92,246,0.35));
+  border: 1px solid rgba(139,92,246,0.4);
+  color: #a5b4fc;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  box-shadow: 0 0 22px rgba(99,102,241,0.25);
+}
+
+.ai-hero-text {
+  flex: 1;
+  min-width: 0;
+}
+
+.ai-hero-row {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+  margin-bottom: 0.4rem;
+}
+
+.ai-hero-label {
+  font-size: 0.72rem;
+  font-weight: 700;
+  color: rgba(255,255,255,0.45);
+  text-transform: uppercase;
+  letter-spacing: 0.07em;
+}
+
+.ai-date-chip {
+  font-size: 0.72rem;
+  font-weight: 600;
+  color: rgba(255,255,255,0.55);
+  background: rgba(255,255,255,0.07);
+  border: 1px solid rgba(255,255,255,0.1);
+  padding: 2px 8px;
+  border-radius: 100px;
+}
+
+.ai-sentiment-chip {
+  font-size: 0.72rem;
+  font-weight: 700;
+  padding: 2px 9px;
+  border-radius: 100px;
+}
+
+.ai-sentiment-chip.pos {
+  background: rgba(16,185,129,0.15);
+  border: 1px solid rgba(16,185,129,0.3);
+  color: #34d399;
+}
+
+.ai-sentiment-chip.neg {
+  background: rgba(239,68,68,0.15);
+  border: 1px solid rgba(239,68,68,0.3);
+  color: #f87171;
+}
+
+.ai-hero-summary {
+  margin: 0;
+  font-size: 0.88rem;
+  font-weight: 600;
+  color: rgba(255,255,255,0.85);
+  line-height: 1.45;
+}
+
+/* Metrics row */
+.ai-metrics {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 0.6rem;
+}
+
+.ai-metric {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 0.75rem 0.85rem;
+  background: #f9fafb;
+  border: 1px solid #eef2f7;
+  border-radius: 11px;
+}
+
+.ai-metric-label {
+  font-size: 0.68rem;
+  font-weight: 600;
+  color: #94a3b8;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+.ai-metric-val {
+  font-size: 0.95rem;
+  font-weight: 800;
+  color: #0f172a;
+  letter-spacing: -0.02em;
+}
+
+/* Chat bubble */
+.ai-chat {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.75rem;
+}
+
+.ai-chat-avatar {
+  width: 32px;
+  height: 32px;
+  border-radius: 10px;
+  background: linear-gradient(135deg, #6366f1, #8b5cf6);
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+
+.ai-bubble {
+  flex: 1;
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 0 14px 14px 14px;
+  padding: 0.85rem 1rem;
+}
+
+.ai-bubble-header {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  margin-bottom: 0.5rem;
+}
+
+.ai-bubble-name {
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: #6366f1;
+}
+
+.ai-bubble-time {
+  font-size: 0.68rem;
+  color: #94a3b8;
+}
+
+.ai-bubble-text {
+  margin: 0;
+  font-size: 0.85rem;
+  color: #334155;
+  line-height: 1.6;
+}
+
+/* History section */
+.ai-hist-section {
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+  border-top: 1px solid #f1f5f9;
+  padding-top: 1rem;
+}
+
+.ai-hist-label {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.68rem;
+  font-weight: 700;
+  color: #94a3b8;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+.ai-hist-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  background: #f9fafb;
+  border: 1px solid #eef2f7;
+  border-radius: 11px;
+  overflow: hidden;
+}
+
+.ai-hist-item {
+  border-bottom: 1px solid #f1f5f9;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+
+.ai-hist-item:last-child {
+  border-bottom: none;
+}
+
+.ai-hist-item:hover {
+  background: #f1f5f9;
+}
+
+.ai-hist-item.expanded {
+  background: rgba(99,102,241,0.04);
+}
+
+.ai-hist-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.65rem;
+  padding: 0.75rem 0.9rem;
+}
+
+.ai-hist-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  flex-shrink: 0;
+  margin-top: 5px;
+}
+
+.ai-hist-dot.pos { background: #10b981; }
+.ai-hist-dot.neg { background: #ef4444; }
+
+.ai-hist-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.ai-hist-date {
+  font-size: 0.72rem;
+  font-weight: 700;
+  color: #475569;
+}
+
+.ai-hist-summary {
+  margin: 2px 0 0;
+  font-size: 0.8rem;
+  color: #64748b;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.ai-hist-sentiment {
+  font-size: 0.8rem;
+  font-weight: 700;
+  flex-shrink: 0;
+}
+
+.ai-hist-sentiment.pos { color: #10b981; }
+.ai-hist-sentiment.neg { color: #ef4444; }
+
+.ai-hist-detail {
+  padding: 0.65rem 0.9rem 0.85rem 2.3rem;
+  font-size: 0.82rem;
+  color: #475569;
+  line-height: 1.6;
+  border-top: 1px dashed #e2e8f0;
+  background: rgba(99,102,241,0.03);
+}
+
+/* Pagination */
+.ai-pagination {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.75rem;
+}
+
+.ai-page-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  border: 1.5px solid #e2e8f0;
+  background: #fff;
+  color: #475569;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.ai-page-btn:hover:not(:disabled) {
+  border-color: #6366f1;
+  color: #6366f1;
+}
+
+.ai-page-btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.ai-page-info {
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: #64748b;
+}
+
+@media (max-width: 520px) {
+  .ai-metrics {
+    grid-template-columns: repeat(2, 1fr);
   }
 }
 

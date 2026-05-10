@@ -346,4 +346,12 @@ export function sendPublicContactRequest(payload) {
   return api.post('public/contact', payload)
 }
 
+export function getLatestAiAdvice() {
+  return api.get('web/ai-advice/latest')
+}
+
+export function getAiAdviceHistory(params) {
+  return api.get('web/ai-advice/history', { params })
+}
+
 export default api
