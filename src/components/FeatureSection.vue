@@ -230,5 +230,13 @@ const iconMap = { Package, BarChart3, Heart, Zap }
 @media (max-width: 540px) {
   .features-section { padding: 5rem 0; }
   .features-grid { grid-template-columns: 1fr; }
+  .section-head { margin-bottom: 2.5rem; }
+  .section-sub { font-size: 0.95rem; }
+}
+
+@media (max-width: 400px) {
+  .section-container { padding: 0 1.25rem; }
+  .features-section { padding: 4rem 0; }
+  .feature-card { padding: 1.5rem 1.25rem; }
 }
 </style>

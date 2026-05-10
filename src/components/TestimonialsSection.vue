@@ -212,6 +212,19 @@ onMounted(() => {
 
 @media (max-width: 768px) {
   .testimonials-section { padding: 5rem 0; }
+  .section-head { margin-bottom: 2.5rem; }
+  .section-sub { font-size: 0.95rem; }
   .testimonial-card { min-width: 270px; max-width: 270px; padding: 1.25rem; }
+}
+
+@media (max-width: 480px) {
+  .testimonial-card { min-width: 240px; max-width: 240px; padding: 1.1rem; }
+  .quote-text { font-size: 0.88rem; }
+}
+
+@media (max-width: 400px) {
+  .section-container { padding: 0 1.25rem; }
+  .testimonials-section { padding: 4rem 0; }
+  .testimonial-card { min-width: 220px; max-width: 220px; }
 }
 </style>

@@ -1104,29 +1104,92 @@ const goContact = () => goToHomeSection(router, 'contact')
 
 @media (max-width: 520px) {
   .hero {
-    padding: 5.5rem 0 4rem;
+    padding: 5.5rem 0 3.5rem;
+  }
+
+  .hero-container {
+    padding: 0 1.25rem;
   }
 
   .headline {
-    font-size: 2.3rem;
+    font-size: 2.2rem;
+    margin-bottom: 1.25rem;
+  }
+
+  .subheadline {
+    font-size: 1rem;
+    margin-bottom: 2rem;
+  }
+
+  .cta-group {
+    flex-direction: column;
+    width: 100%;
+    margin-bottom: 2rem;
+  }
+
+  .btn {
+    width: 100%;
+    justify-content: center;
+  }
+
+  .trust-bar {
+    width: 100%;
+    justify-content: space-around;
+    gap: 0.75rem;
+    padding: 0.85rem 1rem;
   }
 
   .window-body {
-    height: 270px;
+    height: 250px;
   }
 
   .float-badge {
     display: none;
   }
 
-  .cta-group {
-    flex-direction: column;
-    width: 100%;
+  .mini-list {
+    display: none;
+  }
+}
+
+@media (max-width: 380px) {
+  .hero {
+    padding: 5rem 0 3rem;
   }
 
-  .btn {
-    width: 100%;
-    justify-content: center;
+  .hero-container {
+    padding: 0 1rem;
+  }
+
+  .headline {
+    font-size: 1.9rem;
+  }
+
+  .subheadline {
+    font-size: 0.92rem;
+  }
+
+  .trust-bar {
+    flex-wrap: wrap;
+    padding: 0.75rem 0.85rem;
+    gap: 0.5rem;
+  }
+
+  .trust-divider {
+    display: none;
+  }
+
+  .trust-item {
+    align-items: center;
+  }
+
+  .window-body {
+    height: 220px;
+  }
+
+  .kpi-row {
+    grid-template-columns: repeat(3, 1fr);
+    gap: 5px;
   }
 }
 </style>

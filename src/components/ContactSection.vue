@@ -442,6 +442,20 @@ const handleSubmit = async () => {
 
 @media (max-width: 520px) {
   .contact-section { padding: 5rem 0; }
-  .info-panel, .form-panel { padding: 2.5rem 1.75rem; }
+  .info-panel, .form-panel { padding: 2.25rem 1.75rem; }
+  .contact-sub { margin-bottom: 2rem; font-size: 0.95rem; }
+}
+
+@media (max-width: 420px) {
+  .section-container { padding: 0 1.25rem; }
+  .contact-section { padding: 4rem 0; }
+  .info-panel, .form-panel { padding: 2rem 1.25rem; }
+  .info-panel { border-radius: 20px 20px 0 0; }
+  .form-panel { border-radius: 0 0 20px 20px; }
+  .contact-card { border-radius: 20px; }
+  .form-input { font-size: 0.9rem; padding: 0.7rem 0.9rem; }
+  .btn-submit { min-height: 48px; font-size: 0.95rem; }
+  .mode-btn { padding: 0.35rem 0.7rem; font-size: 0.7rem; }
+  .info-items { gap: 1.25rem; }
 }
 </style>

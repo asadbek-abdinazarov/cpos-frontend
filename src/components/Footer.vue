@@ -253,8 +253,18 @@ const goSection = (id) => {
 }
 
 @media (max-width: 540px) {
-  .footer-grid { grid-template-columns: 1fr; }
+  .footer-grid { grid-template-columns: 1fr; gap: 2rem; }
   .footer-bottom { flex-direction: column; gap: 1rem; text-align: center; }
   .footer { padding-top: 4rem; }
+  .footer-desc { max-width: 100%; }
+  .legal-links { gap: 1.25rem; }
+}
+
+@media (max-width: 400px) {
+  .footer-container { padding: 0 1.25rem; }
+  .footer { padding-top: 3.5rem; }
+  .footer-grid { gap: 1.75rem; padding-bottom: 3rem; }
+  .footer-logo { height: 48px; }
+  .footer-bottom { padding: 1.25rem 0; }
 }
 </style>

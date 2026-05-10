@@ -656,13 +656,47 @@ onMounted(loadPlans)
 
 @media (max-width: 640px) {
   .ps {
-    padding: 5rem 0 6rem;
+    padding: 5rem 0 5.5rem;
+  }
+  .ps__head {
+    margin-bottom: 3rem;
   }
   .ps__grid {
     grid-template-columns: 1fr;
   }
   .ps__card::before {
     font-size: 4rem;
+  }
+  .ps__title {
+    margin-bottom: 1.75rem;
+  }
+}
+
+@media (max-width: 420px) {
+  .ps__container {
+    padding: 0 1.25rem;
+  }
+  .ps {
+    padding: 4rem 0 4.5rem;
+  }
+  .ps__head {
+    margin-bottom: 2.5rem;
+  }
+  .ps__toggle-wrap {
+    width: 100%;
+    justify-content: center;
+  }
+  .ps__tab {
+    flex: 1;
+    justify-content: center;
+    padding: 8px 12px;
+    font-size: 0.825rem;
+  }
+  .ps__card-body {
+    padding: 1.5rem 1.5rem 0;
+  }
+  .ps__card-foot {
+    padding: 0 1.5rem 1.5rem;
   }
 }
 </style>

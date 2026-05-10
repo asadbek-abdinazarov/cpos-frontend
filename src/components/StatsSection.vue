@@ -115,6 +115,7 @@ const stats = computed(() => [
 @media (max-width: 640px) {
   .stats-container {
     grid-template-columns: 1fr;
+    padding: 0 1.5rem;
   }
 
   .stat-item:not(:last-child)::after {
@@ -126,7 +127,19 @@ const stats = computed(() => [
   }
 
   .stat-item {
-    padding: 2.5rem 1.5rem;
+    padding: 2.25rem 1.25rem;
+  }
+}
+
+@media (max-width: 400px) {
+  .stats-container {
+    padding: 0 1.25rem;
+  }
+  .stat-item {
+    padding: 2rem 1rem;
+  }
+  .stat-label {
+    font-size: 0.9rem;
   }
 }
 </style>

@@ -157,10 +157,19 @@ const catClass = (cat) => {
 
 @media (max-width: 768px) {
   .integrations-grid { grid-template-columns: repeat(2, 1fr); }
+  .section-head { margin-bottom: 2.5rem; }
+  .section-sub { font-size: 0.95rem; }
+}
+
+@media (max-width: 480px) {
+  .integration-card { padding: 1.25rem 0.9rem; }
+  .integration-logo { width: 48px; height: 48px; }
 }
 
 @media (max-width: 400px) {
-  .integrations-section { padding: 5rem 0; }
-  .integrations-grid { grid-template-columns: repeat(2, 1fr); gap: 0.75rem; }
+  .section-container { padding: 0 1.25rem; }
+  .integrations-section { padding: 4rem 0; }
+  .integrations-grid { grid-template-columns: repeat(2, 1fr); gap: 0.6rem; }
+  .integration-card { padding: 1rem 0.75rem; }
 }
 </style>

@@ -288,11 +288,13 @@ const products = computed(() => [
   .section-head {
     flex-direction: column;
     align-items: flex-start;
+    margin-bottom: 2.5rem;
   }
 
   .view-all-link {
     align-self: stretch;
     justify-content: center;
+    min-height: 44px;
   }
 
   .product-grid {
@@ -301,6 +303,27 @@ const products = computed(() => [
 
   .section-title {
     font-size: 2rem;
+  }
+
+  .section-sub {
+    font-size: 0.95rem;
+  }
+}
+
+@media (max-width: 400px) {
+  .section-container { padding: 0 1.25rem; }
+  .hardware-section { padding: 4rem 0; }
+  .section-head { margin-bottom: 2rem; }
+  .image-area { height: 180px; }
+  .product-footer {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.75rem;
+  }
+  .btn-quote {
+    width: 100%;
+    min-height: 44px;
+    font-size: 0.9rem;
   }
 }
 </style>

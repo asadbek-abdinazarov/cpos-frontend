@@ -480,4 +480,23 @@ onUnmounted(() => {
     display: block;
   }
 }
+
+@media (max-width: 420px) {
+  .nav-container {
+    padding: 0 1.25rem;
+  }
+  .logo-img {
+    height: 40px;
+  }
+  .mobile-nav-inner {
+    gap: 2rem;
+    padding: 1.5rem 1.25rem;
+  }
+  .mobile-link {
+    font-size: 1.25rem;
+  }
+  .mobile-actions {
+    max-width: 100%;
+  }
+}
 </style>

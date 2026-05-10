@@ -249,15 +249,27 @@ const rows = [
   .feature-row.reverse {
     grid-template-columns: 1fr;
     direction: ltr;
-    gap: 2.5rem;
+    gap: 2rem;
   }
 
-  .rows-wrapper { gap: 5rem; }
+  .rows-wrapper { gap: 4.5rem; }
+  .section-head { margin-bottom: 3.5rem; }
 }
 
 @media (max-width: 540px) {
   .detailed-features { padding: 5rem 0; }
-  .rows-wrapper { gap: 4rem; }
-  .img-frame { min-height: 220px; padding: 1.5rem; }
+  .rows-wrapper { gap: 3.5rem; }
+  .section-head { margin-bottom: 2.75rem; }
+  .section-sub { font-size: 0.95rem; }
+  .img-frame { min-height: 200px; padding: 1.25rem; }
+  .feature-desc { font-size: 0.95rem; }
+  .feature-list li { font-size: 0.9rem; }
+}
+
+@media (max-width: 400px) {
+  .section-container { padding: 0 1.25rem; }
+  .detailed-features { padding: 4rem 0; }
+  .rows-wrapper { gap: 3rem; }
+  .img-frame { min-height: 180px; padding: 1rem; }
 }
 </style>

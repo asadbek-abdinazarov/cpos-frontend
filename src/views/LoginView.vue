@@ -15,6 +15,7 @@ const password = ref('')
 const loading = ref(false)
 const showPassword = ref(false)
 
+
 const passwordToggleLabel = computed(() =>
   showPassword.value ? t('auth.hide_password') : t('auth.show_password'),
 )

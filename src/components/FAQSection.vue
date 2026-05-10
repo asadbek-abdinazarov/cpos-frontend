@@ -192,8 +192,17 @@ const faqList = computed(() => [
 
 @media (max-width: 640px) {
   .faq-section { padding: 5rem 0; }
+  .section-head { margin-bottom: 2.5rem; }
+  .section-sub { font-size: 0.95rem; }
   .q-text { font-size: 0.95rem; }
   .faq-answer p { padding-left: 0; }
   .q-num { display: none; }
+}
+
+@media (max-width: 400px) {
+  .section-container { padding: 0 1.25rem; }
+  .faq-section { padding: 4rem 0; }
+  .faq-question { padding: 1.25rem 0; gap: 0.75rem; }
+  .faq-answer p { font-size: 0.9rem; padding-bottom: 1.25rem; }
 }
 </style>
