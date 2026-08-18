@@ -19,6 +19,17 @@ const api = axios.create({
   },
 })
 
+function readCookie(name) {
+  const match = document.cookie.match(new RegExp('(^|;\\s*)' + name + '=([^;]*)'))
+  return match ? decodeURIComponent(match[2]) : null
+}
+
+// Axios only attaches the XSRF header automatically on same-origin requests.
+// The API lives on a different origin (api.cpos.uz vs cpos.uz), so we set it
+// ourselves — without it Spring's CsrfFilter rejects every mutating request
+// with a 403 that looks identical to a permission denial.
+const CSRF_SAFE_METHODS = ['get', 'head', 'options', 'trace']
+
 api.interceptors.request.use((config) => {
   const lang = getApiLocaleTag()
   config.headers = config.headers || {}
@@ -28,6 +39,15 @@ api.interceptors.request.use((config) => {
   if (config.headers['X-Locale'] == null) {
     config.headers['X-Locale'] = lang
   }
+
+  const method = (config.method || 'get').toLowerCase()
+  if (!CSRF_SAFE_METHODS.includes(method) && config.headers['X-XSRF-TOKEN'] == null) {
+    const token = readCookie('XSRF-TOKEN')
+    if (token) {
+      config.headers['X-XSRF-TOKEN'] = token
+    }
+  }
+
   config.params = { ...config.params }
   if (config.params.lang == null) {
     config.params.lang = lang
@@ -66,6 +86,28 @@ api.interceptors.response.use(
       error.response &&
       (error.response.status === 401 ||
         (error.response.data && error.response.data.status === 401))
+
+    // A mutating request can 403 simply because no XSRF-TOKEN cookie existed yet
+    // (Spring issues it lazily). Fetch one with a safe GET, then retry once.
+    const method = (originalRequest.method || 'get').toLowerCase()
+    if (
+      error.response &&
+      error.response.status === 403 &&
+      !CSRF_SAFE_METHODS.includes(method) &&
+      !originalRequest._csrfRetry &&
+      !readCookie('XSRF-TOKEN')
+    ) {
+      originalRequest._csrfRetry = true
+      try {
+        // any safe request makes Spring issue the cookie
+        await api.get('web/users/me')
+        if (readCookie('XSRF-TOKEN')) {
+          return api(originalRequest)
+        }
+      } catch {
+        // fall through to the normal error handling below
+      }
+    }
 
     if (isUnauthorized && !isAuthEndpoint(originalRequest.url) && !originalRequest._retry) {
       if (isRefreshing) {
