@@ -56,7 +56,11 @@ SERVER_IP="$(curl -fsS --max-time 10 https://api.ipify.org || echo '')"
 for d in "$DOMAIN" "www.${DOMAIN}" "$API_DOMAIN"; do
   RESOLVED="$(getent ahostsv4 "$d" | awk '{print $1}' | head -1 || true)"
   if [[ -z "$RESOLVED" ]]; then
-    echo "  OGOHLANTIRISH: $d hali DNS'da topilmadi."
+    if [[ "$d" == "www.${DOMAIN}" ]]; then
+      echo "  www.${DOMAIN}: DNS'da yo'q — o'tkazib yuboriladi (ixtiyoriy)."
+    else
+      echo "  OGOHLANTIRISH: $d hali DNS'da topilmadi."
+    fi
   elif [[ -n "$SERVER_IP" && "$RESOLVED" != "$SERVER_IP" ]]; then
     echo "  OGOHLANTIRISH: $d -> $RESOLVED (server IP: $SERVER_IP) — mos emas."
   else
@@ -70,11 +74,18 @@ read -rp "Davom etamizmi? [y/N]: " CONFIRM_DNS
 echo "=== 3/6: nginx konfiglari yozilmoqda (HTTP) ==="
 # Certbot keyinchalik shu fayllarga SSL bloklarini o'zi qo'shadi.
 
+# www faqat DNS'da mavjud bo'lsa server_name ga qo'shiladi
+if getent ahostsv4 "www.${DOMAIN}" >/dev/null 2>&1; then
+  SERVER_NAMES="${DOMAIN} www.${DOMAIN}"
+else
+  SERVER_NAMES="${DOMAIN}"
+fi
+
 tee /etc/nginx/sites-available/cpos-frontend >/dev/null <<EOF
 server {
     listen 80;
     listen [::]:80;
-    server_name ${DOMAIN} www.${DOMAIN};
+    server_name ${SERVER_NAMES};
 
     # Yuklanadigan fayl hajmi
     client_max_body_size 20M;
@@ -141,16 +152,26 @@ echo "=== 5/6: SSL sertifikat olinmoqda (Let's Encrypt) ==="
 # Sabab: api.cpos.uz uchun sertifikat allaqachon mavjud bo'lishi mumkin —
 # uni kengaytirish (--expand) o'rniga tegmasdan qoldirgan ma'qul.
 
-# --- Frontend: cpos.uz + www.cpos.uz ---
+# --- Frontend: cpos.uz (+ www.cpos.uz — faqat DNS'da mavjud bo'lsa) ---
+# www uchun DNS record bo'lmasa, uni sertifikatga qo'shib bo'lmaydi:
+# Let's Encrypt NXDOMAIN xatosi bilan BUTUN so'rovni rad etadi.
+CERT_DOMAINS=(-d "${DOMAIN}")
+if getent ahostsv4 "www.${DOMAIN}" >/dev/null 2>&1; then
+  echo "  www.${DOMAIN} DNS'da topildi — sertifikatga qo'shiladi."
+  CERT_DOMAINS+=(-d "www.${DOMAIN}")
+else
+  echo "  www.${DOMAIN} DNS'da yo'q — o'tkazib yuborildi (faqat ${DOMAIN})."
+fi
+
 if certbot certificates 2>/dev/null | grep -qE "^\s+Certificate Name: ${DOMAIN}$"; then
-  echo "  '${DOMAIN}' sertifikati allaqachon mavjud — yangilanmoqda (nginx'ga bog'lanadi)."
-  certbot --nginx -d "${DOMAIN}" -d "www.${DOMAIN}" \
+  echo "  '${DOMAIN}' sertifikati allaqachon mavjud — yangilanmoqda."
+  certbot --nginx "${CERT_DOMAINS[@]}" \
     --cert-name "${DOMAIN}" \
     --non-interactive --agree-tos --email "${LE_EMAIL}" \
     --keep-until-expiring --expand --redirect
 else
   echo "  '${DOMAIN}' uchun yangi sertifikat olinmoqda."
-  certbot --nginx -d "${DOMAIN}" -d "www.${DOMAIN}" \
+  certbot --nginx "${CERT_DOMAINS[@]}" \
     --cert-name "${DOMAIN}" \
     --non-interactive --agree-tos --email "${LE_EMAIL}" \
     --redirect
