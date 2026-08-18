@@ -93,6 +93,14 @@ server {
     access_log /var/log/nginx/cpos-frontend.access.log;
     error_log  /var/log/nginx/cpos-frontend.error.log;
 
+    # Let's Encrypt challenge — konteynerga proxy qilinmaydi
+    location ^~ /.well-known/acme-challenge/ {
+        root /var/www/html;
+        allow all;
+        auth_basic off;
+        access_log off;
+    }
+
     location / {
         proxy_pass http://127.0.0.1:${FRONTEND_PORT};
         proxy_http_version 1.1;
@@ -117,6 +125,16 @@ server {
 
     access_log /var/log/nginx/cpos-api.access.log;
     error_log  /var/log/nginx/cpos-api.error.log;
+
+    # Let's Encrypt challenge — backend'ga YUBORILMAYDI.
+    # Aks holda backend autentifikatsiyasi 401 qaytarib, sertifikat
+    # yangilanishini buzadi.
+    location ^~ /.well-known/acme-challenge/ {
+        root /var/www/html;
+        allow all;
+        auth_basic off;
+        access_log off;
+    }
 
     location / {
         proxy_pass http://127.0.0.1:${BACKEND_PORT};
@@ -179,8 +197,24 @@ fi
 
 # --- Backend: api.cpos.uz ---
 if certbot certificates 2>/dev/null | grep -qE "^\s+Certificate Name: ${API_DOMAIN}$"; then
-  echo "  '${API_DOMAIN}' sertifikati allaqachon mavjud — qayta olinmaydi."
-  echo "  Faqat nginx konfigiga SSL bog'lanmoqda..."
+  echo "  '${API_DOMAIN}' sertifikati allaqachon mavjud."
+
+  # Agar u 'webroot' bilan olingan bo'lsa, yangilanish backend'ning 401'i
+  # tufayli buziladi. Shuning uchun 'nginx' authenticator'ga o'tkazamiz.
+  API_RENEWAL="/etc/letsencrypt/renewal/${API_DOMAIN}.conf"
+  if [[ -f "$API_RENEWAL" ]] && grep -qE '^authenticator\s*=\s*webroot' "$API_RENEWAL"; then
+    echo "  Yangilanish usuli 'webroot' -> 'nginx' ga o'tkazilmoqda..."
+    cp "$API_RENEWAL" "${API_RENEWAL}.bak.$(date +%s)"
+    # --force-renewal ISHLATILMAYDI: maqsad sertifikatni almashtirish emas,
+    # renewal konfigidagi authenticator'ni yangilash. Sertifikat hali amal
+    # qilsa, certbot uni saqlab qoladi, lekin usulni 'nginx' ga o'zgartiradi.
+    certbot certonly --nginx -d "${API_DOMAIN}" \
+      --cert-name "${API_DOMAIN}" \
+      --non-interactive --agree-tos --email "${LE_EMAIL}" \
+      --keep-until-expiring
+  fi
+
+  echo "  nginx konfigiga SSL bog'lanmoqda..."
   certbot install --nginx --cert-name "${API_DOMAIN}" --non-interactive --redirect
 else
   echo "  '${API_DOMAIN}' uchun yangi sertifikat olinmoqda."
@@ -192,7 +226,18 @@ fi
 
 echo "=== 6/6: Avtomatik yangilanish tekshirilmoqda ==="
 systemctl enable --now certbot.timer
-certbot renew --dry-run
+
+# Bu tekshiruv skriptni to'xtatmasin: bitta sertifikat muammosi
+# qolganlarining ishlashiga to'sqinlik qilmaydi.
+mkdir -p /var/www/html
+if certbot renew --dry-run; then
+  echo "  Barcha sertifikatlar avtomatik yangilanadi."
+else
+  echo
+  echo "  OGOHLANTIRISH: ba'zi sertifikatlar dry-run'dan o'tmadi (yuqoriga qarang)."
+  echo "  Sayt hozir ishlaydi, lekin o'sha sertifikat ~90 kundan keyin yangilanmaydi."
+  echo "  Tekshirish uchun: sudo certbot renew --dry-run -v"
+fi
 
 nginx -t
 systemctl reload nginx
