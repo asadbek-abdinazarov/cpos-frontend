@@ -12,48 +12,12 @@ const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080
 const api = axios.create({
   baseURL: API_BASE_URL,
   withCredentials: true,
+  xsrfCookieName: 'XSRF-TOKEN',
+  xsrfHeaderName: 'X-XSRF-TOKEN',
   headers: {
     'Content-Type': 'application/json',
   },
 })
-
-/** Backend JSON: access_token / refresh_token (snake) yoki accessToken / refreshToken (camel) */
-export function persistAuthTokensFromResponse(apiResponseData) {
-  if (!apiResponseData || typeof apiResponseData !== 'object') return
-  const nested = apiResponseData.data
-  const inner = nested && typeof nested === 'object' ? nested : null
-  const access =
-    apiResponseData.access_token ||
-    apiResponseData.accessToken ||
-    (inner && (inner.access_token || inner.accessToken))
-  const refresh =
-    apiResponseData.refresh_token ||
-    apiResponseData.refreshToken ||
-    (inner && (inner.refresh_token || inner.refreshToken))
-  if (access) localStorage.setItem('accessToken', access)
-  if (refresh) localStorage.setItem('refreshToken', refresh)
-}
-
-function shouldAttachBearer(url) {
-  if (!url || typeof url !== 'string') return false
-  if (!url.startsWith('web/')) return false
-  const publicAuth = ['web/auth/login', 'web/auth/register', 'web/auth/refresh']
-  return !publicAuth.some((p) => url.includes(p))
-}
-
-/** `api` instance interceptoridan tashqari `axios.post` chaqiruvlari uchun */
-function buildLocaleAxiosConfig(extra = {}) {
-  const lang = getApiLocaleTag()
-  return {
-    ...extra,
-    params: { lang, ...extra.params },
-    headers: {
-      'Accept-Language': lang,
-      'X-Locale': lang,
-      ...extra.headers,
-    },
-  }
-}
 
 api.interceptors.request.use((config) => {
   const lang = getApiLocaleTag()
@@ -68,92 +32,59 @@ api.interceptors.request.use((config) => {
   if (config.params.lang == null) {
     config.params.lang = lang
   }
-
-  const url = config.url || ''
-  if (shouldAttachBearer(url)) {
-    const token = localStorage.getItem('accessToken')
-    if (token) {
-      config.headers = config.headers || {}
-      config.headers.Authorization = `Bearer ${token}`
-    }
-  }
   return config
 })
 
 let isRefreshing = false
 let failedQueue = []
 
-const processQueue = (error, token = null) => {
+const processQueue = (error) => {
   failedQueue.forEach((prom) => {
     if (error) {
       prom.reject(error)
     } else {
-      prom.resolve(token)
+      prom.resolve()
     }
   })
   failedQueue = []
 }
 
-api.interceptors.response.use(
-  (response) => {
-    return response
-  },
-  async (error) => {
-    const originalRequest = error.config
+function isAuthEndpoint(url) {
+  if (!url) return false
+  return (
+    url.includes('web/auth/login') ||
+    url.includes('web/auth/refresh') ||
+    url.includes('web/auth/logout')
+  )
+}
 
-    // Try token refresh on any 401 Unauthorized (unless it's from the auth/login or auth/refresh themselves)
-    const isAuthUrl =
-      originalRequest.url &&
-      (originalRequest.url.includes('web/auth/login') ||
-        originalRequest.url.includes('web/auth/refresh'))
+api.interceptors.response.use(
+  (response) => response,
+  async (error) => {
+    const originalRequest = error.config || {}
     const isUnauthorized =
       error.response &&
-      (error.response.status === 401 || (error.response.data && error.response.data.status === 401))
+      (error.response.status === 401 ||
+        (error.response.data && error.response.data.status === 401))
 
-    if (isUnauthorized && !isAuthUrl && !originalRequest._retry) {
+    if (isUnauthorized && !isAuthEndpoint(originalRequest.url) && !originalRequest._retry) {
       if (isRefreshing) {
-        return new Promise(function (resolve, reject) {
+        return new Promise((resolve, reject) => {
           failedQueue.push({ resolve, reject })
         })
-          .then(() => {
-            return api(originalRequest)
-          })
-          .catch((err) => {
-            return Promise.reject(err)
-          })
+          .then(() => api(originalRequest))
+          .catch((err) => Promise.reject(err))
       }
 
       originalRequest._retry = true
       isRefreshing = true
 
-      const refreshToken = localStorage.getItem('refreshToken')
-
-      if (!refreshToken) {
-        forceLogout()
-        return Promise.reject(error)
-      }
-
       try {
-        const { data } = await axios.post(
-          `${API_BASE_URL}web/auth/refresh`,
-          {
-            refreshToken: refreshToken,
-          },
-          buildLocaleAxiosConfig({
-            withCredentials: true, // needed if backend sets new cookies
-          }),
-        )
-
-        if (data.success) {
-          persistAuthTokensFromResponse(data)
-        }
-
+        await api.post('web/auth/refresh')
         processQueue(null)
-
-        // Retry original request (the cookie will automatically be sent by browser)
         return api(originalRequest)
       } catch (refreshError) {
-        processQueue(refreshError, null)
+        processQueue(refreshError)
         forceLogout()
         return Promise.reject(refreshError)
       } finally {
@@ -161,9 +92,7 @@ api.interceptors.response.use(
       }
     }
 
-    // Global Error Message Extraction
-    // Avoid showing the error message if it's the 401 we just handled transparently
-    if (!(isUnauthorized && !isAuthUrl)) {
+    if (!(isUnauthorized && !isAuthEndpoint(originalRequest.url))) {
       if (error.response && error.response.data) {
         const data = error.response.data
         if (data.message && data.message !== 'Validation Failed') {
@@ -190,12 +119,8 @@ api.interceptors.response.use(
 function forceLogout() {
   showNotification({ type: 'error', message: t('auth.session_expired') })
 
-  axios
-    .post(`${API_BASE_URL}web/auth/logout`, {}, buildLocaleAxiosConfig({ withCredentials: true }))
-    .catch(() => {})
+  api.post('web/auth/logout').catch(() => {})
 
-  localStorage.removeItem('refreshToken')
-  localStorage.removeItem('accessToken')
   localStorage.removeItem('username')
   localStorage.removeItem('userId')
 

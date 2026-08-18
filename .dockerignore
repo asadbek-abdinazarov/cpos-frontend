@@ -1,0 +1,16 @@
+node_modules
+dist
+dist-ssr
+.git
+.github
+.vscode
+.claude
+.DS_Store
+*.log
+coverage
+.env
+.env.*
+!.env.example
+README.md
+ec2-setup.sh
+server-setup.sh

@@ -55,7 +55,7 @@ const goSectionAndClose = (id) => {
 
 onMounted(() => {
   window.addEventListener('scroll', handleScroll)
-  isAuthenticated.value = !!localStorage.getItem('refreshToken')
+  isAuthenticated.value = !!localStorage.getItem('userId')
 })
 
 onUnmounted(() => {

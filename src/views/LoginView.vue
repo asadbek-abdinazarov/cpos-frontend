@@ -2,7 +2,7 @@
 import { ref, onMounted, computed } from 'vue'
 import { useRouter } from 'vue-router'
 import { useI18n } from 'vue-i18n'
-import { login, persistAuthTokensFromResponse } from '@/services/api'
+import { login } from '@/services/api'
 import { useNotification } from '@/composables/useNotification'
 import { enterDashboard } from '@/composables/useAppLoader'
 import { Eye, EyeOff } from 'lucide-vue-next'
@@ -43,7 +43,6 @@ const handleLogin = async () => {
     })
     const data = response.data
     if (data.success && data.data) {
-      persistAuthTokensFromResponse(data)
       localStorage.setItem('username', data.data.username)
       localStorage.setItem('userId', data.data.userId)
       showNotification({ type: 'success', message: t('auth.login_success') })

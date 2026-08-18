@@ -1,51 +1,127 @@
-name: Deploy to AWS EC2
+name: Build & Deploy (Docker → Ubuntu 22.04)
 
 on:
   push:
     branches:
       - main
+  workflow_dispatch:
+
+env:
+  REGISTRY: ghcr.io
+  IMAGE_NAME: ${{ github.repository }}
 
 jobs:
-  build-and-deploy:
+  build:
+    name: Build & push image
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+    outputs:
+      image: ${{ steps.meta.outputs.image }}
 
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Log in to GHCR
+        uses: docker/login-action@v3
         with:
-          node-version: '22'
-          cache: 'npm'
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Install dependencies
-        run: npm ci
+      - name: Prepare image name (lowercase)
+        id: meta
+        run: |
+          IMAGE="${REGISTRY}/$(echo "${IMAGE_NAME}" | tr '[:upper:]' '[:lower:]')"
+          echo "image=${IMAGE}" >> "$GITHUB_OUTPUT"
 
-      - name: Build
-        run: npm run build
-        env:
-          NODE_ENV: production
-
-      - name: Deploy to EC2
-        uses: appleboy/scp-action@v0.1.7
+      - name: Build and push
+        uses: docker/build-push-action@v6
         with:
-          host: ${{ secrets.EC2_HOST }}
-          username: ${{ secrets.EC2_USERNAME }}
-          key: ${{ secrets.EC2_SSH_KEY }}
-          source: 'dist/'
-          target: '/tmp/cpos-deploy'
-          strip_components: 1
+          context: .
+          push: true
+          tags: |
+            ${{ steps.meta.outputs.image }}:latest
+            ${{ steps.meta.outputs.image }}:${{ github.sha }}
+          build-args: |
+            VITE_API_BASE_URL=${{ secrets.VITE_API_BASE_URL }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
 
-      - name: Restart Nginx
-        uses: appleboy/ssh-action@v1.0.3
+  deploy:
+    name: Deploy to server
+    needs: build
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Deploy over SSH
+        uses: appleboy/ssh-action@v1.2.0
         with:
-          host: ${{ secrets.EC2_HOST }}
-          username: ${{ secrets.EC2_USERNAME }}
-          key: ${{ secrets.EC2_SSH_KEY }}
+          host: ${{ secrets.SERVER_HOST }}
+          username: ${{ secrets.SERVER_USER }}
+          key: ${{ secrets.SERVER_SSH_KEY }}
+          port: ${{ secrets.SERVER_PORT || 22 }}
+          script_stop: true
+          envs: GHCR_USER,GHCR_TOKEN,IMAGE_REF
           script: |
-            sudo rm -rf /var/www/cpos-frontend/*
-            sudo cp -r /tmp/cpos-deploy/* /var/www/cpos-frontend/
-            sudo rm -rf /tmp/cpos-deploy
-            sudo systemctl reload nginx
-            echo "Deploy muvaffaqiyatli!"
+            set -e
+            cd /opt/cpos-frontend
+
+            echo "$GHCR_TOKEN" | docker login ghcr.io -u "$GHCR_USER" --password-stdin
+
+            # .env dagi IMAGE ni shu deploy uchun aniq SHA tegiga yangilaymiz
+            if grep -q '^IMAGE=' .env; then
+              sed -i "s#^IMAGE=.*#IMAGE=${IMAGE_REF}#" .env
+            else
+              echo "IMAGE=${IMAGE_REF}" >> .env
+            fi
+
+            docker compose pull
+            docker compose up -d --remove-orphans
+            docker image prune -f
+
+            echo "=== Holat ==="
+            docker compose ps
+        env:
+          GHCR_USER: ${{ github.actor }}
+          GHCR_TOKEN: ${{ secrets.GHCR_TOKEN }}
+          IMAGE_REF: ${{ needs.build.outputs.image }}:${{ github.sha }}
+
+      - name: Healthcheck
+        uses: appleboy/ssh-action@v1.2.0
+        with:
+          host: ${{ secrets.SERVER_HOST }}
+          username: ${{ secrets.SERVER_USER }}
+          key: ${{ secrets.SERVER_SSH_KEY }}
+          port: ${{ secrets.SERVER_PORT || 22 }}
+          script: |
+            PORT=$(grep -sE '^APP_PORT=' /opt/cpos-frontend/.env | cut -d= -f2)
+            PORT=${PORT:-8080}
+
+            # 1) Konteynerning o'zi javob beryaptimi
+            for i in $(seq 1 10); do
+              if curl -fsS "http://127.0.0.1:${PORT}/healthz" >/dev/null; then
+                echo "Konteyner ishlayapti (port ${PORT})."
+                break
+              fi
+              if [ "$i" = "10" ]; then
+                echo "Konteyner javob bermadi!"
+                docker logs --tail 50 cpos-frontend
+                exit 1
+              fi
+              echo "Kutilmoqda... ($i/10)"
+              sleep 3
+            done
+
+            # 2) Domen orqali (host nginx + SSL) ochilyaptimi
+            if curl -fsS --max-time 10 https://cpos.uz/healthz >/dev/null; then
+              echo "Deploy muvaffaqiyatli: https://cpos.uz"
+            else
+              echo "OGOHLANTIRISH: konteyner ishlayapti, lekin https://cpos.uz javob bermadi."
+              echo "domain-setup.sh ishga tushirilganini va DNS/SSL to'g'riligini tekshiring."
+            fi
