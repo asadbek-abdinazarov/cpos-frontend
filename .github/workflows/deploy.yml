@@ -142,29 +142,9 @@ jobs:
             # ishlab turgan konteynerlarga tegmaydi.
             docker image prune -f || true
 
-            # Nginx konteynerning haqiqiy portiga qarayotganini ta'minlaymiz.
-            # Bu blok DEPLOY'NI TO'XTATMASLIGI kerak: konfig fayli root'niki
-            # bo'lgani uchun grep/sudo ruxsat bermasligi mumkin. Shu sababli
-            # butun blok `set -e` ta'siridan chiqarilgan.
-            set +e
-            NGINX_CONF=/etc/nginx/sites-available/cpos-frontend
-            if sudo -n test -f "$NGINX_CONF" 2>/dev/null; then
-              if ! sudo -n grep -q "127.0.0.1:${APP_PORT_TARGET};" "$NGINX_CONF" 2>/dev/null; then
-                echo "Nginx proxy_pass ${APP_PORT_TARGET} ga yangilanmoqda..."
-                sudo -n sed -i -E "s#proxy_pass http://127\.0\.0\.1:[0-9]+;#proxy_pass http://127.0.0.1:${APP_PORT_TARGET};#" "$NGINX_CONF" \
-                  && sudo -n nginx -t \
-                  && sudo -n systemctl reload nginx \
-                  && echo "Nginx yangilandi."
-              else
-                echo "Nginx allaqachon ${APP_PORT_TARGET} ga qarayapti."
-              fi
-            else
-              echo "OGOHLANTIRISH: nginx konfigini o'qib bo'lmadi (sudo ruxsati yo'q)."
-              echo "Agar sayt 502 bersa, serverda qo'lda bajaring:"
-              echo "  sudo sed -i 's#127.0.0.1:[0-9]*#127.0.0.1:${APP_PORT_TARGET}#' ${NGINX_CONF}"
-              echo "  sudo nginx -t && sudo systemctl reload nginx"
-            fi
-            set -e
+            # Nginx konfigi qo'lda sozlangan (proxy_pass -> 3000) va unga
+            # bu yerdan tegilmaydi: root fayli uchun sudo kerak, script_stop
+            # esa har qanday non-zero natijada deploy'ni to'xtatib qo'yadi.
 
             echo "=== Holat ==="
             docker compose ps || true
@@ -174,8 +154,8 @@ jobs:
               if docker ps --filter name=cpos-app --filter status=running -q | grep -q .; then
                 echo "OK: backend (cpos-app) ishlayapti."
               else
-                echo "OGOHLANTIRISH: backend (cpos-app) ishlamayapti! Ishga tushirilmoqda..."
-                docker start cpos-app || true
+                echo "OGOHLANTIRISH: backend (cpos-app) ishlamayapti."
+                echo "Bu deploy unga tegmadi — backend tomonda tekshiring."
               fi
             fi
 
