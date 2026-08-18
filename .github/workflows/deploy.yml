@@ -72,7 +72,13 @@ jobs:
             set -e
             cd /opt/cpos-frontend
 
-            echo "$GHCR_TOKEN" | docker login ghcr.io -u "$GHCR_USER" --password-stdin
+            # GHCR login faqat token berilgan bo'lsa. Image public bo'lsa
+            # login umuman kerak emas.
+            if [ -n "$GHCR_TOKEN" ]; then
+              echo "$GHCR_TOKEN" | docker login ghcr.io -u "$GHCR_USER" --password-stdin
+            else
+              echo "GHCR_TOKEN yo'q — login o'tkazib yuborildi (public image)."
+            fi
 
             # .env dagi IMAGE ni shu deploy uchun aniq SHA tegiga yangilaymiz
             if grep -q '^IMAGE=' .env; then
@@ -81,7 +87,14 @@ jobs:
               echo "IMAGE=${IMAGE_REF}" >> .env
             fi
 
-            docker compose pull
+            # Agar pull muvaffaqiyatsiz bo'lsa, serverdagi eski/buzuq login
+            # sabab bo'lishi mumkin — logout qilib anonim urinib ko'ramiz.
+            if ! docker compose pull; then
+              echo "Pull xato berdi — logout qilib qayta urinilmoqda..."
+              docker logout ghcr.io || true
+              docker compose pull
+            fi
+
             docker compose up -d --remove-orphans
             docker image prune -f
 
