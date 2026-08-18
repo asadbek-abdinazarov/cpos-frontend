@@ -114,7 +114,28 @@ EOF
 
 # api.cpos.uz uchun konfig YOZILMAYDI — u serverda allaqachon sozlangan.
 
+# Bu skriptning eski versiyasi 'cpos-api' faylini yaratgan bo'lishi mumkin.
+# U api.cpos.uz ni ikkinchi marta e'lon qilib, "conflicting server name"
+# ogohlantirishiga sabab bo'ladi — tozalaymiz.
+if [[ -e /etc/nginx/sites-enabled/cpos-api || -e /etc/nginx/sites-available/cpos-api ]]; then
+  echo "  Ortiqcha 'cpos-api' konfigi topildi — o'chirilmoqda."
+  rm -f /etc/nginx/sites-enabled/cpos-api /etc/nginx/sites-available/cpos-api
+fi
+
 ln -sf /etc/nginx/sites-available/cpos-frontend /etc/nginx/sites-enabled/
+
+# Boshqa konfig 'default_server' yoki 'server_name _' bilan cpos.uz
+# so'rovlarini o'zlashtirib olayotgan bo'lsa, buni aniqlaymiz.
+echo "  Konflikt tekshirilmoqda..."
+for f in /etc/nginx/sites-enabled/*; do
+  [[ "$(basename "$f")" == "cpos-frontend" ]] && continue
+  [[ -e "$f" ]] || continue
+  if grep -qE '^\s*(listen[^;]*default_server|server_name\s+_\s*;)' "$f" 2>/dev/null; then
+    echo "  OGOHLANTIRISH: $(basename "$f") barcha so'rovlarni qabul qiladi"
+    echo "                 (default_server yoki 'server_name _'),"
+    echo "                 shu sabab ${DOMAIN} noto'g'ri joyga tushishi mumkin."
+  fi
+done
 
 nginx -t
 systemctl enable nginx

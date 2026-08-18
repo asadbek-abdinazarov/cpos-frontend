@@ -121,7 +121,9 @@ jobs:
 
             # Eski konteynerni to'liq to'xtatamiz, aks holda port band qolib
             # yangisi ko'tarila olmaydi.
-            docker compose down --remove-orphans || true
+            # DIQQAT: --remove-orphans ISHLATILMAYDI. U shu compose faylida
+            # sanalmagan konteynerlarni o'chiradi — jumladan backend (cpos-app).
+            docker compose down || true
             docker rm -f cpos-frontend 2>/dev/null || true
 
             # Port hali ham band bo'lsa, kim egallaganini ko'rsatamiz
@@ -134,7 +136,10 @@ jobs:
               exit 1
             fi
 
-            docker compose up -d --remove-orphans
+            docker compose up -d
+
+            # 'prune -f' faqat egasiz (dangling) image'larni o'chiradi —
+            # ishlab turgan konteynerlarga tegmaydi.
             docker image prune -f || true
 
             # Nginx konteynerning haqiqiy portiga qarayotganini ta'minlaymiz.
@@ -163,6 +168,16 @@ jobs:
 
             echo "=== Holat ==="
             docker compose ps || true
+
+            # Backend'ga tegilmaganini tasdiqlaymiz (deploy uni to'xtatmasligi kerak).
+            if docker ps -a --filter name=cpos-app -q | grep -q .; then
+              if docker ps --filter name=cpos-app --filter status=running -q | grep -q .; then
+                echo "OK: backend (cpos-app) ishlayapti."
+              else
+                echo "OGOHLANTIRISH: backend (cpos-app) ishlamayapti! Ishga tushirilmoqda..."
+                docker start cpos-app || true
+              fi
+            fi
 
             # Konteyner haqiqatan ishlayaptimi — deploy'ning yakuniy hukmi shu.
             sleep 3
