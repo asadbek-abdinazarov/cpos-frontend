@@ -30,9 +30,6 @@ if [[ $EUID -ne 0 ]]; then
   exit 1
 fi
 
-read -rp "Backend qaysi portda ishlayapti? [8000]: " BACKEND_PORT
-BACKEND_PORT="${BACKEND_PORT:-8000}"
-
 read -rp "SSL sertifikat uchun email (Let's Encrypt ogohlantirishlari): " LE_EMAIL
 if [[ -z "$LE_EMAIL" ]]; then
   echo "Email kiritilmadi — to'xtatildi."
@@ -41,8 +38,8 @@ fi
 
 echo
 echo "=== Sozlamalar ==="
-echo "  Frontend : https://${DOMAIN}, https://www.${DOMAIN}  ->  127.0.0.1:${FRONTEND_PORT} (Docker)"
-echo "  Backend  : https://${API_DOMAIN}                     ->  127.0.0.1:${BACKEND_PORT}"
+echo "  Frontend : https://${DOMAIN}  ->  127.0.0.1:${FRONTEND_PORT} (Docker)"
+echo "  Backend  : ${API_DOMAIN} — tegilmaydi (allaqachon sozlangan)"
 echo
 read -rp "Davom etamizmi? [y/N]: " CONFIRM
 [[ "${CONFIRM,,}" == "y" ]] || { echo "Bekor qilindi."; exit 0; }
@@ -53,7 +50,7 @@ apt-get install -y nginx certbot python3-certbot-nginx
 
 echo "=== 2/6: DNS tekshirilmoqda ==="
 SERVER_IP="$(curl -fsS --max-time 10 https://api.ipify.org || echo '')"
-for d in "$DOMAIN" "www.${DOMAIN}" "$API_DOMAIN"; do
+for d in "$DOMAIN" "www.${DOMAIN}"; do
   RESOLVED="$(getent ahostsv4 "$d" | awk '{print $1}' | head -1 || true)"
   if [[ -z "$RESOLVED" ]]; then
     if [[ "$d" == "www.${DOMAIN}" ]]; then
@@ -115,44 +112,9 @@ server {
 }
 EOF
 
-tee /etc/nginx/sites-available/cpos-api >/dev/null <<EOF
-server {
-    listen 80;
-    listen [::]:80;
-    server_name ${API_DOMAIN};
-
-    client_max_body_size 50M;
-
-    access_log /var/log/nginx/cpos-api.access.log;
-    error_log  /var/log/nginx/cpos-api.error.log;
-
-    # Let's Encrypt challenge — backend'ga YUBORILMAYDI.
-    # Aks holda backend autentifikatsiyasi 401 qaytarib, sertifikat
-    # yangilanishini buzadi.
-    location ^~ /.well-known/acme-challenge/ {
-        root /var/www/html;
-        allow all;
-        auth_basic off;
-        access_log off;
-    }
-
-    location / {
-        proxy_pass http://127.0.0.1:${BACKEND_PORT};
-        proxy_http_version 1.1;
-        proxy_set_header Host              \$host;
-        proxy_set_header X-Real-IP         \$remote_addr;
-        proxy_set_header X-Forwarded-For   \$proxy_add_x_forwarded_for;
-        proxy_set_header X-Forwarded-Proto \$scheme;
-        proxy_set_header Upgrade           \$http_upgrade;
-        proxy_set_header Connection        "upgrade";
-        proxy_read_timeout 120s;
-    }
-}
-EOF
+# api.cpos.uz uchun konfig YOZILMAYDI — u serverda allaqachon sozlangan.
 
 ln -sf /etc/nginx/sites-available/cpos-frontend /etc/nginx/sites-enabled/
-ln -sf /etc/nginx/sites-available/cpos-api      /etc/nginx/sites-enabled/
-rm -f /etc/nginx/sites-enabled/default
 
 nginx -t
 systemctl enable nginx
@@ -196,47 +158,20 @@ else
 fi
 
 # --- Backend: api.cpos.uz ---
-if certbot certificates 2>/dev/null | grep -qE "^\s+Certificate Name: ${API_DOMAIN}$"; then
-  echo "  '${API_DOMAIN}' sertifikati allaqachon mavjud."
+# TEGILMAYDI. Bu domen uchun sertifikat allaqachon mavjud va ishlayapti —
+# uni boshqarish bu skriptning vazifasi emas.
+echo "  '${API_DOMAIN}': mavjud sertifikat — tegilmadi."
 
-  # Agar u 'webroot' bilan olingan bo'lsa, yangilanish backend'ning 401'i
-  # tufayli buziladi. Shuning uchun 'nginx' authenticator'ga o'tkazamiz.
-  API_RENEWAL="/etc/letsencrypt/renewal/${API_DOMAIN}.conf"
-  if [[ -f "$API_RENEWAL" ]] && grep -qE '^authenticator\s*=\s*webroot' "$API_RENEWAL"; then
-    echo "  Yangilanish usuli 'webroot' -> 'nginx' ga o'tkazilmoqda..."
-    cp "$API_RENEWAL" "${API_RENEWAL}.bak.$(date +%s)"
-    # --force-renewal ISHLATILMAYDI: maqsad sertifikatni almashtirish emas,
-    # renewal konfigidagi authenticator'ni yangilash. Sertifikat hali amal
-    # qilsa, certbot uni saqlab qoladi, lekin usulni 'nginx' ga o'zgartiradi.
-    certbot certonly --nginx -d "${API_DOMAIN}" \
-      --cert-name "${API_DOMAIN}" \
-      --non-interactive --agree-tos --email "${LE_EMAIL}" \
-      --keep-until-expiring
-  fi
-
-  echo "  nginx konfigiga SSL bog'lanmoqda..."
-  certbot install --nginx --cert-name "${API_DOMAIN}" --non-interactive --redirect
-else
-  echo "  '${API_DOMAIN}' uchun yangi sertifikat olinmoqda."
-  certbot --nginx -d "${API_DOMAIN}" \
-    --cert-name "${API_DOMAIN}" \
-    --non-interactive --agree-tos --email "${LE_EMAIL}" \
-    --redirect
-fi
-
-echo "=== 6/6: Avtomatik yangilanish tekshirilmoqda ==="
+echo "=== 6/6: Avtomatik yangilanish yoqilmoqda ==="
+mkdir -p /var/www/html
 systemctl enable --now certbot.timer
 
-# Bu tekshiruv skriptni to'xtatmasin: bitta sertifikat muammosi
-# qolganlarining ishlashiga to'sqinlik qilmaydi.
-mkdir -p /var/www/html
-if certbot renew --dry-run; then
-  echo "  Barcha sertifikatlar avtomatik yangilanadi."
+# Faqat cpos.uz tekshiriladi. 'certbot renew' barcha sertifikatlarni
+# tekshiradi, shu sabab boshqa domenlar bu skriptga aloqasiz xato beradi.
+if certbot renew --cert-name "${DOMAIN}" --dry-run; then
+  echo "  ${DOMAIN} avtomatik yangilanadi."
 else
-  echo
-  echo "  OGOHLANTIRISH: ba'zi sertifikatlar dry-run'dan o'tmadi (yuqoriga qarang)."
-  echo "  Sayt hozir ishlaydi, lekin o'sha sertifikat ~90 kundan keyin yangilanmaydi."
-  echo "  Tekshirish uchun: sudo certbot renew --dry-run -v"
+  echo "  OGOHLANTIRISH: ${DOMAIN} dry-run'dan o'tmadi."
 fi
 
 nginx -t
