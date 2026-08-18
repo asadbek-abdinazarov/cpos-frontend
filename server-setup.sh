@@ -9,7 +9,7 @@
 #   - GHCR (GitHub Container Registry) ga login qiladi
 #   - UFW firewall'ni sozlaydi
 #
-# Konteyner faqat 127.0.0.1:8080 ga bog'lanadi. Tashqi dunyoga (cpos.uz, SSL)
+# Konteyner faqat 127.0.0.1:3000 ga bog'lanadi. Tashqi dunyoga (cpos.uz, SSL)
 # chiqarish uchun keyin domain-setup.sh ni ishga tushiring.
 
 set -euo pipefail
@@ -62,7 +62,7 @@ services:
     container_name: cpos-frontend
     restart: unless-stopped
     ports:
-      - '127.0.0.1:${APP_PORT:-8080}:80'
+      - '127.0.0.1:${APP_PORT:-3000}:80'
     healthcheck:
       test: ['CMD', 'wget', '-qO-', 'http://127.0.0.1/healthz']
       interval: 30s
@@ -76,8 +76,8 @@ if [[ ! -f "$APP_DIR/.env" ]]; then
   read -rp "GitHub owner (username yoki tashkilot nomi): " GH_OWNER
   read -rp "Repo nomi [cpos-frontend]: " GH_REPO
   GH_REPO="${GH_REPO:-cpos-frontend}"
-  read -rp "Ichki (localhost) port [8080]: " APP_PORT
-  APP_PORT="${APP_PORT:-8080}"
+  read -rp "Ichki (localhost) port [3000]: " APP_PORT
+  APP_PORT="${APP_PORT:-3000}"
 
   OWNER_LC=$(echo "$GH_OWNER" | tr '[:upper:]' '[:lower:]')
   REPO_LC=$(echo "$GH_REPO" | tr '[:upper:]' '[:lower:]')
@@ -103,7 +103,7 @@ if [[ "${DO_LOGIN,,}" == "y" ]]; then
 fi
 
 echo "=== 6/6: Firewall sozlanmoqda ==="
-# Konteyner 127.0.0.1 ga bog'langani uchun 8080 ochilmaydi.
+# Konteyner 127.0.0.1 ga bog'langani uchun ilova porti tashqariga ochilmaydi.
 sudo ufw allow OpenSSH
 sudo ufw allow 80/tcp
 sudo ufw allow 443/tcp

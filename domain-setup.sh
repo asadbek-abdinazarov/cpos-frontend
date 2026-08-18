@@ -3,8 +3,8 @@
 #   sudo bash domain-setup.sh
 #
 # Bu skript host nginx'ni cpos.uz uchun reverse proxy qilib sozlaydi:
-#   cpos.uz, www.cpos.uz  -> Docker konteyner (127.0.0.1:8080)  [frontend]
-#   api.cpos.uz           -> backend (127.0.0.1:8080 emas, alohida port) [backend]
+#   cpos.uz  -> Docker konteyner (127.0.0.1:3000)  [frontend]
+#   api.cpos.uz -> TEGILMAYDI (allaqachon sozlangan, backend 8080-portda)
 #   Let's Encrypt SSL (certbot) + avtomatik yangilanish
 #   HTTP -> HTTPS redirect
 #
@@ -23,7 +23,7 @@ APP_DIR="/opt/cpos-frontend"
 
 # Frontend Docker konteyner porti (docker-compose .env dagi APP_PORT bilan bir xil)
 FRONTEND_PORT="$(grep -sE '^APP_PORT=' "$APP_DIR/.env" | cut -d= -f2 || true)"
-FRONTEND_PORT="${FRONTEND_PORT:-8080}"
+FRONTEND_PORT="${FRONTEND_PORT:-3000}"
 
 if [[ $EUID -ne 0 ]]; then
   echo "Iltimos sudo bilan ishga tushiring: sudo bash domain-setup.sh"
@@ -123,8 +123,8 @@ systemctl reload nginx
 echo "=== 4/6: Firewall ==="
 if command -v ufw >/dev/null 2>&1; then
   ufw allow 'Nginx Full' || true
-  # Konteyner endi faqat 127.0.0.1 ga bog'lanadi, 8080 tashqaridan yopiq bo'lsin
-  ufw delete allow 8080/tcp 2>/dev/null || true
+  # Konteyner faqat 127.0.0.1 ga bog'lanadi — ilova porti tashqaridan yopiq
+  ufw delete allow 3000/tcp 2>/dev/null || true
 fi
 
 echo "=== 5/6: SSL sertifikat olinmoqda (Let's Encrypt) ==="

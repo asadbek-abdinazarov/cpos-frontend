@@ -59,6 +59,21 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      # Serverdagi compose fayli repodagidan ajralib qolmasligi uchun
+      # har deployda ustidan yoziladi.
+      - name: Sync docker-compose.yml to server
+        uses: appleboy/scp-action@v0.1.7
+        with:
+          host: ${{ secrets.SERVER_HOST }}
+          username: ${{ secrets.SERVER_USER }}
+          key: ${{ secrets.SERVER_SSH_KEY }}
+          port: ${{ secrets.SERVER_PORT || 22 }}
+          source: 'docker-compose.yml'
+          target: '/opt/cpos-frontend'
+
       - name: Deploy over SSH
         uses: appleboy/ssh-action@v1.2.0
         with:
@@ -67,7 +82,7 @@ jobs:
           key: ${{ secrets.SERVER_SSH_KEY }}
           port: ${{ secrets.SERVER_PORT || 22 }}
           script_stop: true
-          envs: GHCR_USER,GHCR_TOKEN,IMAGE_REF
+          envs: GHCR_USER,GHCR_TOKEN,IMAGE_REF,APP_PORT_TARGET
           script: |
             set -e
             cd /opt/cpos-frontend
@@ -87,6 +102,15 @@ jobs:
               echo "IMAGE=${IMAGE_REF}" >> .env
             fi
 
+            # 8080 backend'niki — frontend u yerda tura olmaydi.
+            # Eski .env da qolgan bo'lsa, ${APP_PORT_TARGET} ga o'tkazamiz.
+            if grep -qE '^APP_PORT=8080$' .env; then
+              echo "APP_PORT=8080 topildi (backend porti) — ${APP_PORT_TARGET} ga o'zgartirilmoqda."
+              sed -i "s#^APP_PORT=.*#APP_PORT=${APP_PORT_TARGET}#" .env
+            elif ! grep -q '^APP_PORT=' .env; then
+              echo "APP_PORT=${APP_PORT_TARGET}" >> .env
+            fi
+
             # Agar pull muvaffaqiyatsiz bo'lsa, serverdagi eski/buzuq login
             # sabab bo'lishi mumkin — logout qilib anonim urinib ko'ramiz.
             if ! docker compose pull; then
@@ -95,8 +119,39 @@ jobs:
               docker compose pull
             fi
 
+            # Eski konteynerni to'liq to'xtatamiz, aks holda port band qolib
+            # yangisi ko'tarila olmaydi.
+            docker compose down --remove-orphans || true
+            docker rm -f cpos-frontend 2>/dev/null || true
+
+            # Port hali ham band bo'lsa, kim egallaganini ko'rsatamiz
+            PORT=$(grep -sE '^APP_PORT=' .env | cut -d= -f2)
+            PORT=${PORT:-3000}
+            if ss -tln 2>/dev/null | grep -q ":${PORT} "; then
+              echo "XATO: ${PORT}-port band. Uni quyidagi jarayon egallagan:"
+              ss -tlnp 2>/dev/null | grep ":${PORT} " || true
+              echo "Yechim: /opt/cpos-frontend/.env dagi APP_PORT ni bo'sh portga o'zgartiring."
+              exit 1
+            fi
+
             docker compose up -d --remove-orphans
             docker image prune -f
+
+            # Nginx konteynerning haqiqiy portiga qarayotganini ta'minlaymiz.
+            # sudo parol so'ramasa ishlaydi; aks holda faqat ogohlantiradi.
+            NGINX_CONF=/etc/nginx/sites-available/cpos-frontend
+            if [ -f "$NGINX_CONF" ] && ! grep -q "proxy_pass http://127.0.0.1:${APP_PORT_TARGET};" "$NGINX_CONF"; then
+              if sudo -n true 2>/dev/null; then
+                echo "Nginx proxy_pass ${APP_PORT_TARGET} ga yangilanmoqda..."
+                sudo sed -i -E "s#proxy_pass http://127\.0\.0\.1:[0-9]+;#proxy_pass http://127.0.0.1:${APP_PORT_TARGET};#" "$NGINX_CONF"
+                sudo nginx -t && sudo systemctl reload nginx
+              else
+                echo "OGOHLANTIRISH: nginx hali eski portga qarayapti."
+                echo "Serverda qo'lda bajaring:"
+                echo "  sudo sed -i 's#127.0.0.1:[0-9]*#127.0.0.1:${APP_PORT_TARGET}#' ${NGINX_CONF}"
+                echo "  sudo nginx -t && sudo systemctl reload nginx"
+              fi
+            fi
 
             echo "=== Holat ==="
             docker compose ps
@@ -104,6 +159,7 @@ jobs:
           GHCR_USER: ${{ github.actor }}
           GHCR_TOKEN: ${{ secrets.GHCR_TOKEN }}
           IMAGE_REF: ${{ needs.build.outputs.image }}:${{ github.sha }}
+          APP_PORT_TARGET: '3000'
 
       - name: Healthcheck
         uses: appleboy/ssh-action@v1.2.0
@@ -114,7 +170,7 @@ jobs:
           port: ${{ secrets.SERVER_PORT || 22 }}
           script: |
             PORT=$(grep -sE '^APP_PORT=' /opt/cpos-frontend/.env | cut -d= -f2)
-            PORT=${PORT:-8080}
+            PORT=${PORT:-3000}
 
             # 1) Konteynerning o'zi javob beryaptimi
             for i in $(seq 1 10); do
