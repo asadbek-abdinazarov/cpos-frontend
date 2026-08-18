@@ -100,7 +100,7 @@ const rows = [
 .section-head {
   text-align: center;
   max-width: 700px;
-  margin: 0 auto 5rem;
+  margin: 0 auto 4rem;
 }
 
 .section-tag {
@@ -135,7 +135,7 @@ const rows = [
 .rows-wrapper {
   display: flex;
   flex-direction: column;
-  gap: 7rem;
+  gap: 4.5rem;
 }
 
 .feature-row {
@@ -252,13 +252,13 @@ const rows = [
     gap: 2rem;
   }
 
-  .rows-wrapper { gap: 4.5rem; }
+  .rows-wrapper { gap: 3.5rem; }
   .section-head { margin-bottom: 3.5rem; }
 }
 
 @media (max-width: 540px) {
   .detailed-features { padding: 5rem 0; }
-  .rows-wrapper { gap: 3.5rem; }
+  .rows-wrapper { gap: 3rem; }
   .section-head { margin-bottom: 2.75rem; }
   .section-sub { font-size: 0.95rem; }
   .img-frame { min-height: 200px; padding: 1.25rem; }
@@ -269,7 +269,7 @@ const rows = [
 @media (max-width: 400px) {
   .section-container { padding: 0 1.25rem; }
   .detailed-features { padding: 4rem 0; }
-  .rows-wrapper { gap: 3rem; }
+  .rows-wrapper { gap: 2.5rem; }
   .img-frame { min-height: 180px; padding: 1rem; }
 }
 </style>

@@ -11,7 +11,6 @@ const router = useRouter()
 
 const goContact = () => goToHomeSection(router, 'contact')
 
-const isAnnual = ref(false)
 const plansLoading = ref(false)
 const plansError = ref(false)
 const rawPlans = ref([])
@@ -50,11 +49,11 @@ const featuredPlanId = computed(() => {
 
 const plans = computed(() => {
   return publicPlans.value.map((p) => {
-    const isFree = (p.monthlyPrice ?? 0) === 0 && (p.annualPrice ?? 0) === 0
-    const priceNumber = isAnnual.value ? (p.annualPrice ?? 0) : (p.monthlyPrice ?? 0)
+    const isFree = (p.monthlyPrice ?? 0) === 0
+    const priceNumber = p.monthlyPrice ?? 0
 
     const priceText = isFree ? t('pricing.free') : formatMoneyUZS(priceNumber)
-    const unitText = isFree ? '' : isAnnual.value ? t('pricing.per_year') : t('pricing.per_month')
+    const unitText = isFree ? '' : t('pricing.per_month')
 
     const enabledFeatures = (p.features || [])
       .filter((f) => f && f.enabled)
@@ -111,26 +110,6 @@ onMounted(loadPlans)
           <span class="ps__eyebrow-line"></span>
         </div>
         <h2 class="ps__title">{{ t('pricing.title') }}</h2>
-
-        <div class="ps__toggle-wrap" role="tablist">
-          <button
-            role="tab"
-            :aria-selected="!isAnnual"
-            :class="['ps__tab', { 'ps__tab--on': !isAnnual }]"
-            @click="isAnnual = false"
-          >
-            {{ t('pricing.monthly') }}
-          </button>
-          <button
-            role="tab"
-            :aria-selected="isAnnual"
-            :class="['ps__tab', { 'ps__tab--on': isAnnual }]"
-            @click="isAnnual = true"
-          >
-            {{ t('pricing.annual') }}
-            <span class="ps__save-chip">{{ t('pricing.save') }}</span>
-          </button>
-        </div>
       </header>
 
       <div class="ps__grid" data-aos="fade-up" data-aos-delay="120">
@@ -223,7 +202,7 @@ onMounted(loadPlans)
 /* ── Section shell ── */
 .ps {
   position: relative;
-  padding: 7rem 0 8rem;
+  padding: 7rem 0;
   background: #f0f4ff;
   overflow: hidden;
   font-family: 'Poppins', system-ui, sans-serif;
@@ -249,7 +228,7 @@ onMounted(loadPlans)
 /* ── Header ── */
 .ps__head {
   text-align: center;
-  margin-bottom: 4.5rem;
+  margin-bottom: 4rem;
 }
 
 .ps__eyebrow {
@@ -288,62 +267,15 @@ onMounted(loadPlans)
   margin-bottom: 2.25rem;
 }
 
-/* ── Billing toggle ── */
-.ps__toggle-wrap {
-  display: inline-flex;
-  align-items: center;
-  background: #fff;
-  border: 1px solid #dde2ee;
-  border-radius: 100px;
-  padding: 5px;
-  gap: 4px;
-}
-
-.ps__tab {
-  display: flex;
-  align-items: center;
-  gap: 7px;
-  padding: 7px 20px;
-  border-radius: 100px;
-  border: none;
-  background: transparent;
-  font-family: 'Poppins', sans-serif;
-  font-size: 0.875rem;
-  font-weight: 500;
-  color: #7a8499;
-  cursor: pointer;
-  transition: all 0.22s ease;
-  white-space: nowrap;
-}
-
-.ps__tab--on {
-  background: #007bff;
-  color: #fff;
-  font-weight: 600;
-}
-
-.ps__save-chip {
-  font-size: 0.67rem;
-  font-weight: 600;
-  background: rgba(0, 123, 255, 0.12);
-  color: #007bff;
-  padding: 2px 8px;
-  border-radius: 100px;
-  letter-spacing: 0.02em;
-}
-
-.ps__tab--on .ps__save-chip {
-  background: rgba(255, 255, 255, 0.22);
-  color: #fff;
-}
-
 /* ── Grid ── */
 .ps__grid {
-  display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: 1.25rem;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
   align-items: stretch;
+  gap: 1.25rem;
 }
+
 
 .ps__state {
   grid-column: 1 / -1;
@@ -389,6 +321,8 @@ onMounted(loadPlans)
   display: flex;
   flex-direction: column;
   overflow: hidden;
+  flex: 1 1 280px;
+  max-width: 320px;
   transition:
     transform 0.28s ease,
     box-shadow 0.28s ease;
@@ -658,21 +592,16 @@ onMounted(loadPlans)
 }
 
 /* ── Responsive ── */
-@media (max-width: 1100px) {
-  .ps__grid {
-    grid-template-columns: repeat(2, 1fr);
-  }
-}
-
 @media (max-width: 640px) {
   .ps {
-    padding: 5rem 0 5.5rem;
+    padding: 5rem 0;
   }
   .ps__head {
     margin-bottom: 3rem;
   }
-  .ps__grid {
-    grid-template-columns: 1fr;
+  .ps__card {
+    flex-basis: 100%;
+    max-width: 380px;
   }
   .ps__card::before {
     font-size: 4rem;
@@ -687,20 +616,10 @@ onMounted(loadPlans)
     padding: 0 1.25rem;
   }
   .ps {
-    padding: 4rem 0 4.5rem;
+    padding: 4rem 0;
   }
   .ps__head {
     margin-bottom: 2.5rem;
-  }
-  .ps__toggle-wrap {
-    width: 100%;
-    justify-content: center;
-  }
-  .ps__tab {
-    flex: 1;
-    justify-content: center;
-    padding: 8px 12px;
-    font-size: 0.825rem;
   }
   .ps__card-body {
     padding: 1.5rem 1.5rem 0;

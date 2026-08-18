@@ -1,5 +1,5 @@
 <script setup>
-import { ref, onMounted, computed } from 'vue'
+import { ref, onMounted, onUnmounted, computed } from 'vue'
 import { useRouter } from 'vue-router'
 import { useI18n } from 'vue-i18n'
 import { login } from '@/services/api'
@@ -15,13 +15,81 @@ const password = ref('')
 const loading = ref(false)
 const showPassword = ref(false)
 
-
 const passwordToggleLabel = computed(() =>
   showPassword.value ? t('auth.hide_password') : t('auth.show_password'),
 )
 
+/* ── Brand panel animation: "The living ledger" ── */
+const ledgerRows = [
+  { amount: '24 000', method: 'NAQD' },
+  { amount: '138 500', method: 'KARTA' },
+  { amount: '9 200', method: 'CLICK' },
+  { amount: '412 000', method: 'PAYME' },
+  { amount: '56 800', method: 'KARTA' },
+  { amount: '7 500', method: 'NAQD' },
+  { amount: '230 000', method: 'KARTA' },
+  { amount: '18 400', method: 'NAQD' },
+]
+
+const total = ref(12480000)
+const panelHidden = ref(false)
+const totalFmt = computed(() => String(total.value).replace(/\B(?=(\d{3})+(?!\d))/g, ' '))
+
+/* Sparkline: a rolling window of cumulative totals — it climbs as sales come in */
+const SPARK_POINTS = 10
+/* viewBox is 224×52; the svg renders at 280×76, so overlays scale by these */
+const SPARK_SCALE_X = 280 / 224
+const SPARK_SCALE_Y = 76 / 52
+const sparkHistory = ref(
+  Array.from({ length: SPARK_POINTS }, (_, i) => total.value - (SPARK_POINTS - 1 - i) * 90000),
+)
+
+const sparkGeometry = computed(() => {
+  const values = sparkHistory.value
+  const min = Math.min(...values)
+  const max = Math.max(...values)
+  const span = max - min || 1
+  const points = values.map((v, i) => ({
+    x: 2 + i * ((218 - 2) / (SPARK_POINTS - 1)),
+    // 42 = baseline, 7 = ceiling; higher value sits higher on the chart
+    y: 42 - ((v - min) / span) * (42 - 7),
+  }))
+  return {
+    d: points.map((p, i) => `${i === 0 ? 'M' : 'L'}${p.x.toFixed(1)} ${p.y.toFixed(1)}`).join(' '),
+    last: points[points.length - 1],
+  }
+})
+
+let ledgerTimer = null
+let ledgerIndex = 0
+const prefersReducedMotion = () => window.matchMedia('(prefers-reduced-motion: reduce)').matches
+
+const tickLedger = () => {
+  const row = ledgerRows[ledgerIndex++ % ledgerRows.length]
+  total.value += Number(row.amount.replace(/\s/g, ''))
+  sparkHistory.value = [...sparkHistory.value.slice(1), total.value]
+}
+
+const onVisibilityChange = () => {
+  panelHidden.value = document.hidden
+  if (document.hidden) {
+    clearInterval(ledgerTimer)
+    ledgerTimer = null
+  } else if (!ledgerTimer && !prefersReducedMotion()) {
+    ledgerTimer = setInterval(tickLedger, 1500)
+  }
+}
+
 onMounted(() => {
   document.title = `CPOS - ${t('nav.login')}`
+  if (!prefersReducedMotion()) ledgerTimer = setInterval(tickLedger, 1500)
+  document.addEventListener('visibilitychange', onVisibilityChange)
+})
+
+onUnmounted(() => {
+  clearInterval(ledgerTimer)
+  ledgerTimer = null
+  document.removeEventListener('visibilitychange', onVisibilityChange)
 })
 
 function getDeviceMac() {
@@ -64,114 +132,96 @@ const handleLogin = async () => {
     <!-- ══════════════════════════════════════════
          LEFT  –  Brand panel
     ══════════════════════════════════════════ -->
-    <aside class="brand-panel">
+    <aside class="brand-panel" :class="{ 'bp-paused': panelHidden }">
       <!-- Ambient layers -->
-      <div class="bp-grid"></div>
-      <div class="bp-orb orb-1"></div>
-      <div class="bp-orb orb-2"></div>
-      <div class="bp-orb orb-3"></div>
+      <div class="bp-grid" aria-hidden="true"></div>
+      <div class="bp-orb orb-1" aria-hidden="true"></div>
+      <div class="bp-orb orb-2" aria-hidden="true"></div>
+      <div class="bp-orb orb-3" aria-hidden="true"></div>
 
-      <div class="bp-inner">
-        <!-- Top logo -->
-        <div class="bp-logo">
-          <img src="/logo-footer.svg" alt="CPOS" />
-        </div>
+      <!-- beat 1: logo -->
+      <div class="bp-head">
+        <img src="/logo-footer.svg" alt="CPOS" class="bp-logo-img" />
+      </div>
 
-        <!-- Central visual: stat cards + glow orb -->
-        <div class="bp-visual">
-          <div class="orb-center"></div>
+      <div class="bp-body">
+        <div class="bp-comp">
+          <!-- beat 2: the ledger stream -->
+          <div class="bp-ledger" aria-hidden="true">
+            <div
+              v-for="(r, i) in ledgerRows"
+              :key="i"
+              class="bp-row"
+              :style="{ '--sy': 448 - i * 68 + 'px', animationDelay: -1.5 * i + 's' }"
+            >
+              <div class="bp-row-l">
+                <span class="bp-glyph" :style="{ animationDelay: -1.5 * i + 's' }">
+                  <svg width="11" height="11" viewBox="0 0 12 12" fill="none">
+                    <path
+                      d="M2 6.4 4.6 9 10 3.4"
+                      stroke="#34D399"
+                      stroke-width="1.8"
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                    />
+                  </svg>
+                </span>
+                <span class="bp-amount">{{ r.amount }}</span>
+              </div>
+              <span class="bp-method">{{ r.method }}</span>
+            </div>
+          </div>
 
-          <!-- Stat cards -->
-          <div class="stat-card sc-1">
-            <div class="sc-icon sc-blue">
-              <svg
-                width="16"
-                height="16"
-                fill="none"
-                stroke="currentColor"
-                stroke-width="2"
-                viewBox="0 0 24 24"
-              >
-                <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" />
-                <polyline points="9 22 9 12 15 12 15 22" />
+          <!-- beat 3: the anchor — running total + sparkline -->
+          <div class="bp-total">
+            <div class="bp-live"><span class="bp-live-dot" aria-hidden="true"></span>JONLI</div>
+            <div class="bp-total-label">Bugungi savdo</div>
+            <div class="bp-total-val">{{ totalFmt }}<span>so'm</span></div>
+            <div class="bp-spark-wrap" aria-hidden="true">
+              <svg width="280" height="76" viewBox="0 0 224 52" fill="none">
+                <path
+                  class="bp-spark"
+                  :d="sparkGeometry.d"
+                  stroke="url(#bpSpark)"
+                  stroke-width="2"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  fill="none"
+                  stroke-dasharray="420"
+                />
+                <defs>
+                  <linearGradient id="bpSpark" x1="0" y1="52" x2="224" y2="0">
+                    <stop stop-color="#007BFF" />
+                    <stop offset="1" stop-color="#34D399" />
+                  </linearGradient>
+                </defs>
               </svg>
-            </div>
-            <div class="sc-body">
-              <span class="sc-val">1,240</span>
-              <span class="sc-lbl">Faol do'konlar</span>
-            </div>
-            <span class="sc-trend up">↑ 12%</span>
-          </div>
-
-          <div class="stat-card sc-2">
-            <div class="sc-icon sc-green">
-              <svg
-                width="16"
-                height="16"
-                fill="none"
-                stroke="currentColor"
-                stroke-width="2"
-                viewBox="0 0 24 24"
-              >
-                <polyline points="23 6 13.5 15.5 8.5 10.5 1 18" />
-                <polyline points="17 6 23 6 23 12" />
-              </svg>
-            </div>
-            <div class="sc-body">
-              <span class="sc-val">4.28M</span>
-              <span class="sc-lbl">Bugungi daromad</span>
-            </div>
-            <span class="sc-trend up">↑ 24%</span>
-          </div>
-
-          <div class="stat-card sc-3">
-            <div class="sc-icon sc-purple">
-              <svg
-                width="16"
-                height="16"
-                fill="none"
-                stroke="currentColor"
-                stroke-width="2"
-                viewBox="0 0 24 24"
-              >
-                <line x1="12" y1="1" x2="12" y2="23" />
-                <path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6" />
-              </svg>
-            </div>
-            <div class="sc-body">
-              <span class="sc-val">5M+</span>
-              <span class="sc-lbl">Tranzaksiyalar</span>
-            </div>
-            <span class="sc-trend up">↑ 8%</span>
-          </div>
-
-          <!-- Live indicator -->
-          <div class="live-pill">
-            <span class="live-dot"></span>
-            Tizim ishlayapti · 99.9%
-          </div>
-        </div>
-
-        <!-- Bottom quote -->
-        <div class="bp-quote">
-          <svg class="quote-mark" width="32" height="24" viewBox="0 0 32 24" fill="none">
-            <path
-              d="M0 24V14.4C0 6.4 4.8 1.6 14.4 0l1.6 2.4C10.4 3.6 7.6 6.4 7.2 10.4H14.4V24H0ZM17.6 24V14.4C17.6 6.4 22.4 1.6 32 0l1.6 2.4C28 3.6 25.2 6.4 24.8 10.4H32V24H17.6Z"
-              fill="currentColor"
-              opacity=".18"
-            />
-          </svg>
-          <p class="quote-text">
-            CPOS bilan ishlash juda oson. Xodimlarim 15 daqiqada o'rganib olishdi.
-          </p>
-          <div class="quote-author">
-            <div class="qa-avatar">A</div>
-            <div>
-              <div class="qa-name">Azizbek T.</div>
-              <div class="qa-biz">Kiyim do'koni, Toshkent</div>
+              <span
+                class="bp-spark-node"
+                :style="{
+                  left: sparkGeometry.last.x * SPARK_SCALE_X - 6 + 'px',
+                  top: sparkGeometry.last.y * SPARK_SCALE_Y - 6 + 'px',
+                }"
+              ></span>
+              <span
+                class="bp-ring"
+                :style="{
+                  left: sparkGeometry.last.x * SPARK_SCALE_X - 10 + 'px',
+                  top: sparkGeometry.last.y * SPARK_SCALE_Y - 10 + 'px',
+                }"
+              ></span>
             </div>
           </div>
         </div>
+      </div>
+
+      <!-- beat 4: copy -->
+      <!-- Copy options: 1) "Har bir savdo hisobda"
+                         2) "Biznesingiz jonli oqimda"
+                         3) "Savdo oqimi to'xtamaydi" -->
+      <div class="bp-copy">
+        <h2>Har bir savdo hisobda</h2>
+        <p>CPOS kunning har daqiqasida savdolaringizni yozib boradi.</p>
       </div>
     </aside>
 
@@ -343,6 +393,11 @@ const handleLogin = async () => {
   background: #080d1a;
   overflow: hidden;
   display: flex;
+  flex-direction: column;
+  padding: 56px 56px 48px;
+  /* the panel is a container; the composition scales instead of reflowing */
+  container-type: inline-size;
+  container-name: brandpanel;
 }
 
 /* Dot-grid overlay */
@@ -387,286 +442,349 @@ const handleLogin = async () => {
   left: 35%;
 }
 
-/* Inner scaffold */
-.bp-inner {
+/* ─────────────────────────────────────────────
+   Brand panel animation — "The living ledger"
+───────────────────────────────────────────── */
+
+/* beat 1: logo */
+.bp-head {
   position: relative;
   z-index: 1;
-  display: flex;
-  flex-direction: column;
-  width: 100%;
-  padding: 2.75rem 3.5rem;
-  gap: 0;
+  animation: bp-in 0.68s cubic-bezier(0.4, 0, 0.2, 1) both;
 }
 
-/* Logo row */
-.bp-logo {
-  flex-shrink: 0;
-  margin-bottom: 2.5rem;
-}
-
-.bp-logo img {
-  height: 48px;
-  width: auto;
+.bp-logo-img {
+  height: 100px;
   display: block;
 }
 
-/* ── Central visual area ── */
-.bp-visual {
-  flex: 1;
+.bp-body {
   position: relative;
+  z-index: 1;
+  flex: 1;
+  display: flex;
+  align-items: center;
+  margin-top: 26px;
+  min-width: 0;
+}
+
+.bp-comp {
+  position: relative;
+  display: flex;
+  align-items: center;
+  /* 300 (ledger) + 96 (gap) + 348 (total card) */
+  width: 744px;
+  flex: 0 0 744px;
+  transform-origin: left center;
+}
+
+/* the composition needs 744px + 112px panel padding — scale it down below that */
+@container brandpanel (max-width: 856px) {
+  .bp-comp {
+    transform: scale(0.86);
+  }
+}
+
+@container brandpanel (max-width: 740px) {
+  .bp-comp {
+    transform: scale(0.72);
+  }
+}
+
+@container brandpanel (max-width: 620px) {
+  .bp-comp {
+    transform: scale(0.58);
+  }
+}
+
+/* beat 2: the stream */
+.bp-ledger {
+  position: relative;
+  width: 300px;
+  flex: 0 0 300px;
+  height: 516px;
+  overflow: hidden;
+  animation: bp-in-soft 0.8s cubic-bezier(0.4, 0, 0.2, 1) 0.12s both;
+  -webkit-mask-image: linear-gradient(to top, transparent 0%, #000 16%, #000 78%, transparent 100%);
+  mask-image: linear-gradient(to top, transparent 0%, #000 16%, #000 78%, transparent 100%);
+}
+
+.bp-row {
+  position: absolute;
+  inset: 0 0 auto 0;
+  height: 60px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 16px;
+  border-radius: 12px;
+  white-space: nowrap;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  animation: bp-rise 12s linear infinite;
+  will-change: transform;
+}
+
+.bp-row-l {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.bp-glyph {
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
-  min-height: 0;
+  background: rgba(16, 185, 129, 0.14);
+  border: 1px solid rgba(52, 211, 153, 0.35);
+  animation: bp-glyph 12s ease-in-out infinite;
 }
 
-/* Central glow orb (decorative) */
-.orb-center {
-  width: 280px;
-  height: 280px;
-  border-radius: 50%;
-  background: radial-gradient(
-    circle at 40% 40%,
-    rgba(0, 123, 255, 0.18) 0%,
-    rgba(99, 102, 241, 0.1) 50%,
-    transparent 70%
-  );
-  border: 1px solid rgba(0, 123, 255, 0.12);
-  flex-shrink: 0;
+.bp-amount {
+  font-size: 15px;
+  font-weight: 600;
+  color: #f1f5f9;
+}
+
+.bp-method {
+  font-size: 12px;
+  font-weight: 500;
+  color: #64748b;
+  letter-spacing: 0.04em;
+}
+
+/* beat 3: the anchor */
+.bp-total {
   position: relative;
-}
-
-.orb-center::before {
-  content: '';
-  position: absolute;
-  inset: 16px;
-  border-radius: 50%;
-  border: 1px solid rgba(0, 123, 255, 0.08);
-}
-
-.orb-center::after {
-  content: '';
-  position: absolute;
-  inset: 36px;
-  border-radius: 50%;
-  border: 1px solid rgba(0, 123, 255, 0.05);
-}
-
-/* ── Stat cards ── */
-.stat-card {
-  position: absolute;
-  display: flex;
-  align-items: center;
-  gap: 10px;
+  z-index: 2;
+  margin-left: 96px;
+  width: 348px;
+  flex: 0 0 348px;
+  box-sizing: border-box;
+  min-width: 0;
+  padding: 34px 34px 30px;
+  border-radius: 20px;
   background: rgba(255, 255, 255, 0.05);
   border: 1px solid rgba(255, 255, 255, 0.1);
   backdrop-filter: blur(20px);
   -webkit-backdrop-filter: blur(20px);
-  border-radius: 14px;
-  padding: 12px 16px;
-  white-space: nowrap;
+  animation: bp-in 0.72s cubic-bezier(0.4, 0, 0.2, 1) 0.24s both;
 }
 
-/* Positioned around the orb */
-.sc-1 {
-  top: 12%;
-  left: -5%;
-  animation: float-a 5s ease-in-out infinite;
-}
-
-.sc-2 {
-  bottom: 18%;
-  right: -8%;
-  animation: float-b 4.5s ease-in-out infinite;
-}
-
-.sc-3 {
-  bottom: 5%;
-  left: 5%;
-  animation: float-a 6s ease-in-out infinite 0.8s;
-}
-
-@keyframes float-a {
-  0%,
-  100% {
-    transform: translateY(0px);
-  }
-  50% {
-    transform: translateY(-9px);
-  }
-}
-
-@keyframes float-b {
-  0%,
-  100% {
-    transform: translateY(0px);
-  }
-  50% {
-    transform: translateY(9px);
-  }
-}
-
-.sc-icon {
-  width: 34px;
-  height: 34px;
-  border-radius: 9px;
+.bp-live {
   display: flex;
   align-items: center;
-  justify-content: center;
-  flex-shrink: 0;
-}
-
-.sc-blue {
-  background: rgba(0, 123, 255, 0.18);
-  color: #60a5fa;
-}
-.sc-green {
-  background: rgba(16, 185, 129, 0.18);
-  color: #34d399;
-}
-.sc-purple {
-  background: rgba(99, 102, 241, 0.18);
-  color: #a5b4fc;
-}
-
-.sc-body {
-  display: flex;
-  flex-direction: column;
-  gap: 1px;
-}
-
-.sc-val {
-  font-size: 1rem;
-  font-weight: 700;
-  color: #f1f5f9;
-  line-height: 1.1;
-}
-
-.sc-lbl {
-  font-size: 0.7rem;
-  color: #64748b;
-  font-weight: 500;
-}
-
-.sc-trend {
-  font-size: 0.68rem;
-  font-weight: 700;
-  padding: 3px 7px;
-  border-radius: 100px;
-}
-
-.sc-trend.up {
-  background: rgba(16, 185, 129, 0.12);
-  color: #34d399;
-}
-
-/* Live pill */
-.live-pill {
-  position: absolute;
-  top: 8%;
-  right: 0%;
-  display: flex;
-  align-items: center;
-  gap: 7px;
-  background: rgba(16, 185, 129, 0.08);
-  border: 1px solid rgba(16, 185, 129, 0.2);
-  border-radius: 100px;
-  padding: 5px 12px;
-  font-size: 0.72rem;
+  gap: 10px;
+  margin-bottom: 20px;
+  font-size: 13px;
   font-weight: 600;
-  color: #34d399;
+  color: #64748b;
+  letter-spacing: 0.12em;
 }
 
-.live-dot {
-  width: 7px;
-  height: 7px;
+.bp-live-dot {
+  width: 9px;
+  height: 9px;
   border-radius: 50%;
-  background: #10b981;
+  background: #34d399;
+  animation: bp-breathe 4s ease-in-out infinite;
+}
+
+.bp-total-label {
+  font-size: 14px;
+  font-weight: 500;
+  color: #94a3b8;
+  margin-bottom: 8px;
+}
+
+.bp-total-val {
+  font-size: 42px;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  color: #f1f5f9;
+}
+
+.bp-total-val span {
+  margin-left: 8px;
+  font-size: 17px;
+  font-weight: 500;
+  color: #64748b;
+}
+
+.bp-spark-wrap {
   position: relative;
-  flex-shrink: 0;
+  margin-top: 22px;
+  height: 76px;
 }
 
-.live-dot::after {
-  content: '';
+.bp-spark {
+  animation: bp-draw 1.1s cubic-bezier(0.4, 0, 0.2, 1) 0.5s both;
+  /* the line reshapes as new sales land */
+  transition: d 1.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.bp-spark-node {
   position: absolute;
-  inset: -3px;
+  width: 12px;
+  height: 12px;
   border-radius: 50%;
-  border: 1.5px solid #10b981;
-  animation: ping 1.8s ease-out infinite;
+  background: #34d399;
+  animation: bp-in-soft 0.5s ease-out 1.5s both;
+  transition:
+    left 1.2s cubic-bezier(0.4, 0, 0.2, 1),
+    top 1.2s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-@keyframes ping {
+.bp-ring {
+  position: absolute;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  border: 1px solid rgba(52, 211, 153, 0.7);
+  animation: bp-ring 6s ease-in-out 1.8s infinite;
+  transition:
+    left 1.2s cubic-bezier(0.4, 0, 0.2, 1),
+    top 1.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* beat 4: copy */
+.bp-copy {
+  position: relative;
+  z-index: 1;
+  max-width: 460px;
+  animation: bp-in 0.8s cubic-bezier(0.4, 0, 0.2, 1) 0.36s both;
+}
+
+.bp-copy h2 {
+  margin: 0 0 10px;
+  font-size: 34px;
+  line-height: 1.18;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  color: #f1f5f9;
+  text-wrap: pretty;
+}
+
+.bp-copy p {
+  margin: 0;
+  font-size: 15px;
+  line-height: 1.6;
+  font-weight: 500;
+  color: #94a3b8;
+  text-wrap: pretty;
+}
+
+@keyframes bp-in {
+  from {
+    opacity: 0;
+    transform: translateY(14px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes bp-in-soft {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes bp-rise {
   0% {
+    transform: translateY(516px);
+    opacity: 0;
+  }
+  7% {
+    opacity: 1;
+  }
+  82% {
+    opacity: 1;
+  }
+  100% {
+    transform: translateY(-84px);
+    opacity: 0;
+  }
+}
+
+@keyframes bp-glyph {
+  0%,
+  5% {
+    opacity: 0;
+    transform: scale(0.72);
+  }
+  13%,
+  100% {
     opacity: 1;
     transform: scale(1);
   }
+}
+
+@keyframes bp-ring {
+  0% {
+    transform: scale(0.6);
+    opacity: 0.55;
+  }
+  70%,
   100% {
+    transform: scale(2.6);
     opacity: 0;
-    transform: scale(2.4);
   }
 }
 
-/* ── Bottom quote ── */
-.bp-quote {
-  flex-shrink: 0;
-  padding-top: 2.5rem;
-  position: relative;
+@keyframes bp-draw {
+  from {
+    stroke-dashoffset: 420;
+  }
+  to {
+    stroke-dashoffset: 0;
+  }
 }
 
-/* Thin top separator */
-.bp-quote::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  height: 1px;
-  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.08), transparent);
+@keyframes bp-breathe {
+  0%,
+  100% {
+    opacity: 0.5;
+  }
+  50% {
+    opacity: 1;
+  }
 }
 
-.quote-mark {
-  color: #fff;
-  margin-bottom: 1rem;
+/* idle tab costs nothing */
+.bp-paused,
+.bp-paused * {
+  animation-play-state: paused !important;
 }
 
-.quote-text {
-  font-size: 1rem;
-  color: #94a3b8;
-  line-height: 1.7;
-  margin-bottom: 1.25rem;
-  font-style: italic;
-}
-
-.quote-author {
-  display: flex;
-  align-items: center;
-  gap: 0.75rem;
-}
-
-.qa-avatar {
-  width: 38px;
-  height: 38px;
-  border-radius: 50%;
-  background: linear-gradient(135deg, #007bff, #6366f1);
-  color: #fff;
-  font-weight: 700;
-  font-size: 0.9rem;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  flex-shrink: 0;
-}
-
-.qa-name {
-  font-size: 0.875rem;
-  font-weight: 700;
-  color: #e2e8f0;
-}
-
-.qa-biz {
-  font-size: 0.75rem;
-  color: #64748b;
-  margin-top: 1px;
+/* accessibility: static, complete composition */
+@media (prefers-reduced-motion: reduce) {
+  .brand-panel,
+  .brand-panel * {
+    animation: none !important;
+    transition: none !important;
+  }
+  .bp-row {
+    transform: translateY(var(--sy)) !important;
+    opacity: 1 !important;
+  }
+  .bp-glyph {
+    opacity: 1 !important;
+    transform: none !important;
+  }
+  .bp-spark {
+    stroke-dashoffset: 0 !important;
+  }
+  .bp-ring {
+    opacity: 0 !important;
+  }
 }
 
 /* ─────────────────────────────────────────────
