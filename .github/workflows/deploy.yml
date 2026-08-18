@@ -135,26 +135,45 @@ jobs:
             fi
 
             docker compose up -d --remove-orphans
-            docker image prune -f
+            docker image prune -f || true
 
             # Nginx konteynerning haqiqiy portiga qarayotganini ta'minlaymiz.
-            # sudo parol so'ramasa ishlaydi; aks holda faqat ogohlantiradi.
+            # Bu blok DEPLOY'NI TO'XTATMASLIGI kerak: konfig fayli root'niki
+            # bo'lgani uchun grep/sudo ruxsat bermasligi mumkin. Shu sababli
+            # butun blok `set -e` ta'siridan chiqarilgan.
+            set +e
             NGINX_CONF=/etc/nginx/sites-available/cpos-frontend
-            if [ -f "$NGINX_CONF" ] && ! grep -q "proxy_pass http://127.0.0.1:${APP_PORT_TARGET};" "$NGINX_CONF"; then
-              if sudo -n true 2>/dev/null; then
+            if sudo -n test -f "$NGINX_CONF" 2>/dev/null; then
+              if ! sudo -n grep -q "127.0.0.1:${APP_PORT_TARGET};" "$NGINX_CONF" 2>/dev/null; then
                 echo "Nginx proxy_pass ${APP_PORT_TARGET} ga yangilanmoqda..."
-                sudo sed -i -E "s#proxy_pass http://127\.0\.0\.1:[0-9]+;#proxy_pass http://127.0.0.1:${APP_PORT_TARGET};#" "$NGINX_CONF"
-                sudo nginx -t && sudo systemctl reload nginx
+                sudo -n sed -i -E "s#proxy_pass http://127\.0\.0\.1:[0-9]+;#proxy_pass http://127.0.0.1:${APP_PORT_TARGET};#" "$NGINX_CONF" \
+                  && sudo -n nginx -t \
+                  && sudo -n systemctl reload nginx \
+                  && echo "Nginx yangilandi."
               else
-                echo "OGOHLANTIRISH: nginx hali eski portga qarayapti."
-                echo "Serverda qo'lda bajaring:"
-                echo "  sudo sed -i 's#127.0.0.1:[0-9]*#127.0.0.1:${APP_PORT_TARGET}#' ${NGINX_CONF}"
-                echo "  sudo nginx -t && sudo systemctl reload nginx"
+                echo "Nginx allaqachon ${APP_PORT_TARGET} ga qarayapti."
               fi
+            else
+              echo "OGOHLANTIRISH: nginx konfigini o'qib bo'lmadi (sudo ruxsati yo'q)."
+              echo "Agar sayt 502 bersa, serverda qo'lda bajaring:"
+              echo "  sudo sed -i 's#127.0.0.1:[0-9]*#127.0.0.1:${APP_PORT_TARGET}#' ${NGINX_CONF}"
+              echo "  sudo nginx -t && sudo systemctl reload nginx"
             fi
+            set -e
 
             echo "=== Holat ==="
-            docker compose ps
+            docker compose ps || true
+
+            # Konteyner haqiqatan ishlayaptimi — deploy'ning yakuniy hukmi shu.
+            sleep 3
+            if docker ps --filter name=cpos-frontend --filter status=running -q | grep -q .; then
+              echo "OK: cpos-frontend ishlayapti."
+              exit 0
+            else
+              echo "XATO: konteyner ishlamayapti. Loglar:"
+              docker logs --tail 50 cpos-frontend 2>&1 || true
+              exit 1
+            fi
         env:
           GHCR_USER: ${{ github.actor }}
           GHCR_TOKEN: ${{ secrets.GHCR_TOKEN }}
