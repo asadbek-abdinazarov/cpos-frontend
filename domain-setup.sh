@@ -137,10 +137,37 @@ if command -v ufw >/dev/null 2>&1; then
 fi
 
 echo "=== 5/6: SSL sertifikat olinmoqda (Let's Encrypt) ==="
-certbot --nginx \
-  -d "${DOMAIN}" -d "www.${DOMAIN}" -d "${API_DOMAIN}" \
-  --non-interactive --agree-tos --email "${LE_EMAIL}" \
-  --redirect
+# Frontend va backend uchun ALOHIDA sertifikatlar olinadi.
+# Sabab: api.cpos.uz uchun sertifikat allaqachon mavjud bo'lishi mumkin —
+# uni kengaytirish (--expand) o'rniga tegmasdan qoldirgan ma'qul.
+
+# --- Frontend: cpos.uz + www.cpos.uz ---
+if certbot certificates 2>/dev/null | grep -qE "^\s+Certificate Name: ${DOMAIN}$"; then
+  echo "  '${DOMAIN}' sertifikati allaqachon mavjud — yangilanmoqda (nginx'ga bog'lanadi)."
+  certbot --nginx -d "${DOMAIN}" -d "www.${DOMAIN}" \
+    --cert-name "${DOMAIN}" \
+    --non-interactive --agree-tos --email "${LE_EMAIL}" \
+    --keep-until-expiring --expand --redirect
+else
+  echo "  '${DOMAIN}' uchun yangi sertifikat olinmoqda."
+  certbot --nginx -d "${DOMAIN}" -d "www.${DOMAIN}" \
+    --cert-name "${DOMAIN}" \
+    --non-interactive --agree-tos --email "${LE_EMAIL}" \
+    --redirect
+fi
+
+# --- Backend: api.cpos.uz ---
+if certbot certificates 2>/dev/null | grep -qE "^\s+Certificate Name: ${API_DOMAIN}$"; then
+  echo "  '${API_DOMAIN}' sertifikati allaqachon mavjud — qayta olinmaydi."
+  echo "  Faqat nginx konfigiga SSL bog'lanmoqda..."
+  certbot install --nginx --cert-name "${API_DOMAIN}" --non-interactive --redirect
+else
+  echo "  '${API_DOMAIN}' uchun yangi sertifikat olinmoqda."
+  certbot --nginx -d "${API_DOMAIN}" \
+    --cert-name "${API_DOMAIN}" \
+    --non-interactive --agree-tos --email "${LE_EMAIL}" \
+    --redirect
+fi
 
 echo "=== 6/6: Avtomatik yangilanish tekshirilmoqda ==="
 systemctl enable --now certbot.timer
