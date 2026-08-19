@@ -32,29 +32,56 @@ const CSRF_SAFE_METHODS = ['get', 'head', 'options', 'trace']
 
 const CSRF_ENDPOINT = 'web/auth/csrf'
 
+// The server sets XSRF-TOKEN with `Path=/api/v1/web`, so the browser stores it
+// and replays it on API calls, but `document.cookie` on a page like /dashboard
+// never sees it — the path does not match. Whenever the endpoint also returns
+// the token in its body we cache it here, because reading the cookie is not an
+// option from the app's own pages. Cleared on logout.
+let csrfTokenFromBody = null
+
 let csrfRequestPromise = null
+
+function extractCsrfToken(payload) {
+  if (!payload || typeof payload !== 'object') return null
+  const candidate =
+    payload.token ?? payload.csrfToken ?? payload.data?.token ?? payload.data?.csrfToken
+  return typeof candidate === 'string' && candidate ? candidate : null
+}
+
+export function getCsrfToken() {
+  return readCookie('XSRF-TOKEN') || csrfTokenFromBody
+}
 
 // Primes the XSRF-TOKEN cookie. The backend issues it from a dedicated public
 // endpoint, so this works before login too — unlike the old `web/users/me`
 // probe, which 401s for anonymous visitors and never reached the cookie.
 export function fetchCsrfToken() {
   if (!csrfRequestPromise) {
-    csrfRequestPromise = api.get(CSRF_ENDPOINT).finally(() => {
-      csrfRequestPromise = null
-    })
+    csrfRequestPromise = api
+      .get(CSRF_ENDPOINT)
+      .then((response) => {
+        const token = extractCsrfToken(response.data)
+        if (token) {
+          csrfTokenFromBody = token
+        }
+        return response
+      })
+      .finally(() => {
+        csrfRequestPromise = null
+      })
   }
   return csrfRequestPromise
 }
 
 export async function ensureCsrfToken() {
-  if (readCookie('XSRF-TOKEN')) return true
+  if (getCsrfToken()) return true
   try {
     await fetchCsrfToken()
   } catch {
     // network/server problem — the caller still tries, and the 403 handler
     // below gets one more chance at it
   }
-  return !!readCookie('XSRF-TOKEN')
+  return !!getCsrfToken()
 }
 
 api.interceptors.request.use((config) => {
@@ -69,7 +96,7 @@ api.interceptors.request.use((config) => {
 
   const method = (config.method || 'get').toLowerCase()
   if (!CSRF_SAFE_METHODS.includes(method) && config.headers['X-XSRF-TOKEN'] == null) {
-    const token = readCookie('XSRF-TOKEN')
+    const token = getCsrfToken()
     if (token) {
       config.headers['X-XSRF-TOKEN'] = token
     }
@@ -127,8 +154,9 @@ api.interceptors.response.use(
     ) {
       originalRequest._csrfRetry = true
       try {
+        csrfTokenFromBody = null
         await fetchCsrfToken()
-        const token = readCookie('XSRF-TOKEN')
+        const token = getCsrfToken()
         if (token) {
           originalRequest.headers = originalRequest.headers || {}
           originalRequest.headers['X-XSRF-TOKEN'] = token
@@ -192,6 +220,7 @@ function forceLogout() {
   showNotification({ type: 'error', message: t('auth.session_expired') })
 
   api.post('web/auth/logout').catch(() => {})
+  csrfTokenFromBody = null
 
   localStorage.removeItem('username')
   localStorage.removeItem('userId')
@@ -209,7 +238,9 @@ export async function login(data) {
 }
 
 export function logout() {
-  return api.post('web/auth/logout')
+  return api.post('web/auth/logout').finally(() => {
+    csrfTokenFromBody = null
+  })
 }
 
 let profileRequestPromise = null
