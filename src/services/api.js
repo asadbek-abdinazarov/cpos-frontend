@@ -30,6 +30,33 @@ function readCookie(name) {
 // with a 403 that looks identical to a permission denial.
 const CSRF_SAFE_METHODS = ['get', 'head', 'options', 'trace']
 
+const CSRF_ENDPOINT = 'web/auth/csrf'
+
+let csrfRequestPromise = null
+
+// Primes the XSRF-TOKEN cookie. The backend issues it from a dedicated public
+// endpoint, so this works before login too — unlike the old `web/users/me`
+// probe, which 401s for anonymous visitors and never reached the cookie.
+export function fetchCsrfToken() {
+  if (!csrfRequestPromise) {
+    csrfRequestPromise = api.get(CSRF_ENDPOINT).finally(() => {
+      csrfRequestPromise = null
+    })
+  }
+  return csrfRequestPromise
+}
+
+export async function ensureCsrfToken() {
+  if (readCookie('XSRF-TOKEN')) return true
+  try {
+    await fetchCsrfToken()
+  } catch {
+    // network/server problem — the caller still tries, and the 403 handler
+    // below gets one more chance at it
+  }
+  return !!readCookie('XSRF-TOKEN')
+}
+
 api.interceptors.request.use((config) => {
   const lang = getApiLocaleTag()
   config.headers = config.headers || {}
@@ -74,7 +101,8 @@ function isAuthEndpoint(url) {
   return (
     url.includes('web/auth/login') ||
     url.includes('web/auth/refresh') ||
-    url.includes('web/auth/logout')
+    url.includes('web/auth/logout') ||
+    url.includes(CSRF_ENDPOINT)
   )
 }
 
@@ -95,13 +123,15 @@ api.interceptors.response.use(
       error.response.status === 403 &&
       !CSRF_SAFE_METHODS.includes(method) &&
       !originalRequest._csrfRetry &&
-      !readCookie('XSRF-TOKEN')
+      !originalRequest.url?.includes(CSRF_ENDPOINT)
     ) {
       originalRequest._csrfRetry = true
       try {
-        // any safe request makes Spring issue the cookie
-        await api.get('web/users/me')
-        if (readCookie('XSRF-TOKEN')) {
+        await fetchCsrfToken()
+        const token = readCookie('XSRF-TOKEN')
+        if (token) {
+          originalRequest.headers = originalRequest.headers || {}
+          originalRequest.headers['X-XSRF-TOKEN'] = token
           return api(originalRequest)
         }
       } catch {
@@ -169,7 +199,8 @@ function forceLogout() {
   router.push('/login')
 }
 
-export function login(data) {
+export async function login(data) {
+  await ensureCsrfToken()
   return api.post('web/auth/login', {
     username: data.username,
     password: data.password,
