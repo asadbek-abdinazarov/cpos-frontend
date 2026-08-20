@@ -380,6 +380,10 @@ const handleLogin = async () => {
 .lp {
   display: flex;
   min-height: 100vh;
+  /* svh follows mobile browser chrome; the page itself never scrolls */
+  min-height: 100svh;
+  height: 100svh;
+  overflow: hidden;
   width: 100%;
   font-family: 'Poppins', sans-serif;
 }
@@ -394,10 +398,12 @@ const handleLogin = async () => {
   overflow: hidden;
   display: flex;
   flex-direction: column;
-  padding: 56px 56px 48px;
+  padding: clamp(20px, 4.2vh, 56px) clamp(28px, 4vw, 56px) clamp(18px, 3.6vh, 48px);
   /* the panel is a container; the composition scales instead of reflowing */
   container-type: inline-size;
   container-name: brandpanel;
+  /* ledger height drives both the mask and the rise keyframe */
+  --ledger-h: clamp(240px, 52vh, 516px);
 }
 
 /* Dot-grid overlay */
@@ -454,7 +460,7 @@ const handleLogin = async () => {
 }
 
 .bp-logo-img {
-  height: 100px;
+  height: clamp(48px, 8.5vh, 100px);
   display: block;
 }
 
@@ -464,8 +470,9 @@ const handleLogin = async () => {
   flex: 1;
   display: flex;
   align-items: center;
-  margin-top: 26px;
+  margin-top: clamp(10px, 2.4vh, 26px);
   min-width: 0;
+  min-height: 0;
 }
 
 .bp-comp {
@@ -497,12 +504,31 @@ const handleLogin = async () => {
   }
 }
 
+/* short viewports: shrink the whole composition instead of overflowing */
+@media (max-height: 860px) {
+  .bp-comp {
+    transform: scale(0.88);
+  }
+}
+
+@media (max-height: 760px) {
+  .bp-comp {
+    transform: scale(0.78);
+  }
+}
+
+@media (max-height: 660px) {
+  .bp-comp {
+    transform: scale(0.66);
+  }
+}
+
 /* beat 2: the stream */
 .bp-ledger {
   position: relative;
   width: 300px;
   flex: 0 0 300px;
-  height: 516px;
+  height: var(--ledger-h);
   overflow: hidden;
   animation: bp-in-soft 0.8s cubic-bezier(0.4, 0, 0.2, 1) 0.12s both;
   -webkit-mask-image: linear-gradient(to top, transparent 0%, #000 16%, #000 78%, transparent 100%);
@@ -565,7 +591,7 @@ const handleLogin = async () => {
   flex: 0 0 348px;
   box-sizing: border-box;
   min-width: 0;
-  padding: 34px 34px 30px;
+  padding: clamp(22px, 3vh, 34px) clamp(22px, 2.2vw, 34px) clamp(20px, 2.6vh, 30px);
   border-radius: 20px;
   background: rgba(255, 255, 255, 0.05);
   border: 1px solid rgba(255, 255, 255, 0.1);
@@ -578,7 +604,7 @@ const handleLogin = async () => {
   display: flex;
   align-items: center;
   gap: 10px;
-  margin-bottom: 20px;
+  margin-bottom: clamp(12px, 2vh, 20px);
   font-size: 13px;
   font-weight: 600;
   color: #64748b;
@@ -601,7 +627,7 @@ const handleLogin = async () => {
 }
 
 .bp-total-val {
-  font-size: 42px;
+  font-size: clamp(30px, 4.2vh, 42px);
   font-weight: 700;
   letter-spacing: -0.02em;
   color: #f1f5f9;
@@ -616,7 +642,7 @@ const handleLogin = async () => {
 
 .bp-spark-wrap {
   position: relative;
-  margin-top: 22px;
+  margin-top: clamp(12px, 2.2vh, 22px);
   height: 76px;
 }
 
@@ -659,8 +685,8 @@ const handleLogin = async () => {
 }
 
 .bp-copy h2 {
-  margin: 0 0 10px;
-  font-size: 34px;
+  margin: 0 0 clamp(6px, 1vh, 10px);
+  font-size: clamp(22px, 3.4vh, 34px);
   line-height: 1.18;
   font-weight: 700;
   letter-spacing: -0.02em;
@@ -699,7 +725,7 @@ const handleLogin = async () => {
 
 @keyframes bp-rise {
   0% {
-    transform: translateY(516px);
+    transform: translateY(var(--ledger-h, 516px));
     opacity: 0;
   }
   7% {
@@ -797,8 +823,11 @@ const handleLogin = async () => {
   align-items: center;
   justify-content: center;
   background: #fff;
-  padding: 2.5rem 2rem;
+  padding: clamp(1rem, 3.5vh, 2.5rem) clamp(1.25rem, 3vw, 2rem);
   position: relative;
+  min-height: 0;
+  /* if a very short viewport still can't fit the form, scroll here — not the page */
+  overflow-y: auto;
 }
 
 /* Mobile top bar (hidden on desktop) */
@@ -822,7 +851,7 @@ const handleLogin = async () => {
 
 /* ── Form header ── */
 .fh {
-  margin-bottom: 2.5rem;
+  margin-bottom: clamp(1.25rem, 3.5vh, 2.5rem);
 }
 
 .fh-eyebrow {
@@ -834,7 +863,7 @@ const handleLogin = async () => {
   color: #94a3b8;
   letter-spacing: 0.06em;
   text-transform: uppercase;
-  margin-bottom: 1rem;
+  margin-bottom: clamp(0.5rem, 1.4vh, 1rem);
 }
 
 .fh-dot {
@@ -845,7 +874,7 @@ const handleLogin = async () => {
 }
 
 .fh-title {
-  font-size: 2rem;
+  font-size: clamp(1.5rem, 3.4vh, 2rem);
   font-weight: 800;
   color: #0f172a;
   letter-spacing: -0.035em;
@@ -863,7 +892,7 @@ const handleLogin = async () => {
 .the-form {
   display: flex;
   flex-direction: column;
-  gap: 1.1rem;
+  gap: clamp(0.7rem, 1.6vh, 1.1rem);
 }
 
 .fg {
@@ -1065,8 +1094,8 @@ const handleLogin = async () => {
 
 /* ── Form footer ── */
 .ff {
-  margin-top: 2rem;
-  padding-top: 1.5rem;
+  margin-top: clamp(1rem, 2.8vh, 2rem);
+  padding-top: clamp(0.85rem, 2vh, 1.5rem);
   border-top: 1px solid #f1f5f9;
   text-align: center;
 }
@@ -1099,13 +1128,13 @@ const handleLogin = async () => {
 
   .form-panel {
     background: linear-gradient(155deg, #eef4ff 0%, #f8faff 60%, #edf2ff 100%);
-    justify-content: flex-start;
-    padding: 0 1.25rem 2rem;
+    justify-content: center;
+    padding: 1.5rem 1.25rem;
   }
 
   .mobile-bar {
     display: flex;
-    padding-top: 2.25rem;
+    margin-bottom: clamp(1rem, 3vh, 2.5rem);
   }
 
   .form-wrap {
@@ -1116,10 +1145,14 @@ const handleLogin = async () => {
 
 @media (max-width: 480px) {
   .form-panel {
-    padding: 0 1rem 2rem;
+    padding: 1.25rem 1rem;
   }
-  .fh-title {
-    font-size: 1.7rem;
+}
+
+/* very short viewports (landscape phones): let the form scroll inside its panel */
+@media (max-height: 560px) {
+  .form-panel {
+    justify-content: flex-start;
   }
 }
 </style>
