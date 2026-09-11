@@ -1,85 +1,129 @@
 <script setup>
 import { useI18n } from 'vue-i18n'
-import analyticsImg from '@/assets/images/real-time-business-analize.png'
-import inventoryImg from '@/assets/images/smart-warehouse.png'
-import paymentsImg  from '@/assets/images/payment-integration.png'
-import { Check } from 'lucide-vue-next'
+import { BarChart3, Package, Users, Check } from 'lucide-vue-next'
 
-const { t } = useI18n()
+const { t, tm } = useI18n()
 
+/**
+ * Har bir qator kabinetning haqiqiy bo'limiga mos keladi.
+ * Rasm o'rniga interfeys kod bilan chiziladi — tarjima bo'ladi va og'irlik qo'shmaydi.
+ */
 const rows = [
-  {
-    key: 'analytics',
-    img: analyticsImg,
-    alt: 'Real-time Analytics',
-    iconBg: 'rgba(0,123,255,0.1)',
-    iconColor: '#007BFF',
-    checkColor: '#007BFF',
-    reverse: false,
-    icon: `<svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>`
-  },
-  {
-    key: 'inventory',
-    img: inventoryImg,
-    alt: 'Smart Inventory',
-    iconBg: 'rgba(16,185,129,0.1)',
-    iconColor: '#10B981',
-    checkColor: '#10B981',
-    reverse: true,
-    icon: `<svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/><polyline points="3.27 6.96 12 12.01 20.73 6.96"/><line x1="12" y1="22.08" x2="12" y2="12"/></svg>`
-  },
-  {
-    key: 'payments',
-    img: paymentsImg,
-    alt: 'Payment Integration',
-    iconBg: 'rgba(99,102,241,0.1)',
-    iconColor: '#6366F1',
-    checkColor: '#6366F1',
-    reverse: false,
-    icon: `<svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="1" y="4" width="22" height="16" rx="2" ry="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg>`
-  }
+  { key: 'analytics', icon: BarChart3, accent: '#007BFF', mock: 'analytics', reverse: false },
+  { key: 'inventory', icon: Package, accent: '#10B981', mock: 'products', reverse: true },
+  { key: 'payments', icon: Users, accent: '#6366F1', mock: 'sales', reverse: false },
 ]
+
+const trend = [38, 55, 44, 70, 88, 62]
+
+const products = [
+  { name: 'Kofe latte', code: '4780 1234', qty: '124', tone: 'ok' },
+  { name: 'Dona non', code: '4780 5567', qty: '38', tone: 'ok' },
+  { name: 'Sharbat 1L', code: '4780 8890', qty: '6', tone: 'low' },
+]
+
+const sales = [
+  { id: '#1042', pay: 'cash', sum: '84 000' },
+  { id: '#1041', pay: 'card', sum: '212 500' },
+  { id: '#1040', pay: 'transfer', sum: '46 000' },
+]
+
+const m = (key) => t(`detailed_features.mock.${key}`)
 </script>
 
 <template>
   <section class="detailed-features" id="features">
     <div class="section-container">
       <div class="section-head" data-aos="fade-up">
-        <span class="section-tag">Batafsil</span>
         <h2 class="section-title">{{ t('detailed_features.title') }}</h2>
         <p class="section-sub">{{ t('detailed_features.subtitle') }}</p>
       </div>
 
       <div class="rows-wrapper">
-        <div
+        <article
           v-for="(row, i) in rows"
           :key="row.key"
           :class="['feature-row', { reverse: row.reverse }]"
           data-aos="fade-up"
           :data-aos-delay="i * 60"
         >
-          <!-- Image side -->
-          <div class="img-side">
-            <div class="img-frame">
-              <img :src="row.img" :alt="row.alt" class="feature-img" loading="lazy" />
+          <!-- ── Interfeys ko'rinishi ─────────────── -->
+          <div class="mock-side">
+            <div class="mock-frame">
+              <!-- Analitika -->
+              <div v-if="row.mock === 'analytics'" class="mock mock-analytics">
+                <div class="mock-bar-head">
+                  <span class="mock-chip"></span>
+                  <span class="mock-chip mock-chip--wide"></span>
+                </div>
+                <div class="mock-kpis">
+                  <div v-for="n in 3" :key="n" class="mock-kpi">
+                    <span class="mock-kpi-label"></span>
+                    <span class="mock-kpi-val"></span>
+                  </div>
+                </div>
+                <div class="mock-chart">
+                  <div v-for="(h, bi) in trend" :key="bi" class="mock-bar" :style="{ height: `${h}%` }"></div>
+                </div>
+              </div>
+
+              <!-- Mahsulotlar jadvali -->
+              <div v-else-if="row.mock === 'products'" class="mock mock-table">
+                <div class="mock-thead">
+                  <span>{{ m('product') }}</span>
+                  <span class="hide-xs">{{ m('barcode') }}</span>
+                  <span class="ta-end">{{ m('stock') }}</span>
+                </div>
+                <div v-for="p in products" :key="p.code" class="mock-trow">
+                  <span class="mock-cell-main">
+                    <span class="mock-thumb"></span>
+                    {{ p.name }}
+                  </span>
+                  <span class="mock-code hide-xs">{{ p.code }}</span>
+                  <span class="ta-end">
+                    <span class="mock-pill" :class="`is-${p.tone}`">{{ p.qty }}</span>
+                  </span>
+                </div>
+              </div>
+
+              <!-- Sotuvlar tarixi -->
+              <div v-else class="mock mock-table">
+                <div class="mock-thead">
+                  <span>{{ m('receipt') }}</span>
+                  <span class="hide-xs">{{ m('payment') }}</span>
+                  <span class="ta-end">{{ m('amount') }}</span>
+                </div>
+                <div v-for="s in sales" :key="s.id" class="mock-trow">
+                  <span class="mock-cell-main">
+                    <span class="mock-avatar"></span>
+                    {{ s.id }}
+                  </span>
+                  <span class="hide-xs">
+                    <span class="mock-tag" :class="`pay-${s.pay}`">{{ m(s.pay) }}</span>
+                  </span>
+                  <span class="mock-sum ta-end">{{ s.sum }}</span>
+                </div>
+              </div>
             </div>
           </div>
 
-          <!-- Content side -->
+          <!-- ── Matn ─────────────────────────────── -->
           <div class="content-side">
-            <div class="feature-icon" :style="{ background: row.iconBg, color: row.iconColor }" v-html="row.icon"></div>
+            <div class="feature-icon" :style="{ background: `${row.accent}18`, color: row.accent }">
+              <component :is="row.icon" :size="22" :stroke-width="2" />
+            </div>
             <h3 class="feature-title">{{ t(`detailed_features.${row.key}.title`) }}</h3>
             <p class="feature-desc">{{ t(`detailed_features.${row.key}.desc`) }}</p>
             <ul class="feature-list">
-              <li v-for="n in 3" :key="n">
-                <span class="check-icon" :style="{ background: `${row.checkColor}18`, color: row.checkColor }">
+              <li v-for="(item, li) in tm(`detailed_features.${row.key}.list`)" :key="li">
+                <span class="check-icon" :style="{ background: `${row.accent}18`, color: row.accent }">
                   <Check :size="12" :stroke-width="3" />
                 </span>
-                {{ t(`detailed_features.${row.key}.list[${n - 1}]`) }}
+                {{ item }}
               </li>
             </ul>
           </div>
-        </div>
+        </article>
       </div>
     </div>
   </section>
@@ -87,110 +131,269 @@ const rows = [
 
 <style scoped>
 .detailed-features {
-  padding: 7rem 0;
+  padding: clamp(4rem, 9vw, 7rem) 0;
   background: #fff;
 }
 
 .section-container {
   max-width: 1200px;
   margin: 0 auto;
-  padding: 0 2rem;
+  padding: 0 var(--page-gutter, 2rem);
 }
 
 .section-head {
   text-align: center;
   max-width: 700px;
-  margin: 0 auto 4rem;
-}
-
-.section-tag {
-  display: inline-block;
-  background: rgba(0, 123, 255, 0.08);
-  border: 1px solid rgba(0, 123, 255, 0.15);
-  color: #007BFF;
-  font-size: 0.78rem;
-  font-weight: 700;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-  padding: 5px 14px;
-  border-radius: 100px;
-  margin-bottom: 1.25rem;
+  margin: 0 auto clamp(2.5rem, 6vw, 4rem);
 }
 
 .section-title {
-  font-size: clamp(2rem, 3.5vw, 2.75rem);
+  font-size: clamp(1.75rem, 4.5vw, 2.75rem);
   font-weight: 800;
-  color: #0F172A;
+  color: #0f172a;
   margin-bottom: 1rem;
   letter-spacing: -0.02em;
+  text-wrap: balance;
 }
 
 .section-sub {
-  font-size: 1.1rem;
-  color: #64748B;
+  font-size: clamp(0.95rem, 2.2vw, 1.1rem);
+  color: #64748b;
   line-height: 1.7;
+  text-wrap: pretty;
 }
 
-/* Rows */
+/* ─── Qatorlar ───────────────────────────────── */
 .rows-wrapper {
   display: flex;
   flex-direction: column;
-  gap: 4.5rem;
+  gap: clamp(2.5rem, 6vw, 4.5rem);
 }
 
 .feature-row {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 5rem;
+  gap: clamp(2rem, 5vw, 5rem);
   align-items: center;
 }
 
-.feature-row.reverse {
-  direction: rtl;
+.feature-row.reverse .mock-side {
+  order: 2;
 }
 
-.feature-row.reverse > * {
-  direction: ltr;
+/* ─── Mockup ramkasi ─────────────────────────── */
+.mock-side {
+  min-width: 0;
 }
 
-/* Image */
-.img-side {
-  width: 100%;
-}
-
-.img-frame {
-  background: #F8FAFC;
-  border: 1px solid #E2E8F0;
+.mock-frame {
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
   border-radius: 20px;
-  padding: 2.5rem;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  min-height: 320px;
-  overflow: hidden;
+  padding: clamp(1rem, 3vw, 1.75rem);
   transition: box-shadow 0.3s ease;
 }
 
-.img-frame:hover {
-  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.07);
+@media (hover: hover) {
+  .mock-frame:hover {
+    box-shadow: 0 20px 50px rgba(0, 0, 0, 0.07);
+  }
 }
 
-.feature-img {
-  width: 100%;
-  max-height: 280px;
-  object-fit: contain;
-  transition: transform 0.4s ease;
+.mock {
+  background: #fff;
+  border: 1px solid #eef2f7;
+  border-radius: 12px;
+  padding: clamp(0.75rem, 2vw, 1rem);
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  min-height: clamp(190px, 26vw, 250px);
 }
 
-.img-frame:hover .feature-img {
-  transform: scale(1.03);
+/* Analitika mockup */
+.mock-bar-head {
+  display: flex;
+  gap: 6px;
 }
 
-/* Content */
+.mock-chip {
+  height: 8px;
+  width: 46px;
+  border-radius: 4px;
+  background: #eef2f7;
+}
+
+.mock-chip--wide {
+  width: 74px;
+  background: rgba(0, 123, 255, 0.16);
+}
+
+.mock-kpis {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.mock-kpi {
+  border: 1px solid #f1f5f9;
+  border-radius: 8px;
+  padding: 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.mock-kpi-label {
+  height: 5px;
+  width: 70%;
+  border-radius: 3px;
+  background: #eef2f7;
+}
+
+.mock-kpi-val {
+  height: 9px;
+  width: 55%;
+  border-radius: 3px;
+  background: #dbeafe;
+}
+
+.mock-chart {
+  display: flex;
+  align-items: flex-end;
+  gap: 6px;
+  flex: 1;
+  min-height: 70px;
+}
+
+.mock-bar {
+  flex: 1;
+  border-radius: 4px 4px 0 0;
+  background: linear-gradient(180deg, rgba(0, 123, 255, 0.65), rgba(0, 123, 255, 0.22));
+}
+
+/* Jadval mockup */
+.mock-table {
+  gap: 0;
+}
+
+.mock-thead,
+.mock-trow {
+  display: grid;
+  grid-template-columns: 1fr 0.8fr 0.5fr;
+  align-items: center;
+  gap: 8px;
+  padding: 9px 4px;
+}
+
+.mock-thead {
+  font-size: 0.6rem;
+  font-weight: 700;
+  color: #94a3b8;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  border-bottom: 1px solid #f1f5f9;
+}
+
+.mock-trow {
+  border-bottom: 1px solid #f8fafc;
+  font-size: 0.72rem;
+  color: #334155;
+}
+
+.mock-trow:last-child {
+  border-bottom: none;
+}
+
+.mock-cell-main {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  font-weight: 600;
+  min-width: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.mock-thumb,
+.mock-avatar {
+  width: 20px;
+  height: 20px;
+  border-radius: 6px;
+  background: linear-gradient(135deg, #e0effe, #c7d7fd);
+  flex-shrink: 0;
+}
+
+.mock-avatar {
+  border-radius: 50%;
+}
+
+.mock-code {
+  font-size: 0.66rem;
+  color: #94a3b8;
+  font-variant-numeric: tabular-nums;
+}
+
+.ta-end {
+  text-align: end;
+}
+
+.mock-pill {
+  display: inline-block;
+  padding: 2px 8px;
+  border-radius: 100px;
+  font-size: 0.64rem;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+
+.mock-pill.is-ok {
+  background: rgba(16, 185, 129, 0.12);
+  color: #059669;
+}
+
+.mock-pill.is-low {
+  background: rgba(245, 158, 11, 0.14);
+  color: #d97706;
+}
+
+.mock-tag {
+  display: inline-block;
+  padding: 2px 8px;
+  border-radius: 6px;
+  font-size: 0.62rem;
+  font-weight: 600;
+}
+
+.pay-cash {
+  background: rgba(16, 185, 129, 0.12);
+  color: #059669;
+}
+
+.pay-card {
+  background: rgba(0, 123, 255, 0.12);
+  color: #007bff;
+}
+
+.pay-transfer {
+  background: rgba(139, 92, 246, 0.12);
+  color: #7c3aed;
+}
+
+.mock-sum {
+  font-weight: 700;
+  color: #0f172a;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+/* ─── Matn tomoni ────────────────────────────── */
 .content-side {
   display: flex;
   flex-direction: column;
-  gap: 1.25rem;
+  gap: 1.15rem;
+  min-width: 0;
 }
 
 .feature-icon {
@@ -200,36 +403,40 @@ const rows = [
   display: flex;
   align-items: center;
   justify-content: center;
+  flex-shrink: 0;
 }
 
 .feature-title {
-  font-size: clamp(1.6rem, 2.5vw, 2rem);
+  font-size: clamp(1.35rem, 3.2vw, 2rem);
   font-weight: 800;
-  color: #0F172A;
+  color: #0f172a;
   margin: 0;
   letter-spacing: -0.02em;
   line-height: 1.2;
+  text-wrap: balance;
 }
 
 .feature-desc {
-  font-size: 1rem;
-  color: #64748B;
+  font-size: clamp(0.92rem, 2vw, 1rem);
+  color: #64748b;
   line-height: 1.7;
+  text-wrap: pretty;
 }
 
 .feature-list {
   list-style: none;
   display: flex;
   flex-direction: column;
-  gap: 0.85rem;
-  margin-top: 0.5rem;
+  gap: 0.8rem;
+  margin: 0;
+  padding: 0;
 }
 
 .feature-list li {
   display: flex;
   align-items: center;
-  gap: 0.75rem;
-  font-size: 0.95rem;
+  gap: 0.7rem;
+  font-size: clamp(0.88rem, 1.9vw, 0.95rem);
   color: #374151;
   font-weight: 500;
 }
@@ -244,32 +451,37 @@ const rows = [
   flex-shrink: 0;
 }
 
+/* ─── Responsive ─────────────────────────────── */
 @media (max-width: 960px) {
   .feature-row,
   .feature-row.reverse {
     grid-template-columns: 1fr;
-    direction: ltr;
-    gap: 2rem;
   }
 
-  .rows-wrapper { gap: 3.5rem; }
-  .section-head { margin-bottom: 3.5rem; }
+  /* Mobil oqim: har doim avval interfeys, keyin matn */
+  .feature-row.reverse .mock-side {
+    order: 0;
+  }
 }
 
-@media (max-width: 540px) {
-  .detailed-features { padding: 5rem 0; }
-  .rows-wrapper { gap: 3rem; }
-  .section-head { margin-bottom: 2.75rem; }
-  .section-sub { font-size: 0.95rem; }
-  .img-frame { min-height: 200px; padding: 1.25rem; }
-  .feature-desc { font-size: 0.95rem; }
-  .feature-list li { font-size: 0.9rem; }
-}
+@media (max-width: 480px) {
+  .hide-xs {
+    display: none;
+  }
 
-@media (max-width: 400px) {
-  .section-container { padding: 0 1.25rem; }
-  .detailed-features { padding: 4rem 0; }
-  .rows-wrapper { gap: 2.5rem; }
-  .img-frame { min-height: 180px; padding: 1rem; }
+  .mock-thead,
+  .mock-trow {
+    grid-template-columns: 1fr auto;
+  }
+
+  .mock-frame {
+    border-radius: 16px;
+  }
+
+  .feature-icon {
+    width: 46px;
+    height: 46px;
+    border-radius: 12px;
+  }
 }
 </style>

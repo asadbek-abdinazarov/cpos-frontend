@@ -1,5 +1,5 @@
 <script setup>
-import { ref, onMounted, onUnmounted } from 'vue'
+import { ref, watch, onMounted, onUnmounted } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useRouter } from 'vue-router'
 import { goToHomeSection } from '@/composables/useHomeSectionNav'
@@ -9,27 +9,17 @@ import { enterDashboard } from '@/composables/useAppLoader'
 const { t, locale } = useI18n()
 const router = useRouter()
 
-const goToDashboard = () => {
-  closeMenu()
-  enterDashboard(() => router.push('/dashboard'))
-}
-
-const goSection = (id) => {
-  goToHomeSection(router, id)
-}
-
-const handleLogoClick = () => {
-  if (router.currentRoute.value.path === '/') {
-    window.scrollTo({ top: 0, behavior: 'smooth' })
-  } else {
-    router.push('/')
-  }
-}
-
 const languages = [
   { code: 'uz', name: "O'zbek" },
   { code: 'oz', name: 'Ўзбек' },
   { code: 'ru', name: 'Русский' },
+]
+
+const sections = [
+  { id: 'features', label: 'nav.features' },
+  { id: 'workflow', label: 'footer.capabilities' },
+  { id: 'pricing', label: 'nav.pricing' },
+  { id: 'contact', label: 'nav.support' },
 ]
 
 const isScrolled = ref(false)
@@ -40,62 +30,80 @@ const handleScroll = () => {
   isScrolled.value = window.scrollY > 50
 }
 
-const toggleMenu = () => {
-  isMenuOpen.value = !isMenuOpen.value
-}
-
 const closeMenu = () => {
   isMenuOpen.value = false
 }
 
-const goSectionAndClose = (id) => {
-  goSection(id)
-  closeMenu()
+const toggleMenu = () => {
+  isMenuOpen.value = !isMenuOpen.value
 }
 
+const goSection = (id) => {
+  closeMenu()
+  goToHomeSection(router, id)
+}
+
+const goToDashboard = () => {
+  closeMenu()
+  enterDashboard(() => router.push('/dashboard'))
+}
+
+const handleLogoClick = () => {
+  closeMenu()
+  if (router.currentRoute.value.path === '/') {
+    window.scrollTo({ top: 0, behavior: 'smooth' })
+  } else {
+    router.push('/')
+  }
+}
+
+const onKeydown = (e) => {
+  if (e.key === 'Escape') closeMenu()
+}
+
+// Menyu ochiqligida orqa fon skroll qilinmasin
+watch(isMenuOpen, (open) => {
+  document.body.style.overflow = open ? 'hidden' : ''
+})
+
 onMounted(() => {
-  window.addEventListener('scroll', handleScroll)
+  window.addEventListener('scroll', handleScroll, { passive: true })
+  window.addEventListener('keydown', onKeydown)
   isAuthenticated.value = !!localStorage.getItem('userId')
 })
 
 onUnmounted(() => {
   window.removeEventListener('scroll', handleScroll)
+  window.removeEventListener('keydown', onKeydown)
+  document.body.style.overflow = ''
 })
 </script>
 
 <template>
   <nav :class="['navbar', { 'navbar-scrolled': isScrolled }]">
     <div class="nav-container">
-      <!-- Logo -->
       <a href="/" class="logo-link" @click.prevent="handleLogoClick">
-        <img src="/logo-nav.svg" alt="CPOS Logo" class="logo-img" />
+        <img src="/logo-nav.svg" alt="CPOS" class="logo-img" />
       </a>
 
-      <!-- Desktop Nav Links -->
+      <!-- Desktop -->
       <div class="desktop-nav">
-        <a href="/" class="nav-link" @click.prevent="goSection('features')">{{
-          t('nav.features')
-        }}</a>
-        <a href="/" class="nav-link" @click.prevent="goSection('hardware')">{{
-          t('nav.hardware')
-        }}</a>
-        <a href="/" class="nav-link" @click.prevent="goSection('pricing')">{{
-          t('nav.pricing')
-        }}</a>
-        <a href="/" class="nav-link" @click.prevent="goSection('contact')">{{
-          t('nav.support')
-        }}</a>
+        <a
+          v-for="s in sections"
+          :key="s.id"
+          href="/"
+          class="nav-link"
+          @click.prevent="goSection(s.id)"
+          >{{ t(s.label) }}</a
+        >
       </div>
 
-      <!-- Right Actions -->
       <div class="desktop-actions">
-        <div class="lang-switcher">
-          <select v-model="$i18n.locale" class="lang-select">
-            <option v-for="lang in languages" :key="lang.code" :value="lang.code">
-              {{ lang.name }}
-            </option>
-          </select>
-        </div>
+        <select v-model="locale" class="lang-select" :aria-label="'Til / Язык'">
+          <option v-for="lang in languages" :key="lang.code" :value="lang.code">
+            {{ lang.name }}
+          </option>
+        </select>
 
         <template v-if="!isAuthenticated">
           <router-link to="/login" class="btn-login-nav">
@@ -114,68 +122,83 @@ onUnmounted(() => {
         </template>
       </div>
 
-      <!-- Mobile Hamburger -->
-      <button class="menu-toggle" @click="toggleMenu" aria-label="Toggle navigation">
-        <span class="hamburger" :class="{ 'is-active': isMenuOpen }"></span>
+      <!-- Mobil tugma -->
+      <button
+        class="menu-toggle"
+        :class="{ 'is-open': isMenuOpen }"
+        @click="toggleMenu"
+        :aria-expanded="isMenuOpen"
+        aria-controls="mobile-nav"
+        aria-label="Menyu"
+      >
+        <span class="hamburger"></span>
       </button>
+    </div>
 
-      <!-- Mobile Nav -->
-      <div :class="['mobile-nav', { 'is-open': isMenuOpen }]">
-        <div class="mobile-nav-inner">
-          <div class="mobile-nav-links">
-            <a href="/" class="mobile-link" @click.prevent="goSectionAndClose('features')">{{
-              t('nav.features')
-            }}</a>
-            <a href="/" class="mobile-link" @click.prevent="goSectionAndClose('hardware')">{{
-              t('nav.hardware')
-            }}</a>
-            <a href="/" class="mobile-link" @click.prevent="goSectionAndClose('pricing')">{{
-              t('nav.pricing')
-            }}</a>
-            <a href="/" class="mobile-link" @click.prevent="goSectionAndClose('contact')">{{
-              t('nav.support')
-            }}</a>
-          </div>
-
-          <div class="mobile-lang">
-            <button
-              v-for="lang in languages"
-              :key="lang.code"
-              @click="locale = lang.code"
-              :class="['lang-btn', { active: locale === lang.code }]"
+    <!-- Mobil menyu: navbar'da backdrop-filter bor — u fixed avlodlar uchun
+         containing block yaratadi, shuning uchun menyu body'ga teleport qilinadi -->
+    <Teleport to="body">
+      <Transition name="menu">
+        <div v-if="isMenuOpen" id="mobile-nav" class="mobile-nav">
+          <button class="menu-close" @click="closeMenu" aria-label="Yopish">
+            <svg
+              width="22"
+              height="22"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2.25"
+              stroke-linecap="round"
+              aria-hidden="true"
             >
-              {{ lang.name }}
-            </button>
-          </div>
+              <path d="M18 6 6 18M6 6l12 12" />
+            </svg>
+          </button>
 
-          <div class="mobile-actions">
-            <template v-if="!isAuthenticated">
-              <router-link
-                to="/login"
-                class="btn-login-nav btn-login-nav--mobile"
-                @click="closeMenu"
-              >
-                <LogIn :size="18" :stroke-width="2.25" />
-                {{ t('nav.login') }}
-              </router-link>
+          <div class="mobile-nav-inner">
+            <div class="mobile-nav-links">
               <a
+                v-for="s in sections"
+                :key="s.id"
                 href="/"
-                class="btn-cta btn-cta--mobile"
-                @click.prevent="goSectionAndClose('contact')"
+                class="mobile-link"
+                @click.prevent="goSection(s.id)"
+                >{{ t(s.label) }}</a
               >
-                {{ t('nav.start_trial') }}
-              </a>
-            </template>
-            <template v-else>
-              <button class="btn-login-nav btn-login-nav--mobile" @click="goToDashboard">
-                <LayoutDashboard :size="18" :stroke-width="2.25" />
-                {{ t('nav.dashboard') }}
+            </div>
+
+            <div class="mobile-lang">
+              <button
+                v-for="lang in languages"
+                :key="lang.code"
+                @click="locale = lang.code"
+                :class="['lang-btn', { active: locale === lang.code }]"
+              >
+                {{ lang.name }}
               </button>
-            </template>
+            </div>
+
+            <div class="mobile-actions">
+              <template v-if="!isAuthenticated">
+                <router-link to="/login" class="btn-login-nav btn-block" @click="closeMenu">
+                  <LogIn :size="18" :stroke-width="2.25" />
+                  {{ t('nav.login') }}
+                </router-link>
+                <a href="/" class="btn-cta btn-block" @click.prevent="goSection('contact')">
+                  {{ t('nav.start_trial') }}
+                </a>
+              </template>
+              <template v-else>
+                <button class="btn-login-nav btn-block" @click="goToDashboard">
+                  <LayoutDashboard :size="18" :stroke-width="2.25" />
+                  {{ t('nav.dashboard') }}
+                </button>
+              </template>
+            </div>
           </div>
         </div>
-      </div>
-    </div>
+      </Transition>
+    </Teleport>
   </nav>
 </template>
 
@@ -186,24 +209,27 @@ onUnmounted(() => {
   left: 0;
   width: 100%;
   z-index: 1000;
-  padding: 1rem 0;
+  padding: 0.75rem 0;
   background: rgba(255, 255, 255, 0.92);
   backdrop-filter: blur(16px);
   -webkit-backdrop-filter: blur(16px);
   border-bottom: 1px solid transparent;
-  transition: all 0.3s ease;
+  transition:
+    padding 0.3s ease,
+    box-shadow 0.3s ease,
+    border-color 0.3s ease;
+  padding-top: max(0.75rem, env(safe-area-inset-top));
 }
 
 .navbar-scrolled {
   border-bottom-color: rgba(0, 0, 0, 0.06);
   box-shadow: 0 1px 20px rgba(0, 0, 0, 0.06);
-  padding: 0.75rem 0;
 }
 
 .nav-container {
   max-width: 1200px;
   margin: 0 auto;
-  padding: 0 2rem;
+  padding: 0 var(--page-gutter, 2rem);
   display: flex;
   align-items: center;
   gap: 2rem;
@@ -213,7 +239,6 @@ onUnmounted(() => {
   display: flex;
   align-items: center;
   flex-shrink: 0;
-  cursor: pointer;
 }
 
 .logo-link * {
@@ -221,11 +246,11 @@ onUnmounted(() => {
 }
 
 .logo-img {
-  height: 48px;
+  height: clamp(36px, 8vw, 46px);
   width: auto;
 }
 
-/* Desktop nav */
+/* ─── Desktop ────────────────────────────────── */
 .desktop-nav {
   display: flex;
   align-items: center;
@@ -241,6 +266,7 @@ onUnmounted(() => {
   text-decoration: none;
   transition: color 0.2s;
   position: relative;
+  white-space: nowrap;
 }
 
 .nav-link::after {
@@ -263,8 +289,6 @@ onUnmounted(() => {
   width: 100%;
 }
 
-
-/* Right actions */
 .desktop-actions {
   display: flex;
   align-items: center;
@@ -273,7 +297,7 @@ onUnmounted(() => {
 }
 
 .lang-select {
-  padding: 0.4rem 0.6rem;
+  padding: 0.45rem 0.6rem;
   border-radius: 8px;
   border: 1px solid #e2e8f0;
   background: transparent;
@@ -282,18 +306,18 @@ onUnmounted(() => {
   color: #475569;
   cursor: pointer;
   outline: none;
-  transition: border-color 0.2s;
 }
 
-.lang-select:focus {
+.lang-select:focus-visible {
   border-color: #007bff;
 }
 
 .btn-login-nav {
   display: inline-flex;
   align-items: center;
+  justify-content: center;
   gap: 6px;
-  padding: 0.5rem 1rem;
+  padding: 0.55rem 1rem;
   border-radius: 100px;
   font-size: 0.875rem;
   font-weight: 600;
@@ -302,18 +326,19 @@ onUnmounted(() => {
   border: 1.5px solid #e2e8f0;
   background: #fff;
   transition: all 0.2s ease;
+  white-space: nowrap;
 }
 
 .btn-login-nav:hover {
   border-color: #007bff;
   color: #007bff;
-  box-shadow: 0 2px 8px rgba(0, 123, 255, 0.12);
 }
 
 .btn-cta {
   display: inline-flex;
   align-items: center;
-  padding: 0.5rem 1.1rem;
+  justify-content: center;
+  padding: 0.55rem 1.1rem;
   border-radius: 100px;
   font-size: 0.875rem;
   font-weight: 600;
@@ -322,6 +347,7 @@ onUnmounted(() => {
   background: linear-gradient(135deg, #007bff, #6366f1);
   box-shadow: 0 2px 12px rgba(0, 123, 255, 0.3);
   transition: all 0.2s ease;
+  white-space: nowrap;
 }
 
 .btn-cta:hover {
@@ -329,114 +355,141 @@ onUnmounted(() => {
   box-shadow: 0 4px 16px rgba(0, 123, 255, 0.4);
 }
 
-/* Mobile toggle */
+/* ─── Mobil tugma ────────────────────────────── */
 .menu-toggle {
   display: none;
   background: none;
   border: none;
   cursor: pointer;
-  padding: 8px;
-  z-index: 1010;
+  width: 44px;
+  height: 44px;
+  align-items: center;
+  justify-content: center;
   margin-left: auto;
+  margin-right: -10px;
 }
 
-.hamburger {
+.hamburger,
+.hamburger::before,
+.hamburger::after {
   display: block;
   width: 22px;
   height: 2px;
   background: #1e293b;
-  position: relative;
+  border-radius: 2px;
   transition: all 0.3s ease;
+}
+
+.hamburger {
+  position: relative;
 }
 
 .hamburger::before,
 .hamburger::after {
   content: '';
   position: absolute;
-  width: 22px;
-  height: 2px;
-  background: #1e293b;
   left: 0;
-  transition: all 0.3s ease;
 }
 
 .hamburger::before {
   top: -7px;
 }
+
 .hamburger::after {
-  bottom: -7px;
+  top: 7px;
 }
 
-.hamburger.is-active {
+.menu-toggle.is-open .hamburger {
   background: transparent;
 }
-.hamburger.is-active::before {
-  transform: rotate(45deg);
-  top: 0;
-}
-.hamburger.is-active::after {
-  transform: rotate(-45deg);
-  bottom: 0;
+
+.menu-toggle.is-open .hamburger::before {
+  transform: translateY(7px) rotate(45deg);
 }
 
-/* Mobile nav */
+.menu-toggle.is-open .hamburger::after {
+  transform: translateY(-7px) rotate(-45deg);
+}
+
+/* ─── Mobil menyu ────────────────────────────── */
 .mobile-nav {
   position: fixed;
   inset: 0;
   background: #fff;
-  transform: translateX(100%);
-  transition: transform 0.35s cubic-bezier(0.4, 0, 0.2, 1);
-  z-index: 1005;
+  /* navbar (1000) ustida turadi — menyuning o'z yopish tugmasi bor */
+  z-index: 1100;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  padding-top: max(1rem, env(safe-area-inset-top));
+  padding-bottom: max(2rem, env(safe-area-inset-bottom));
+}
+
+.menu-close {
+  position: absolute;
+  top: max(1rem, env(safe-area-inset-top));
+  right: 1rem;
+  width: 44px;
+  height: 44px;
   display: flex;
   align-items: center;
   justify-content: center;
+  border: none;
+  border-radius: 50%;
+  background: #f1f5f9;
+  color: #0f172a;
+  cursor: pointer;
+  z-index: 1;
 }
 
-.mobile-nav.is-open {
-  transform: translateX(0);
+.menu-close:active {
+  background: #e2e8f0;
 }
 
 .mobile-nav-inner {
   display: flex;
   flex-direction: column;
-  align-items: center;
-  gap: 2.5rem;
-  padding: 2rem;
-  width: 100%;
+  gap: 2rem;
+  padding: 2rem var(--page-gutter, 1.5rem);
+  min-height: 100%;
+  justify-content: center;
 }
 
 .mobile-nav-links {
   display: flex;
   flex-direction: column;
-  align-items: center;
-  gap: 1.5rem;
+  gap: 0.25rem;
 }
 
 .mobile-link {
-  font-size: 1.4rem;
+  font-size: 1.25rem;
   font-weight: 600;
   color: #0f172a;
   text-decoration: none;
-  transition: color 0.2s;
+  padding: 0.85rem 0;
+  border-bottom: 1px solid #f1f5f9;
 }
 
-.mobile-link:hover {
+.mobile-link:active {
   color: #007bff;
 }
 
 .mobile-lang {
   display: flex;
   gap: 0.5rem;
+  flex-wrap: wrap;
 }
 
 .lang-btn {
-  padding: 0.45rem 1rem;
+  flex: 1;
+  min-width: 88px;
+  min-height: 44px;
+  padding: 0.5rem 0.75rem;
   border: 1.5px solid #e2e8f0;
-  border-radius: 100px;
+  border-radius: 10px;
   background: transparent;
   color: #64748b;
   font-size: 0.875rem;
-  font-weight: 500;
+  font-weight: 600;
   cursor: pointer;
   transition: all 0.2s;
 }
@@ -450,25 +503,28 @@ onUnmounted(() => {
 .mobile-actions {
   display: flex;
   flex-direction: column;
-  align-items: center;
-  gap: 1rem;
-  width: 100%;
-  max-width: 280px;
+  gap: 0.75rem;
 }
 
-.btn-login-nav--mobile {
+.btn-block {
   width: 100%;
-  justify-content: center;
-  padding: 0.75rem 1.5rem;
-  font-size: 1rem;
-}
-
-.btn-cta--mobile {
-  width: 100%;
-  justify-content: center;
-  padding: 0.75rem 1.5rem;
+  min-height: 50px;
   font-size: 1rem;
   border-radius: 12px;
+}
+
+/* Menyu animatsiyasi */
+.menu-enter-active,
+.menu-leave-active {
+  transition:
+    opacity 0.25s ease,
+    transform 0.25s ease;
+}
+
+.menu-enter-from,
+.menu-leave-to {
+  opacity: 0;
+  transform: translateY(-8px);
 }
 
 @media (max-width: 900px) {
@@ -476,27 +532,19 @@ onUnmounted(() => {
   .desktop-actions {
     display: none;
   }
+
   .menu-toggle {
-    display: block;
+    display: flex;
   }
 }
 
-@media (max-width: 420px) {
-  .nav-container {
-    padding: 0 1.25rem;
-  }
-  .logo-img {
-    height: 40px;
-  }
-  .mobile-nav-inner {
-    gap: 2rem;
-    padding: 1.5rem 1.25rem;
-  }
-  .mobile-link {
-    font-size: 1.25rem;
-  }
-  .mobile-actions {
-    max-width: 100%;
+@media (prefers-reduced-motion: reduce) {
+  .menu-enter-active,
+  .menu-leave-active,
+  .hamburger,
+  .hamburger::before,
+  .hamburger::after {
+    transition: none;
   }
 }
 </style>

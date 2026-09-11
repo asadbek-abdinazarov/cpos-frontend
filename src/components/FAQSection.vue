@@ -2,7 +2,6 @@
   <section class="faq-section">
     <div class="section-container">
       <div class="section-head" data-aos="fade-up">
-        <span class="section-tag">FAQ</span>
         <h2 class="section-title">{{ t('faq.title') }}</h2>
         <p class="section-sub">{{ t('faq.subtitle') }}</p>
       </div>
@@ -72,19 +71,6 @@ const faqList = computed(() => [
   margin-bottom: 4rem;
 }
 
-.section-tag {
-  display: inline-block;
-  background: rgba(245, 158, 11, 0.08);
-  border: 1px solid rgba(245, 158, 11, 0.18);
-  color: #D97706;
-  font-size: 0.78rem;
-  font-weight: 700;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-  padding: 5px 14px;
-  border-radius: 100px;
-  margin-bottom: 1.25rem;
-}
 
 .section-title {
   font-size: clamp(2rem, 3.5vw, 2.75rem);

@@ -1,7 +1,6 @@
 {
   "nav": {
     "features": "Imkoniyatlar",
-    "hardware": "Uskunalar",
     "pricing": "Narxlar",
     "support": "Yordam",
     "login": "Kirish",
@@ -12,26 +11,41 @@
     "success-logout": "Chiqish muvaffaqiyatli bo'ldi!"
   },
   "hero": {
-    "title_prefix": "Kichik biznes katta qadamlar",
-    "title_highlight": "CPOS bilan",
-    "subtitle": "Bizning zamonaviy, intuitiv va kuchli Savdo Nuqtasi tizimi bilan biznes jarayonlaringizni soddalashtiring. O'sish uchun ishlab chiqilgan.",
+    "badge": "Bulutli POS tizimi",
+    "title_prefix": "Do'koningizni bir joydan",
+    "title_highlight": "boshqaring",
+    "subtitle": "Mahsulot, sotuv va kassirlarni yagona tizimda yuriting. Har bir savdo darhol hisobotda aks etadi.",
     "cta": "Bepul sinab ko'rish",
-    "watch_demo": "Videoni ko'rish"
+    "watch_demo": "Imkoniyatlar bilan tanishish",
+    "trust_businesses": "Faol bizneslar",
+    "trust_uptime": "Ish vaqti",
+    "trust_support": "Texnik yordam",
+    "ui": {
+      "window_title": "CPOS — Analitika",
+      "revenue": "Umumiy tushum",
+      "cost": "Umumiy xarajat",
+      "margin": "Foyda marjasi",
+      "chart_title": "Sotuvlar o'sishi",
+      "legend": "Tushum",
+      "days": [
+        "Du",
+        "Se",
+        "Ch",
+        "Pa",
+        "Ju",
+        "Sh",
+        "Ya"
+      ],
+      "top_products": "Top mahsulotlar",
+      "export": "Hisobot"
+    },
+    "float_growth": "Bugungi tushum",
+    "float_sale": "Yangi savdo qayd etildi"
   },
   "stats": {
     "active_businesses": "Faol bizneslar",
     "transactions": "Tranzaksiyalar",
     "uptime": "Ish vaqti"
-  },
-  "integrations": {
-    "title": "Sevimli vositalaringiz bilan integratsiya",
-    "subtitle": "Biznesingizni boshqarish uchun barcha kerakli tizimlar bilan uzluksiz bog'laning.",
-    "categories": {
-      "payments": "To'lovlar",
-      "state": "Davlat xizmatlari",
-      "accounting": "Buxgalteriya",
-      "delivery": "Yetkazib berish"
-    }
   },
   "testimonials": {
     "title": "Mijozlarimiz fikri",
@@ -78,62 +92,69 @@
     }
   },
   "detailed_features": {
-    "title": "Do'koningizni boshqarish uchun barcha narsa",
-    "subtitle": "CPOS O'zbekistondagi kafelar, chakana savdo do'konlari va xizmat ko'rsatish korxonalari uchun operatsiyalarni soddalashtirishga mo'ljallangan.",
+    "title": "Dasturda nimalar bor",
+    "subtitle": "CPOS bugun ishlayotgan imkoniyatlar — har biri kabinetda mavjud.",
     "analytics": {
-      "title": "Real vaqt rejimida biznes tahlili",
-      "desc": "Bizning keng qamrovli hisobot vositalarimiz bilan ma'lumotlarga asoslangan qarorlar qabul qiling.",
+      "title": "Sotuv analitikasi va hisobotlar",
+      "desc": "Tushum, xarajat va foyda marjasini kuzating. Sotuvlar o'sishi, kategoriya va soatlar kesimidagi grafiklar bilan qaysi mahsulot ishlayotganini ko'ring.",
       "list": [
-        "Savdo samaradorligi hisobotlari",
-        "Foyda marjasi tahlili",
-        "Excel/PDF ga eksport qilish"
+        "Tushum, xarajat va foyda marjasi",
+        "Kategoriya, soat va to'lov turi kesimida",
+        "Excel (XLSX) va CSV ga eksport"
       ]
     },
     "inventory": {
-      "title": "Aqlli Ombor Boshqaruvi",
-      "desc": "Hech qachon zaxirangiz tugab qolmasin. Tizimimiz zaxiralarni avtomatik kuzatib boradi va ogohlantiradi.",
+      "title": "Mahsulot va ombor boshqaruvi",
+      "desc": "Katalogni kategoriyalarga ajrating, zaxirani kuzating. Shtrix-kod va SKU'ni tizim o'zi generatsiya qiladi — qo'lda terib o'tirmaysiz.",
       "list": [
-        "Real vaqtda zaxiralarni kuzatish",
-        "Shtrix-kodni qo'llab-quvvatlash",
-        "Ta'minotchilar boshqaruvi"
+        "Shtrix-kod va SKU avtomatik generatsiyasi",
+        "Kategoriyalar va tarozili mahsulotlar",
+        "Qidiruv, filtr va ommaviy o'chirish"
       ]
     },
     "payments": {
-      "title": "Qulay Mahalliy To'lovlar",
-      "desc": "Mijozlaringiz istagan usulda to'lovlarni qabul qiling. O'zbekiston to'lov tizimlari bilan integratsiyalashgan.",
+      "title": "Kassirlar va savdo nazorati",
+      "desc": "Har bir kassirga alohida hisob oching, kerak bo'lsa faoliyatini to'xtating. Sotuvlar tarixida kim, qachon va qanday to'lov bilan savdo qilganini ko'rasiz.",
       "list": [
-        "Payme & Click integratsiyasi",
-        "Avtomatik fiskal cheklar",
-        "QR kod orqali to'lovlar"
+        "Kassir hisoblari va faollik nazorati",
+        "Naqd, karta va o'tkazma bo'yicha savdo tarixi",
+        "Har bir chek tarkibini ochib ko'rish"
       ]
+    },
+    "mock": {
+      "product": "Mahsulot",
+      "barcode": "Shtrix-kod",
+      "stock": "Zaxira",
+      "receipt": "Chek",
+      "payment": "To'lov",
+      "amount": "Summa",
+      "cash": "Naqd",
+      "card": "Karta",
+      "transfer": "O'tkazma"
     }
   },
-  "hardware": {
-    "title": "Professional Uskunalar",
-    "subtitle": "CPOS uchun mo'ljallangan zamonaviy va ishonchli uskunalar to'plamlari bilan peshtaxtangizni yangilang.",
-    "view_catalog": "To'liq katalogni ko'rish",
-    "request_quote": "Narxni so'rash",
-    "products": {
-      "terminal": {
-        "title": "CPOS Dual Terminal",
-        "desc": "Mijozlar uchun displeyga ega sensorli terminal."
+  "capabilities": {
+    "tag": "Ish jarayoni",
+    "title": "Sotuvdan hisobotgacha — to'rt qadam",
+    "subtitle": "Kassada qabul qilingan savdo darhol zaxirani kamaytiradi va hisobotga tushadi.",
+    "steps": [
+      {
+        "title": "Mahsulotni qo'shing",
+        "desc": "Katalogga mahsulot kiriting. Shtrix-kod va SKU'ni tizim o'zi yaratadi."
       },
-      "printer": {
-        "title": "Yuqori tezlikdagi printer",
-        "desc": "Avto-kesgichli ishonchli termal chek printeri."
+      {
+        "title": "Kassir savdo qiladi",
+        "desc": "Kassir o'z hisobi bilan kiradi va chekni rasmiylashtiradi."
       },
-      "scanner": {
-        "title": "Simsiz Skaner",
-        "desc": "Uzoq batareya quvvatiga ega ergonomik 2D shtrix-kod skaneri."
+      {
+        "title": "Zaxira yangilanadi",
+        "desc": "Sotilgan miqdor omborda avtomatik kamayadi."
+      },
+      {
+        "title": "Hisobotni oling",
+        "desc": "Natijani analitikada ko'ring yoki Excel/CSV ga yuklab oling."
       }
-    },
-    "price_from": "dan",
-    "badge": {
-      "bestseller": "Bestseller",
-      "fast_delivery": "Tez yetkazish",
-      "compact": "Eng ixcham"
-    },
-    "section_tag": "Uskunalar"
+    ]
   },
   "pricing": {
     "title": "Oddiy va shaffof narxlar",
@@ -192,19 +213,20 @@
           "Shaxsiy yordam menejeri"
         ]
       }
-    }
+    },
+    "section_tag": "Narxlar"
   },
   "faq": {
     "title": "Ko'p so'raladigan savollar",
     "subtitle": "Sizni qiziqtirgan savollarga javoblar.",
     "list": [
       {
-        "q": "Internet bo'lmasa dastur ishlaydimi?",
-        "a": "Ha, albatta. Internet paydo bo'lganda ma'lumotlar avtomatik sinxronlanadi."
+        "q": "Kassirlar sonini cheklash mumkinmi?",
+        "a": "Ha. Har bir kassirga alohida hisob ochiladi va kerak bo'lganda uning faoliyatini bir tugma bilan to'xtatib qo'yishingiz mumkin."
       },
       {
-        "q": "Fiskal printer bilan ishlaydimi?",
-        "a": "Ha, biz barcha mashhur fiskal printerlar va terminallar bilan integratsiya qilinganmiz."
+        "q": "Hisobotlarni yuklab olsa bo'ladimi?",
+        "a": "Ha, analitika sahifasidagi barcha ma'lumotlarni Excel (XLSX) yoki CSV formatida yuklab olasiz."
       },
       {
         "q": "Shartnoma tuzish shartmi?",
@@ -293,7 +315,8 @@
     "about": "Biz haqimizda",
     "privacy": "Maxfiylik siyosati",
     "terms": "Foydalanish shartlari",
-    "rights": "Barcha huquqlar himoyalangan."
+    "rights": "Barcha huquqlar himoyalangan.",
+    "capabilities": "Ish jarayoni"
   },
   "dashboard": {
     "sidebar": {
@@ -434,7 +457,8 @@
         "saving": "Saqlanmoqda...",
         "updating": "Yangilanmoqda..."
       },
-      "batch_delete_success": "{count} ta mahsulot o'chirildi"
+      "batch_delete_success": "{count} ta mahsulot o'chirildi",
+      "no_products": "Hozircha mahsulotlar yo'q"
     },
     "categories": {
       "title": "Kategoriyalar",
@@ -650,5 +674,171 @@
     "contact_title": "Muammoga duch keldingizmi?",
     "contact_sub": "Bizning qo'llab-quvvatlash jamoamiz yordam beradi",
     "contact_btn": "Murojaat"
+  },
+  "legal": {
+    "updated": "Oxirgi yangilanish",
+    "back_home": "Bosh sahifaga",
+    "contact_cta": "Savolingiz bormi?",
+    "contact_cta_sub": "Hujjatlar bo'yicha savollarni bizga yo'llang.",
+    "contact_btn": "Bog'lanish",
+    "toc": "Bo'limlar"
+  },
+  "privacy": {
+    "title": "Maxfiylik siyosati",
+    "subtitle": "CPOS xizmatidan foydalanganingizda qanday ma'lumotlarni to'plashimiz, ulardan qanday foydalanishimiz va ularni qanday himoya qilishimiz haqida.",
+    "sections": [
+      {
+        "title": "Umumiy qoidalar",
+        "body": "Ushbu Maxfiylik siyosati CPOS platformasi (keyingi o'rinlarda — «Xizmat») foydalanuvchilarining shaxsiy ma'lumotlarini qayta ishlash tartibini belgilaydi. Xizmatdan ro'yxatdan o'tish yoki foydalanish orqali siz ushbu hujjat shartlariga rozilik bildirasiz.",
+        "items": []
+      },
+      {
+        "title": "Qanday ma'lumotlarni to'playmiz",
+        "body": "Xizmat ishlashi uchun zarur bo'lgan quyidagi ma'lumotlar to'planadi:",
+        "items": [
+          "Hisob ma'lumotlari — ism, familiya, foydalanuvchi nomi, elektron pochta va telefon raqami.",
+          "Tashkilot ma'lumotlari — tashkilot nomi, STIR (INN), manzil va aloqa telefoni.",
+          "Biznes ma'lumotlari — mahsulot katalogi, kategoriyalar, zaxira qoldiqlari va sotuv tranzaksiyalari.",
+          "Kassir hisoblari — siz yaratgan xodimlar hisoblarining ma'lumotlari.",
+          "Texnik ma'lumotlar — IP manzil, brauzer turi va xizmatdan foydalanish vaqti."
+        ]
+      },
+      {
+        "title": "Ma'lumotlardan foydalanish maqsadi",
+        "body": "To'plangan ma'lumotlar faqat quyidagi maqsadlarda ishlatiladi:",
+        "items": [
+          "Xizmatni taqdim etish va hisobingizni yuritish.",
+          "Sotuv, ombor va analitika hisobotlarini shakllantirish.",
+          "Texnik yordam ko'rsatish va murojaatlaringizga javob berish.",
+          "Xizmat xavfsizligini ta'minlash va ruxsatsiz kirishning oldini olish.",
+          "Qonunchilikda nazarda tutilgan majburiyatlarni bajarish."
+        ]
+      },
+      {
+        "title": "Ma'lumotlarni uchinchi shaxslarga berish",
+        "body": "Biz sizning ma'lumotlaringizni sotmaymiz va reklama maqsadida uchinchi shaxslarga bermaymiz. Ma'lumotlar faqat quyidagi hollarda oshkor qilinishi mumkin:",
+        "items": [
+          "Siz aniq rozilik bergan hollarda.",
+          "O'zbekiston Respublikasi qonunchiligiga muvofiq vakolatli davlat organlarining qonuniy talabi asosida.",
+          "Xizmat ishlashini ta'minlovchi texnik hamkorlarga — faqat zarur hajmda va maxfiylik majburiyati asosida."
+        ]
+      },
+      {
+        "title": "Ma'lumotlarni saqlash va himoya qilish",
+        "body": "Ma'lumotlar himoyalangan serverlarda saqlanadi. Uzatish jarayonida HTTPS shifrlash qo'llaniladi, parollar qaytarib bo'lmaydigan shaklda saqlanadi. Hisobingizga kirish huquqi faqat sizda va siz yaratgan kassir hisoblarida bo'ladi.",
+        "items": []
+      },
+      {
+        "title": "Ma'lumotlarni saqlash muddati",
+        "body": "Ma'lumotlaringiz hisobingiz faol bo'lgan davrda saqlanadi. Hisob o'chirilgandan so'ng ma'lumotlar qonunchilikda belgilangan muddat davomida saqlanib, keyin o'chiriladi yoki shaxssizlantiriladi.",
+        "items": []
+      },
+      {
+        "title": "Sizning huquqlaringiz",
+        "body": "Siz quyidagi huquqlarga egasiz:",
+        "items": [
+          "O'zingiz haqingizdagi ma'lumotlarni olish va ularni tuzatish.",
+          "Hisobingizni va unga bog'liq ma'lumotlarni o'chirishni talab qilish.",
+          "Ma'lumotlarni qayta ishlashga bergan rozilikni qaytarib olish.",
+          "Ma'lumotlaringiz nusxasini mashina o'qiy oladigan formatda olish."
+        ]
+      },
+      {
+        "title": "Cookie fayllari",
+        "body": "Xizmat sessiyani saqlash va xavfsizlikni ta'minlash uchun zarur cookie fayllaridan foydalanadi. Ular sizning shaxsingizni reklama maqsadida kuzatish uchun ishlatilmaydi.",
+        "items": []
+      },
+      {
+        "title": "Siyosatga o'zgartirishlar",
+        "body": "Ushbu siyosatga o'zgartirishlar kiritilishi mumkin. Muhim o'zgarishlar haqida elektron pochta orqali yoki Xizmat ichidagi bildirishnoma bilan xabar beramiz. Yangilangan sana hujjat yuqorisida ko'rsatiladi.",
+        "items": []
+      },
+      {
+        "title": "Bog'lanish",
+        "body": "Maxfiylik bo'yicha savollaringiz bo'lsa, biz bilan bog'laning: info@cpos.uz yoki +998 71 200 00 00.",
+        "items": []
+      }
+    ]
+  },
+  "terms": {
+    "title": "Foydalanish shartlari",
+    "subtitle": "CPOS xizmatidan foydalanish qoidalari, tomonlarning huquq va majburiyatlari.",
+    "sections": [
+      {
+        "title": "Atamalar",
+        "body": "«Xizmat» — CPOS bulutli savdo nuqtasi platformasi. «Foydalanuvchi» — Xizmatda ro'yxatdan o'tgan jismoniy yoki yuridik shaxs. «Hisob» — Foydalanuvchining Xizmatdagi shaxsiy kabineti.",
+        "items": []
+      },
+      {
+        "title": "Shartlarni qabul qilish",
+        "body": "Xizmatda ro'yxatdan o'tish orqali siz ushbu Shartlarni to'liq qabul qilasiz. Agar shartlarga rozi bo'lmasangiz, Xizmatdan foydalanishni to'xtating.",
+        "items": []
+      },
+      {
+        "title": "Hisob va xavfsizlik",
+        "body": "Hisobingiz xavfsizligi uchun siz javobgarsiz:",
+        "items": [
+          "Ro'yxatdan o'tishda haqiqiy va to'liq ma'lumot kiritishingiz shart.",
+          "Parolingizni uchinchi shaxslarga oshkor qilmasligingiz kerak.",
+          "Siz yaratgan kassir hisoblarining harakatlari uchun javobgarlik sizda.",
+          "Ruxsatsiz kirish aniqlansa, darhol bizga xabar berishingiz lozim."
+        ]
+      },
+      {
+        "title": "Xizmatdan foydalanish qoidalari",
+        "body": "Xizmatdan foydalanishda quyidagilar taqiqlanadi:",
+        "items": [
+          "Qonunga zid faoliyat uchun Xizmatdan foydalanish.",
+          "Xizmat ishiga xalaqit berish, tizimga ruxsatsiz kirishga urinish.",
+          "Boshqa foydalanuvchilarning ma'lumotlariga kirishga harakat qilish.",
+          "Xizmat dasturiy kodini nusxalash, o'zgartirish yoki qayta sotish."
+        ]
+      },
+      {
+        "title": "Tariflar va to'lov",
+        "body": "Xizmat obuna asosida taqdim etiladi. Tarif rejalari va ularning narxlari Xizmat sahifasida ko'rsatiladi.",
+        "items": [
+          "To'lov tanlangan tarif rejasiga muvofiq oldindan amalga oshiriladi.",
+          "Sinov muddati tugagach, xizmatdan foydalanish uchun tarif tanlash zarur.",
+          "Obunani istalgan vaqtda bekor qilishingiz mumkin; to'langan davr oxirigacha xizmat saqlanadi.",
+          "Narxlar o'zgarganda sizga oldindan xabar beriladi."
+        ]
+      },
+      {
+        "title": "Ma'lumotlaringizga egalik",
+        "body": "Xizmatga kiritgan barcha biznes ma'lumotlaringiz — mahsulotlar, sotuvlar, mijozlar bazasi — sizning mulkingiz bo'lib qoladi. Biz ularni faqat Xizmatni taqdim etish uchun qayta ishlaymiz va istalgan vaqtda eksport qilish imkoniyatini beramiz.",
+        "items": []
+      },
+      {
+        "title": "Xizmat mavjudligi",
+        "body": "Biz Xizmatning uzluksiz ishlashiga harakat qilamiz, lekin texnik profilaktika yoki bizga bog'liq bo'lmagan sabablarga ko'ra vaqtincha uzilishlar bo'lishi mumkin. Rejalashtirilgan profilaktika haqida oldindan xabar beriladi.",
+        "items": []
+      },
+      {
+        "title": "Javobgarlikni cheklash",
+        "body": "Xizmat «boricha» taqdim etiladi. Biz Xizmatdan foydalanish natijasida yuzaga kelgan bilvosita zararlar, boy berilgan foyda yoki uchinchi shaxslar harakatlari uchun javobgar emasmiz. Bizning javobgarligimiz oxirgi 12 oy ichida to'langan obuna summasi bilan cheklanadi.",
+        "items": []
+      },
+      {
+        "title": "Xizmatni to'xtatish",
+        "body": "Ushbu Shartlar buzilgan taqdirda hisobingizni cheklash yoki to'xtatish huquqini o'zimizda saqlab qolamiz. Siz ham istalgan vaqtda hisobingizni o'chirishingiz mumkin.",
+        "items": []
+      },
+      {
+        "title": "Shartlarga o'zgartirishlar",
+        "body": "Shartlar yangilanishi mumkin. Muhim o'zgarishlar kuchga kirishidan oldin sizga xabar beriladi. Xizmatdan foydalanishni davom ettirish yangilangan shartlarni qabul qilish deb hisoblanadi.",
+        "items": []
+      },
+      {
+        "title": "Nizolarni hal qilish",
+        "body": "Ushbu Shartlarga O'zbekiston Respublikasi qonunchiligi qo'llaniladi. Nizolar muzokaralar yo'li bilan, kelishuvga erishilmasa — O'zbekiston Respublikasi sudlari orqali hal qilinadi.",
+        "items": []
+      },
+      {
+        "title": "Bog'lanish",
+        "body": "Shartlar bo'yicha savollaringiz bo'lsa: info@cpos.uz yoki +998 71 200 00 00.",
+        "items": []
+      }
+    ]
   }
 }

@@ -14,7 +14,13 @@
   flex-direction: column;
 }
 
-/* Navbar offset for all anchor sections */
+/* Navbar offset for all anchor sections (mobil navbar pastroq) */
 section[id] {
-  scroll-margin-top: 96px;
+  scroll-margin-top: 84px;
+}
+
+@media (min-width: 901px) {
+  section[id] {
+    scroll-margin-top: 96px;
+  }
 }

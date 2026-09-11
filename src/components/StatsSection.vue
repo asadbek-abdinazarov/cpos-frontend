@@ -4,11 +4,49 @@
       <div class="stat-item" v-for="(stat, index) in stats" :key="index">
         <div class="stat-icon-wrap">
           <!-- Businesses icon -->
-          <svg v-if="index === 0" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+          <svg
+            v-if="index === 0"
+            width="22"
+            height="22"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+          >
+            <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" />
+            <polyline points="9 22 9 12 15 12 15 22" />
+          </svg>
           <!-- Transactions icon -->
-          <svg v-if="index === 1" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+          <svg
+            v-if="index === 1"
+            width="22"
+            height="22"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+          >
+            <line x1="12" y1="1" x2="12" y2="23" />
+            <path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6" />
+          </svg>
           <!-- Uptime icon -->
-          <svg v-if="index === 2" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+          <svg
+            v-if="index === 2"
+            width="22"
+            height="22"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+          >
+            <polyline points="22 12 18 12 15 21 9 3 6 12 2 12" />
+          </svg>
         </div>
         <div class="stat-number">{{ stat.number }}</div>
         <div class="stat-label">{{ stat.label }}</div>
@@ -24,15 +62,15 @@ import { useI18n } from 'vue-i18n'
 const { t } = useI18n()
 
 const stats = computed(() => [
-  { number: '1,000+', label: t('stats.active_businesses') },
-  { number: '5M+', label: t('stats.transactions') },
-  { number: '99.9%', label: t('stats.uptime') }
+  { number: '3+', label: t('stats.active_businesses') },
+  { number: '1K+', label: t('stats.transactions') },
+  { number: '99%', label: t('stats.uptime') },
 ])
 </script>
 
 <style scoped>
 .stats-section {
-  background: #0F172A;
+  background: #0f172a;
   padding: 0;
   position: relative;
   overflow: hidden;
@@ -45,7 +83,13 @@ const stats = computed(() => [
   left: 0;
   right: 0;
   height: 1px;
-  background: linear-gradient(90deg, transparent, rgba(0, 123, 255, 0.5), rgba(99, 102, 241, 0.5), transparent);
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(0, 123, 255, 0.5),
+    rgba(99, 102, 241, 0.5),
+    transparent
+  );
 }
 
 .stats-container {
@@ -90,14 +134,14 @@ const stats = computed(() => [
   display: flex;
   align-items: center;
   justify-content: center;
-  color: #60A5FA;
+  color: #60a5fa;
   margin-bottom: 0.25rem;
 }
 
 .stat-number {
   font-size: clamp(2.5rem, 4vw, 3.5rem);
   font-weight: 800;
-  background: linear-gradient(135deg, #60A5FA 0%, #818CF8 100%);
+  background: linear-gradient(135deg, #60a5fa 0%, #818cf8 100%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
@@ -107,7 +151,7 @@ const stats = computed(() => [
 
 .stat-label {
   font-size: 1rem;
-  color: #94A3B8;
+  color: #94a3b8;
   font-weight: 500;
   letter-spacing: 0.01em;
 }

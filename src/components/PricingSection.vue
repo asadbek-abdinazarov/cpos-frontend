@@ -106,7 +106,7 @@ onMounted(loadPlans)
       <header class="ps__head" data-aos="fade-up">
         <div class="ps__eyebrow">
           <span class="ps__eyebrow-line"></span>
-          <span class="ps__eyebrow-text">Narxlar</span>
+          <span class="ps__eyebrow-text">{{ t('pricing.section_tag') }}</span>
           <span class="ps__eyebrow-line"></span>
         </div>
         <h2 class="ps__title">{{ t('pricing.title') }}</h2>

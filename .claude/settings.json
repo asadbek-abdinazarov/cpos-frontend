@@ -1,0 +1,9 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(npx prettier *)",
+      "Bash(npx oxlint *)",
+      "Bash(pkill -f vite)"
+    ]
+  }
+}

@@ -47,7 +47,6 @@ const iconMap = { Package, BarChart3, Heart, Zap }
   <section id="features-grid" class="features-section">
     <div class="section-container">
       <div class="section-head" data-aos="fade-up">
-        <span class="section-tag">Imkoniyatlar</span>
         <h2 class="section-title">
           {{ t('features.title') }}
           <span class="title-gradient">{{ t('features.title_highlight') }}</span>
@@ -97,19 +96,6 @@ const iconMap = { Package, BarChart3, Heart, Zap }
   margin-bottom: 4rem;
 }
 
-.section-tag {
-  display: inline-block;
-  background: rgba(0, 123, 255, 0.08);
-  border: 1px solid rgba(0, 123, 255, 0.15);
-  color: #007BFF;
-  font-size: 0.78rem;
-  font-weight: 700;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-  padding: 5px 14px;
-  border-radius: 100px;
-  margin-bottom: 1.25rem;
-}
 
 .section-title {
   font-size: clamp(2rem, 3.5vw, 2.75rem);

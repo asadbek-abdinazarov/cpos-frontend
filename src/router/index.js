@@ -3,6 +3,12 @@ import HomeView from '../views/HomeView.vue'
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
+  // Yangi sahifaga o'tganda tepadan boshlanadi; orqaga qaytganda oldingi joy tiklanadi
+  scrollBehavior(to, from, savedPosition) {
+    if (savedPosition) return savedPosition
+    if (to.query.section) return false
+    return { top: 0 }
+  },
   routes: [
     {
       path: '/',
@@ -22,6 +28,18 @@ const router = createRouter({
       name: 'login',
       component: () => import('../views/LoginView.vue'),
       meta: { requiresGuest: true },
+    },
+    {
+      path: '/privacy',
+      name: 'privacy',
+      component: () => import('../views/LegalView.vue'),
+      props: { docKey: 'privacy' },
+    },
+    {
+      path: '/terms',
+      name: 'terms',
+      component: () => import('../views/LegalView.vue'),
+      props: { docKey: 'terms' },
     },
     {
       path: '/dashboard',
