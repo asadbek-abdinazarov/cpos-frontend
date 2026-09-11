@@ -1,4 +1,5 @@
 <script setup>
+import { ref } from 'vue'
 import {
   Search,
   Plus,
@@ -9,9 +10,11 @@ import {
   Package,
   AlertTriangle,
   SlidersHorizontal,
+  Upload,
 } from 'lucide-vue-next'
 import { useProductList } from '@/composables/useProductList'
 import BasePagination from '@/components/dashboard/BasePagination.vue'
+import ProductImportModal from '@/components/dashboard/ProductImportModal.vue'
 
 const {
   loading,
@@ -53,11 +56,19 @@ const goToPage = (page) => {
   pushFiltersToQuery()
   fetchProducts()
 }
+
+const isImportModalOpen = ref(false)
+
+const onImported = () => {
+  selectedProductIds.value = []
+  currentPage.value = 1
+  pushFiltersToQuery()
+  fetchProducts()
+}
 </script>
 
 <template>
   <div class="products-page">
-
     <!-- ─── Hero ───────────────────────────────────── -->
     <div class="pp-hero">
       <div class="pp-hero-grid"></div>
@@ -81,6 +92,10 @@ const goToPage = (page) => {
           >
             <Trash2 :size="15" />
             {{ $t('dashboard.products.delete_selected') }} ({{ selectedProductIds.length }})
+          </button>
+          <button class="pp-btn-outline" @click="isImportModalOpen = true">
+            <Upload :size="15" />
+            {{ $t('dashboard.products.import.open') }}
           </button>
           <button class="pp-btn-primary" @click="goToProductNew">
             <Plus :size="15" />
@@ -132,7 +147,12 @@ const goToPage = (page) => {
           <thead>
             <tr>
               <th class="th-check">
-                <input type="checkbox" :checked="isAllSelected" @change="toggleSelectAll" class="pp-checkbox" />
+                <input
+                  type="checkbox"
+                  :checked="isAllSelected"
+                  @change="toggleSelectAll"
+                  class="pp-checkbox"
+                />
               </th>
               <th>{{ $t('dashboard.table.id') }}</th>
               <th>{{ $t('dashboard.table.product') }}</th>
@@ -148,7 +168,7 @@ const goToPage = (page) => {
             <template v-if="showSkeleton">
               <tr v-for="n in itemsPerPage" :key="n" class="skel-row">
                 <td><div class="skel skel-check"></div></td>
-                <td><div class="skel" style="width:28px;height:12px"></div></td>
+                <td><div class="skel" style="width: 28px; height: 12px"></div></td>
                 <td>
                   <div class="pp-product-cell">
                     <div class="skel skel-img"></div>
@@ -160,7 +180,7 @@ const goToPage = (page) => {
                 <td><div class="skel skel-qty"></div></td>
                 <td><div class="skel skel-badge"></div></td>
                 <td>
-                  <div style="display:flex;gap:.4rem;justify-content:flex-end">
+                  <div style="display: flex; gap: 0.4rem; justify-content: flex-end">
                     <div class="skel skel-act"></div>
                     <div class="skel skel-act"></div>
                     <div class="skel skel-act"></div>
@@ -178,7 +198,12 @@ const goToPage = (page) => {
               @click="goToProductDetail(product)"
             >
               <td @click.stop>
-                <input type="checkbox" :value="product.id" v-model="selectedProductIds" class="pp-checkbox" />
+                <input
+                  type="checkbox"
+                  :value="product.id"
+                  v-model="selectedProductIds"
+                  class="pp-checkbox"
+                />
               </td>
               <td class="td-id">#{{ product.id }}</td>
               <td>
@@ -190,16 +215,29 @@ const goToPage = (page) => {
                 </div>
               </td>
               <td class="td-cat">{{ product.category ? product.category.name : '—' }}</td>
-              <td class="td-price">{{ product.price.toLocaleString('uz-UZ') }} <span class="currency">UZS</span></td>
+              <td class="td-price">
+                {{ product.price.toLocaleString('uz-UZ') }} <span class="currency">UZS</span>
+              </td>
               <td class="td-qty">{{ product.quantity }}</td>
               <td>
-                <span class="pp-status" :class="product.isActive ? 'pp-status-active' : 'pp-status-inactive'">
-                  {{ product.isActive ? $t('dashboard.products.status.active') : $t('dashboard.products.status.inactive') }}
+                <span
+                  class="pp-status"
+                  :class="product.isActive ? 'pp-status-active' : 'pp-status-inactive'"
+                >
+                  {{
+                    product.isActive
+                      ? $t('dashboard.products.status.active')
+                      : $t('dashboard.products.status.inactive')
+                  }}
                 </span>
               </td>
               <td @click.stop>
                 <div class="pp-actions-cell">
-                  <button class="pp-act-btn" :title="$t('dashboard.table.actions')" @click.stop="goToProductDetail(product)">
+                  <button
+                    class="pp-act-btn"
+                    :title="$t('dashboard.table.actions')"
+                    @click.stop="goToProductDetail(product)"
+                  >
                     <Eye :size="14" />
                   </button>
                   <button class="pp-act-btn" @click.stop="goToProductEdit(product)">
@@ -250,8 +288,12 @@ const goToPage = (page) => {
               {{ $t('dashboard.products.delete_confirm_text', { name: productToDelete?.name }) }}
             </p>
             <div class="pp-modal-actions">
-              <button class="pp-btn-ghost" @click="closeDeleteModal">{{ $t('dashboard.products.form.cancel') }}</button>
-              <button class="pp-btn-danger" @click="executeDelete">{{ $t('dashboard.products.delete_product') }}</button>
+              <button class="pp-btn-ghost" @click="closeDeleteModal">
+                {{ $t('dashboard.products.form.cancel') }}
+              </button>
+              <button class="pp-btn-danger" @click="executeDelete">
+                {{ $t('dashboard.products.delete_product') }}
+              </button>
             </div>
           </div>
         </div>
@@ -261,24 +303,39 @@ const goToPage = (page) => {
     <!-- ─── Batch delete modal ───────────────────── -->
     <Teleport to="body">
       <Transition name="modal-fade">
-        <div v-if="isBatchDeleteModalOpen" class="pp-modal-overlay" @click.self="closeBatchDeleteModal">
+        <div
+          v-if="isBatchDeleteModalOpen"
+          class="pp-modal-overlay"
+          @click.self="closeBatchDeleteModal"
+        >
           <div class="pp-modal">
             <div class="pp-modal-icon del-icon">
               <AlertTriangle :size="22" />
             </div>
             <h2 class="pp-modal-title">{{ $t('dashboard.products.delete_selected') }}</h2>
             <p class="pp-modal-text">
-              <strong>{{ selectedProductIds.length }}</strong> ta mahsulot o'chiriladi. Bu amalni bekor qilib bo'lmaydi.
+              <strong>{{ selectedProductIds.length }}</strong> ta mahsulot o'chiriladi. Bu amalni
+              bekor qilib bo'lmaydi.
             </p>
             <div class="pp-modal-actions">
-              <button class="pp-btn-ghost" @click="closeBatchDeleteModal">{{ $t('dashboard.products.form.cancel') }}</button>
-              <button class="pp-btn-danger" @click="executeBatchDelete">{{ $t('dashboard.products.delete_product') }}</button>
+              <button class="pp-btn-ghost" @click="closeBatchDeleteModal">
+                {{ $t('dashboard.products.form.cancel') }}
+              </button>
+              <button class="pp-btn-danger" @click="executeBatchDelete">
+                {{ $t('dashboard.products.delete_product') }}
+              </button>
             </div>
           </div>
         </div>
       </Transition>
     </Teleport>
 
+    <!-- ─── Excel import modal ───────────────────── -->
+    <ProductImportModal
+      v-model="isImportModalOpen"
+      :categories="categories"
+      @imported="onImported"
+    />
   </div>
 </template>
 
@@ -303,8 +360,8 @@ const goToPage = (page) => {
   position: absolute;
   inset: 0;
   background-image:
-    linear-gradient(rgba(0,123,255,0.03) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(0,123,255,0.03) 1px, transparent 1px);
+    linear-gradient(rgba(0, 123, 255, 0.03) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(0, 123, 255, 0.03) 1px, transparent 1px);
   background-size: 28px 28px;
   pointer-events: none;
 }
@@ -316,14 +373,18 @@ const goToPage = (page) => {
   pointer-events: none;
 }
 .pp-orb-1 {
-  width: 320px; height: 320px;
-  background: radial-gradient(circle, rgba(0,123,255,0.09) 0%, transparent 70%);
-  top: -100px; right: -60px;
+  width: 320px;
+  height: 320px;
+  background: radial-gradient(circle, rgba(0, 123, 255, 0.09) 0%, transparent 70%);
+  top: -100px;
+  right: -60px;
 }
 .pp-orb-2 {
-  width: 220px; height: 220px;
-  background: radial-gradient(circle, rgba(99,102,241,0.07) 0%, transparent 70%);
-  bottom: -80px; left: -40px;
+  width: 220px;
+  height: 220px;
+  background: radial-gradient(circle, rgba(99, 102, 241, 0.07) 0%, transparent 70%);
+  bottom: -80px;
+  left: -40px;
 }
 
 .pp-hero-body {
@@ -342,8 +403,8 @@ const goToPage = (page) => {
   gap: 5px;
   padding: 0.3rem 0.8rem;
   border-radius: 100px;
-  background: rgba(0,123,255,0.08);
-  border: 1px solid rgba(0,123,255,0.18);
+  background: rgba(0, 123, 255, 0.08);
+  border: 1px solid rgba(0, 123, 255, 0.18);
   color: #007bff;
   font-size: 0.68rem;
   font-weight: 700;
@@ -391,12 +452,12 @@ const goToPage = (page) => {
   font-weight: 600;
   cursor: pointer;
   transition: all 0.2s;
-  box-shadow: 0 2px 10px rgba(0,123,255,0.25);
+  box-shadow: 0 2px 10px rgba(0, 123, 255, 0.25);
   font-family: inherit;
 }
 .pp-btn-primary:hover {
   transform: translateY(-1px);
-  box-shadow: 0 4px 16px rgba(0,123,255,0.35);
+  box-shadow: 0 4px 16px rgba(0, 123, 255, 0.35);
 }
 
 .pp-btn-danger {
@@ -433,6 +494,27 @@ const goToPage = (page) => {
   cursor: pointer;
   transition: all 0.2s;
   font-family: inherit;
+}
+
+.pp-btn-outline {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 0.6rem 1.1rem;
+  background: #fff;
+  color: #334155;
+  border: 1px solid #e2e8f0;
+  border-radius: 10px;
+  font-size: 0.875rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+  font-family: inherit;
+}
+.pp-btn-outline:hover {
+  border-color: #007bff;
+  color: #007bff;
+  background: rgba(0, 123, 255, 0.04);
 }
 .pp-btn-ghost:hover {
   background: #e2e8f0;
@@ -486,11 +568,13 @@ const goToPage = (page) => {
   font-family: inherit;
   box-sizing: border-box;
 }
-.pp-search-input::placeholder { color: #94a3b8; }
+.pp-search-input::placeholder {
+  color: #94a3b8;
+}
 .pp-search-input:focus {
   border-color: #007bff;
   background: #fff;
-  box-shadow: 0 0 0 3px rgba(0,123,255,0.08);
+  box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.08);
 }
 
 .pp-search-btn {
@@ -506,7 +590,9 @@ const goToPage = (page) => {
   transition: background 0.2s;
   font-family: inherit;
 }
-.pp-search-btn:hover { background: #0069d9; }
+.pp-search-btn:hover {
+  background: #0069d9;
+}
 
 .pp-filters {
   display: flex;
@@ -528,7 +614,10 @@ const goToPage = (page) => {
   border-color: #007bff;
 }
 
-.pp-filter-ico { color: #94a3b8; flex-shrink: 0; }
+.pp-filter-ico {
+  color: #94a3b8;
+  flex-shrink: 0;
+}
 
 .pp-filter-select {
   border: none;
@@ -581,8 +670,13 @@ const goToPage = (page) => {
   vertical-align: middle;
 }
 
-.th-check, .pp-table td:first-child { width: 3rem; }
-.th-actions { text-align: right; }
+.th-check,
+.pp-table td:first-child {
+  width: 3rem;
+}
+.th-actions {
+  text-align: right;
+}
 
 .pp-checkbox {
   width: 15px;
@@ -595,14 +689,34 @@ const goToPage = (page) => {
   cursor: pointer;
   transition: background 0.12s;
 }
-.pp-row:hover td { background: #f8fafc; }
-.pp-row:last-child td { border-bottom: none; }
+.pp-row:hover td {
+  background: #f8fafc;
+}
+.pp-row:last-child td {
+  border-bottom: none;
+}
 
-.td-id { color: #94a3b8; font-size: 0.78rem; font-weight: 600; }
-.td-cat { color: #64748b; }
-.td-price { font-weight: 700; color: #0f172a; }
-.currency { font-size: 0.72rem; font-weight: 500; color: #94a3b8; }
-.td-qty { color: #475569; font-weight: 500; }
+.td-id {
+  color: #94a3b8;
+  font-size: 0.78rem;
+  font-weight: 600;
+}
+.td-cat {
+  color: #64748b;
+}
+.td-price {
+  font-weight: 700;
+  color: #0f172a;
+}
+.currency {
+  font-size: 0.72rem;
+  font-weight: 500;
+  color: #94a3b8;
+}
+.td-qty {
+  color: #475569;
+  font-weight: 500;
+}
 
 .pp-product-cell {
   display: flex;
@@ -614,7 +728,7 @@ const goToPage = (page) => {
   width: 36px;
   height: 36px;
   border-radius: 9px;
-  background: linear-gradient(135deg, rgba(0,123,255,0.1), rgba(99,102,241,0.1));
+  background: linear-gradient(135deg, rgba(0, 123, 255, 0.1), rgba(99, 102, 241, 0.1));
   color: #007bff;
   display: flex;
   align-items: center;
@@ -638,9 +752,9 @@ const goToPage = (page) => {
   white-space: nowrap;
 }
 .pp-status-active {
-  background: rgba(16,185,129,0.1);
+  background: rgba(16, 185, 129, 0.1);
   color: #059669;
-  border: 1px solid rgba(16,185,129,0.2);
+  border: 1px solid rgba(16, 185, 129, 0.2);
 }
 .pp-status-inactive {
   background: #fef2f2;
@@ -670,7 +784,7 @@ const goToPage = (page) => {
 .pp-act-btn:hover {
   background: #f1f5f9;
   color: #007bff;
-  border-color: rgba(0,123,255,0.3);
+  border-color: rgba(0, 123, 255, 0.3);
 }
 .pp-act-del:hover {
   background: #fef2f2;
@@ -679,7 +793,10 @@ const goToPage = (page) => {
 }
 
 /* ─── Empty ─────────────────────────────────────── */
-.pp-empty { text-align: center; padding: 3rem; }
+.pp-empty {
+  text-align: center;
+  padding: 3rem;
+}
 .pp-empty-inner {
   display: flex;
   flex-direction: column;
@@ -688,7 +805,8 @@ const goToPage = (page) => {
   color: #94a3b8;
 }
 .pp-empty-icon {
-  width: 56px; height: 56px;
+  width: 56px;
+  height: 56px;
   border-radius: 14px;
   background: #f1f5f9;
   display: flex;
@@ -696,12 +814,19 @@ const goToPage = (page) => {
   justify-content: center;
   color: #cbd5e1;
 }
-.pp-empty p { font-size: 0.875rem; margin: 0; }
+.pp-empty p {
+  font-size: 0.875rem;
+  margin: 0;
+}
 
 /* ─── Skeleton ──────────────────────────────────── */
 @keyframes shimmer {
-  0% { background-position: -400px 0; }
-  100% { background-position: 400px 0; }
+  0% {
+    background-position: -400px 0;
+  }
+  100% {
+    background-position: 400px 0;
+  }
 }
 .skel {
   border-radius: 6px;
@@ -709,21 +834,52 @@ const goToPage = (page) => {
   background-size: 400px 100%;
   animation: shimmer 1.4s infinite linear;
 }
-.skel-row td { border-bottom: 1px solid #f8fafc; }
-.skel-check { width: 15px; height: 15px; border-radius: 3px; }
-.skel-img { width: 36px; height: 36px; border-radius: 9px; flex-shrink: 0; }
-.skel-name { width: 130px; height: 13px; }
-.skel-cat { width: 72px; height: 12px; }
-.skel-price { width: 96px; height: 12px; }
-.skel-qty { width: 40px; height: 12px; }
-.skel-badge { width: 58px; height: 20px; border-radius: 100px; }
-.skel-act { width: 30px; height: 30px; border-radius: 8px; }
+.skel-row td {
+  border-bottom: 1px solid #f8fafc;
+}
+.skel-check {
+  width: 15px;
+  height: 15px;
+  border-radius: 3px;
+}
+.skel-img {
+  width: 36px;
+  height: 36px;
+  border-radius: 9px;
+  flex-shrink: 0;
+}
+.skel-name {
+  width: 130px;
+  height: 13px;
+}
+.skel-cat {
+  width: 72px;
+  height: 12px;
+}
+.skel-price {
+  width: 96px;
+  height: 12px;
+}
+.skel-qty {
+  width: 40px;
+  height: 12px;
+}
+.skel-badge {
+  width: 58px;
+  height: 20px;
+  border-radius: 100px;
+}
+.skel-act {
+  width: 30px;
+  height: 30px;
+  border-radius: 8px;
+}
 
 /* ─── Modal ─────────────────────────────────────── */
 .pp-modal-overlay {
   position: fixed;
   inset: 0;
-  background: rgba(15,23,42,0.45);
+  background: rgba(15, 23, 42, 0.45);
   backdrop-filter: blur(4px);
   display: flex;
   align-items: center;
@@ -739,7 +895,7 @@ const goToPage = (page) => {
   width: 100%;
   max-width: 380px;
   text-align: center;
-  box-shadow: 0 20px 60px rgba(0,0,0,0.15);
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.15);
 }
 
 .pp-modal-icon {
@@ -779,7 +935,7 @@ const goToPage = (page) => {
 /* Transition */
 .modal-fade-enter-active,
 .modal-fade-leave-active {
-  transition: all 0.2s cubic-bezier(0.4,0,0.2,1);
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
 }
 .modal-fade-enter-from,
 .modal-fade-leave-to {
@@ -789,19 +945,40 @@ const goToPage = (page) => {
 
 /* ─── Responsive ────────────────────────────────── */
 @media (max-width: 768px) {
-  .pp-hero { padding: 1.25rem; }
-  .pp-title { font-size: 1.3rem; }
-  .pp-toolbar { flex-direction: column; align-items: stretch; }
-  .pp-search-wrap { min-width: 0; }
-  .pp-filters { flex-wrap: wrap; }
-  .pp-filter-select { min-width: 90px; }
+  .pp-hero {
+    padding: 1.25rem;
+  }
+  .pp-title {
+    font-size: 1.3rem;
+  }
+  .pp-toolbar {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  .pp-search-wrap {
+    min-width: 0;
+  }
+  .pp-filters {
+    flex-wrap: wrap;
+  }
+  .pp-filter-select {
+    min-width: 90px;
+  }
 }
 
 @media (max-width: 640px) {
   .pp-table th,
-  .pp-table td { padding: 0.7rem 0.85rem; }
-  .pp-modal-actions { flex-direction: column-reverse; gap: 0.5rem; }
+  .pp-table td {
+    padding: 0.7rem 0.85rem;
+  }
+  .pp-modal-actions {
+    flex-direction: column-reverse;
+    gap: 0.5rem;
+  }
   .pp-modal-actions .pp-btn-ghost,
-  .pp-modal-actions .pp-btn-danger { width: 100%; justify-content: center; }
+  .pp-modal-actions .pp-btn-danger {
+    width: 100%;
+    justify-content: center;
+  }
 }
 </style>

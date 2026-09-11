@@ -139,8 +139,7 @@ api.interceptors.response.use(
     const originalRequest = error.config || {}
     const isUnauthorized =
       error.response &&
-      (error.response.status === 401 ||
-        (error.response.data && error.response.data.status === 401))
+      (error.response.status === 401 || (error.response.data && error.response.data.status === 401))
 
     // A mutating request can 403 simply because no XSRF-TOKEN cookie existed yet
     // (Spring issues it lazily). Fetch one with a safe GET, then retry once.
@@ -190,6 +189,13 @@ api.interceptors.response.use(
       } finally {
         isRefreshing = false
       }
+    }
+
+    // Some callers render the payload themselves (e.g. the product import shows
+    // a per-row error table). Without this the interceptor fires one toast per
+    // entry in `errors`, which for a bad import file means dozens of them.
+    if (originalRequest.skipGlobalError) {
+      return Promise.reject(error)
     }
 
     if (!(isUnauthorized && !isAuthEndpoint(originalRequest.url))) {
@@ -350,6 +356,24 @@ export function markNotificationAsRead(id) {
 
 export function getSubscriptionPlans() {
   return api.get('web/subscription/plans')
+}
+
+export function downloadProductImportTemplate() {
+  return api.get('web/products/import/template', { responseType: 'blob' })
+}
+
+export function importProducts(file, { dryRun = true, signal } = {}) {
+  const formData = new FormData()
+  formData.append('file', file)
+
+  return api.post('web/products/import', formData, {
+    params: { dryRun },
+    // The instance sets a JSON content type by default; FormData needs the
+    // browser to write its own header so the multipart boundary is included.
+    headers: { 'Content-Type': undefined },
+    skipGlobalError: true,
+    signal,
+  })
 }
 
 export function generateBarcode() {

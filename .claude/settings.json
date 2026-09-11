@@ -3,7 +3,13 @@
     "allow": [
       "Bash(npx prettier *)",
       "Bash(npx oxlint *)",
-      "Bash(pkill -f vite)"
+      "Bash(pkill -f vite)",
+      "Bash(echo \"---EXIT $?---\")",
+      "Bash(grep -n -E \"^\\\\s{0,4}[a-zA-Z]+:\" /Users/macbookair/real-projects/renessans-vue/src/components/ui/Icon.vue)",
+      "Bash(grep -o '$t\\('\\\\''[^'\\\\'']*'\\\\''' src/components/dashboard/ProductImportModal.vue)",
+      "Bash(grep -v \":0$\")",
+      "Bash(sort -t: -k2 -rn)",
+      "Bash(grep -rnE \"^\\\\s*\\\\.\\(chip|tbl|muted|mono|spread|btn-ghost|card\\)[\\\\s,{:.]\" src/)"
     ]
   }
 }
