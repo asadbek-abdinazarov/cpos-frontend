@@ -392,6 +392,14 @@ export function createCashier(data) {
   return api.post('web/cashiers', data)
 }
 
+export function updateCashier(id, data) {
+  return api.put(`web/cashiers/${id}`, data)
+}
+
+export function deleteCashier(id) {
+  return api.delete(`web/cashiers/${id}`)
+}
+
 export function toggleCashierStatus(id) {
   return api.patch(`web/cashiers/${id}/toggle-status`)
 }

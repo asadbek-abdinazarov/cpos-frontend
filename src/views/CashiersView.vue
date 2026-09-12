@@ -6,9 +6,18 @@ import {
   Users,
   Plus,
   Power,
+  Pencil,
+  Trash2,
+  AlertTriangle,
   X,
 } from 'lucide-vue-next'
-import { getCashiers, createCashier, toggleCashierStatus } from '@/services/api'
+import {
+  getCashiers,
+  createCashier,
+  updateCashier,
+  deleteCashier,
+  toggleCashierStatus,
+} from '@/services/api'
 import { useNotification } from '@/composables/useNotification'
 import { useI18n } from 'vue-i18n'
 
@@ -94,6 +103,70 @@ const handleCreateCashier = async () => {
     showNotification({ type: 'error', message: t('dashboard.cashiers.create_error') })
   } finally {
     isSubmitting.value = false
+  }
+}
+
+/* ─── Tahrirlash ─────────────────────────────────── */
+const isEditModalOpen = ref(false)
+const isUpdating = ref(false)
+const editForm = ref({ id: null, firstName: '', lastName: '', username: '', phone: '' })
+
+const openEditModal = (cashier) => {
+  editForm.value = {
+    id: cashier.id,
+    firstName: cashier.firstName ?? '',
+    lastName: cashier.lastName ?? '',
+    username: cashier.username ?? '',
+    phone: cashier.phone ?? '',
+  }
+  isEditModalOpen.value = true
+}
+const closeEditModal = () => { isEditModalOpen.value = false }
+
+const handleUpdateCashier = async () => {
+  isUpdating.value = true
+  try {
+    const { id, ...payload } = editForm.value
+    const res = await updateCashier(id, payload)
+    if (res.data?.success) {
+      showNotification({ type: 'success', message: t('dashboard.cashiers.updated') })
+      closeEditModal()
+      await fetchCashiers()
+    }
+  } catch {
+    showNotification({ type: 'error', message: t('dashboard.cashiers.update_error') })
+  } finally {
+    isUpdating.value = false
+  }
+}
+
+/* ─── O'chirish ──────────────────────────────────── */
+const isDeleteModalOpen = ref(false)
+const isDeleting = ref(false)
+const deleteTarget = ref(null)
+
+const openDeleteModal = (cashier) => {
+  deleteTarget.value = cashier
+  isDeleteModalOpen.value = true
+}
+const closeDeleteModal = () => { isDeleteModalOpen.value = false }
+
+const handleDeleteCashier = async () => {
+  if (!deleteTarget.value) return
+  isDeleting.value = true
+  try {
+    const res = await deleteCashier(deleteTarget.value.id)
+    if (res.data?.success) {
+      showNotification({ type: 'success', message: t('dashboard.cashiers.deleted') })
+      closeDeleteModal()
+      // Oxirgi sahifadagi oxirgi yozuv o'chirilsa — oldingi sahifaga qaytamiz
+      if (cashiers.value.length === 1 && currentPage.value > 1) currentPage.value--
+      await fetchCashiers()
+    }
+  } catch {
+    showNotification({ type: 'error', message: t('dashboard.cashiers.delete_error') })
+  } finally {
+    isDeleting.value = false
   }
 }
 
@@ -198,6 +271,20 @@ onMounted(fetchCashiers)
                   >
                     <Power :size="14" />
                   </button>
+                  <button
+                    class="cs-act-btn cs-act-edit"
+                    :title="$t('dashboard.cashiers.edit')"
+                    @click="openEditModal(cashier)"
+                  >
+                    <Pencil :size="14" />
+                  </button>
+                  <button
+                    class="cs-act-btn cs-act-del"
+                    :title="$t('dashboard.cashiers.delete')"
+                    @click="openDeleteModal(cashier)"
+                  >
+                    <Trash2 :size="14" />
+                  </button>
                 </div>
               </td>
             </tr>
@@ -275,6 +362,94 @@ onMounted(fetchCashiers)
                 </button>
               </div>
             </form>
+          </div>
+        </div>
+      </Transition>
+    </Teleport>
+
+    <!-- ─── Edit Modal ───────────────────────────────── -->
+    <Teleport to="body">
+      <Transition name="modal-fade">
+        <div v-if="isEditModalOpen" class="cs-modal-overlay" @click.self="closeEditModal">
+          <div class="cs-modal">
+            <div class="cs-modal-header">
+              <div class="cs-modal-icon-wrap">
+                <Pencil :size="22" />
+              </div>
+              <h2 class="cs-modal-title">{{ $t('dashboard.cashiers.edit_modal_title') }}</h2>
+              <button class="cs-close-btn" @click="closeEditModal">
+                <X :size="16" />
+              </button>
+            </div>
+
+            <form @submit.prevent="handleUpdateCashier" class="cs-modal-form">
+              <div class="cs-form-row">
+                <div class="cs-form-group">
+                  <label>{{ $t('dashboard.cashiers.field_first_name') }}</label>
+                  <input v-model="editForm.firstName" type="text" required :placeholder="$t('dashboard.cashiers.ph_first_name')" />
+                </div>
+                <div class="cs-form-group">
+                  <label>{{ $t('dashboard.cashiers.field_last_name') }}</label>
+                  <input v-model="editForm.lastName" type="text" required :placeholder="$t('dashboard.cashiers.ph_last_name')" />
+                </div>
+              </div>
+              <div class="cs-form-group">
+                <label>{{ $t('dashboard.cashiers.field_username') }}</label>
+                <input v-model="editForm.username" type="text" required :placeholder="$t('dashboard.cashiers.ph_username')" />
+              </div>
+              <div class="cs-form-group">
+                <label>{{ $t('dashboard.cashiers.field_phone') }}</label>
+                <input v-model="editForm.phone" type="text" required :placeholder="$t('dashboard.cashiers.ph_phone')" />
+              </div>
+
+              <div class="cs-modal-footer">
+                <button type="button" class="cs-btn-ghost" @click="closeEditModal" :disabled="isUpdating">
+                  {{ $t('dashboard.cashiers.btn_cancel') }}
+                </button>
+                <button type="submit" class="cs-btn-primary" :disabled="isUpdating">
+                  <span v-if="isUpdating" class="cs-spinner"></span>
+                  {{ $t('dashboard.cashiers.btn_save') }}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      </Transition>
+    </Teleport>
+
+    <!-- ─── Delete Confirm Modal ─────────────────────── -->
+    <Teleport to="body">
+      <Transition name="modal-fade">
+        <div v-if="isDeleteModalOpen" class="cs-modal-overlay" @click.self="closeDeleteModal">
+          <div class="cs-modal cs-modal-sm">
+            <div class="cs-modal-header">
+              <div class="cs-modal-icon-wrap cs-modal-icon-danger">
+                <AlertTriangle :size="22" />
+              </div>
+              <h2 class="cs-modal-title">{{ $t('dashboard.cashiers.delete_title') }}</h2>
+              <button class="cs-close-btn" @click="closeDeleteModal">
+                <X :size="16" />
+              </button>
+            </div>
+
+            <div class="cs-modal-form">
+              <p class="cs-confirm-text">
+                {{ $t('dashboard.cashiers.delete_text', {
+                  name: `${deleteTarget?.firstName ?? ''} ${deleteTarget?.lastName ?? ''}`.trim()
+                     || deleteTarget?.username
+                }) }}
+              </p>
+
+              <div class="cs-modal-footer">
+                <button type="button" class="cs-btn-ghost" @click="closeDeleteModal" :disabled="isDeleting">
+                  {{ $t('dashboard.cashiers.btn_cancel') }}
+                </button>
+                <button type="button" class="cs-btn-danger" @click="handleDeleteCashier" :disabled="isDeleting">
+                  <span v-if="isDeleting" class="cs-spinner"></span>
+                  {{ $t('dashboard.cashiers.btn_delete') }}
+                </button>
+              </div>
+            </div>
           </div>
         </div>
       </Transition>
@@ -418,6 +593,29 @@ onMounted(fetchCashiers)
 .cs-btn-ghost:hover:not(:disabled) { background: #e2e8f0; color: #0f172a; }
 .cs-btn-ghost:disabled { opacity: 0.65; cursor: not-allowed; }
 
+.cs-btn-danger {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 0.6rem 1.1rem;
+  background: #dc2626;
+  color: #fff;
+  border: none;
+  border-radius: 10px;
+  font-size: 0.875rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+  box-shadow: 0 2px 10px rgba(220,38,38,0.25);
+  font-family: inherit;
+}
+.cs-btn-danger:hover:not(:disabled) {
+  background: #b91c1c;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 16px rgba(220,38,38,0.35);
+}
+.cs-btn-danger:disabled { opacity: 0.65; cursor: not-allowed; }
+
 /* ─── Table card ───────────────────────────────── */
 .cs-card {
   background: #fff;
@@ -559,6 +757,16 @@ onMounted(fetchCashiers)
   color: #dc2626;
   border-color: #fecaca;
 }
+.cs-act-edit:hover {
+  background: rgba(0,123,255,0.08);
+  color: #007bff;
+  border-color: rgba(0,123,255,0.3);
+}
+.cs-act-del:hover {
+  background: #fef2f2;
+  color: #dc2626;
+  border-color: #fecaca;
+}
 
 /* ─── Empty ─────────────────────────────────────── */
 .cs-empty { text-align: center; padding: 3rem; }
@@ -627,6 +835,8 @@ onMounted(fetchCashiers)
   gap: 1rem;
 }
 
+.cs-modal-sm { max-width: 420px; }
+
 .cs-modal-icon-wrap {
   width: 48px;
   height: 48px;
@@ -637,6 +847,18 @@ onMounted(fetchCashiers)
   align-items: center;
   justify-content: center;
   flex-shrink: 0;
+}
+
+.cs-modal-icon-danger {
+  background: #fef2f2;
+  color: #dc2626;
+}
+
+.cs-confirm-text {
+  margin: 0;
+  font-size: 0.9rem;
+  line-height: 1.55;
+  color: #475569;
 }
 
 .cs-modal-title {

@@ -547,7 +547,18 @@
       "btn_create": "Yaratish",
       "created": "Yangi kassir qo'shildi",
       "create_error": "Kassir qo'shishda xatolik yuz berdi",
-      "fetch_error": "Kassirlarni yuklashda xatolik"
+      "fetch_error": "Kassirlarni yuklashda xatolik",
+      "edit": "Tahrirlash",
+      "edit_modal_title": "Kassir ma'lumotlarini tahrirlash",
+      "btn_save": "Saqlash",
+      "updated": "Kassir ma'lumotlari yangilandi",
+      "update_error": "Ma'lumotlarni yangilashda xatolik yuz berdi",
+      "delete": "O'chirish",
+      "delete_title": "Kassirni o'chirish",
+      "delete_text": "{name} o'chirilsinmi? Bu amalni ortga qaytarib bo'lmaydi.",
+      "btn_delete": "O'chirish",
+      "deleted": "Kassir o'chirildi",
+      "delete_error": "Kassirni o'chirishda xatolik yuz berdi"
     },
     "scales": {
       "title": "Tarozilarni boshqarish",
