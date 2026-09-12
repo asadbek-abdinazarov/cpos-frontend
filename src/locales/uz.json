@@ -27,15 +27,7 @@
       "margin": "Foyda marjasi",
       "chart_title": "Sotuvlar o'sishi",
       "legend": "Tushum",
-      "days": [
-        "Du",
-        "Se",
-        "Ch",
-        "Pa",
-        "Ju",
-        "Sh",
-        "Ya"
-      ],
+      "days": ["Du", "Se", "Ch", "Pa", "Ju", "Sh", "Ya"],
       "top_products": "Top mahsulotlar",
       "export": "Hisobot"
     },
@@ -184,11 +176,7 @@
         "name": "Boshlang'ich",
         "desc": "Endi ish boshlagan kichik do'konlar uchun.",
         "btn": "Boshlash",
-        "features": [
-          "1 Kassa",
-          "Asosiy hisobotlar",
-          "500 tagacha mahsulot"
-        ]
+        "features": ["1 Kassa", "Asosiy hisobotlar", "500 tagacha mahsulot"]
       },
       "growth": {
         "name": "O'sish",
@@ -460,7 +448,7 @@
       "batch_delete_success": "{count} ta mahsulot o'chirildi",
       "no_products": "Hozircha mahsulotlar yo'q",
       "import": {
-        "open": "Import",
+        "open": "Yuklash",
         "title": "Excel'dan import qilish",
         "subtitle": "Mahsulotlarni fayl orqali ommaviy qo'shing.",
         "template_btn": "Shablon",
@@ -590,7 +578,21 @@
       "details": "Mahsulotlar",
       "discount": "Chegirma",
       "paid": "To'langan",
-      "change": "Qaytim"
+      "change": "Qaytim",
+      "receipt_no": "Chek raqami",
+      "item_name": "Nomi",
+      "item_qty": "Soni",
+      "item_price": "Narxi",
+      "item_discount": "Chegirma",
+      "item_total": "Jami summa",
+      "subtotal": "Oraliq summa",
+      "line_discounts": "Qator chegirmalari",
+      "sale_discount": "Sotuv chegirmasi",
+      "grand_total": "Jami to'lov",
+      "cash_part": "Naqd summa",
+      "card_part": "Karta / Online summa",
+      "datetime": "Sana va vaqt",
+      "txn_id": "Tranzaksiya ID"
     },
     "settings": {
       "title": "Sozlamalar",

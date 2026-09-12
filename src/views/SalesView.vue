@@ -1,6 +1,5 @@
 <script setup>
 import { ref, watch, onMounted } from 'vue'
-import { useI18n } from 'vue-i18n'
 import { getSalesHistories } from '@/services/api'
 import { useDelayedLoading } from '@/composables/useDelayedLoading'
 import BasePagination from '@/components/dashboard/BasePagination.vue'
@@ -13,10 +12,7 @@ import {
   ChevronDown,
   ChevronUp,
   User,
-  Package,
 } from 'lucide-vue-next'
-
-const { t } = useI18n()
 
 const sales = ref([])
 const { loading, showSkeleton, startLoading, stopLoading } = useDelayedLoading()
@@ -85,7 +81,46 @@ const formatDate = (str) => {
 const formatCurrency = (amount) =>
   (amount || 0).toLocaleString('uz-UZ') + ' UZS'
 
-const shortUuid = (uuid) => uuid?.split('-')[0] ?? '—'
+const pad = (n, len) => String(n).padStart(len, '0')
+
+/** "12 000 so'm" — uzilmas probel bilan (desktop Money.format bilan bir xil). */
+const fmtMoney = (v) =>
+  new Intl.NumberFormat('ru-RU').format(Number(v) || 0).replace(/ /g, ' ') + " so'm"
+
+/** To'liq: dd.MM.yyyy, HH:mm */
+const fmtDateTime = (str) => {
+  if (!str) return '—'
+  const d = new Date(str)
+  return `${pad(d.getDate(), 2)}.${pad(d.getMonth() + 1, 2)}.${d.getFullYear()}, ` +
+         `${pad(d.getHours(), 2)}:${pad(d.getMinutes(), 2)}`
+}
+
+/**
+ * Chek raqami: backend bermagani uchun sana + tartib raqamdan yasaladi
+ * (yyyyMMdd-NNNN). Tartib sahifadagi mutlaq o'ringa bog'langan, shuning
+ * uchun sahifalar almashganda ham takrorlanmaydi. Faqat ko'rsatish uchun.
+ */
+const receiptNo = (sale, index) => {
+  if (sale.receiptNo) return sale.receiptNo
+  const d = new Date(sale.createdAt)
+  if (isNaN(d)) return '—'
+  const day = `${d.getFullYear()}${pad(d.getMonth() + 1, 2)}${pad(d.getDate(), 2)}`
+  const seq = (currentPage.value - 1) * itemsPerPage.value + index + 1
+  return `${day}-${pad(seq, 4)}`
+}
+
+const lineGross = (item) => (Number(item.price) || 0) * (Number(item.quantity) || 0)
+
+/** Qator chegirmasi: price×qty − total (backend qator chegirmasini alohida bermaydi). */
+const lineDiscount = (item) => Math.max(0, lineGross(item) - (Number(item.total) || 0))
+
+const subtotal = (sale) =>
+  (sale.items || []).reduce((s, it) => s + lineGross(it), 0)
+
+const itemsDiscount = (sale) =>
+  (sale.items || []).reduce((s, it) => s + lineDiscount(it), 0)
+
+const isMixed = (sale) => (sale.cashAmount ?? 0) > 0 && (sale.cardAmount ?? 0) > 0
 
 onMounted(fetchSales)
 </script>
@@ -171,7 +206,7 @@ onMounted(fetchSales)
             </template>
 
             <!-- Rows -->
-            <template v-else v-for="sale in sales" :key="sale.uuid">
+            <template v-else v-for="(sale, saleIndex) in sales" :key="sale.uuid">
               <tr
                 class="sl-row"
                 :class="{ 'sl-row--open': isExpanded(sale.uuid) }"
@@ -184,7 +219,7 @@ onMounted(fetchSales)
                   </div>
                 </td>
                 <td>
-                  <span class="sl-uuid">{{ shortUuid(sale.uuid) }}…</span>
+                  <span class="sl-receipt">{{ receiptNo(sale, saleIndex) }}</span>
                 </td>
                 <td>
                   <div class="sl-cashier">
@@ -223,52 +258,91 @@ onMounted(fetchSales)
               <!-- Expanded row -->
               <tr v-if="isExpanded(sale.uuid)" class="sl-expanded-row">
                 <td colspan="7" class="sl-expanded-cell">
-                  <div class="sl-expanded">
+                  <div class="sl-rc">
 
-                    <!-- Summary chips -->
-                    <div class="sl-summary-row">
-                      <div class="sl-summary-head">
-                        <Package :size="14" class="sl-row-ico" />
-                        {{ $t('dashboard.sales.details') }}
+                    <!-- Mahsulotlar jadvali -->
+                    <div class="sl-rc-items">
+                      <div class="sl-rc-ihead">
+                        <span class="sl-rc-c-name">{{ $t('dashboard.sales.item_name') }}</span>
+                        <span class="sl-rc-c-qty">{{ $t('dashboard.sales.item_qty') }}</span>
+                        <span class="sl-rc-c-price">{{ $t('dashboard.sales.item_price') }}</span>
+                        <span class="sl-rc-c-disc">{{ $t('dashboard.sales.item_discount') }}</span>
+                        <span class="sl-rc-c-total">{{ $t('dashboard.sales.item_total') }}</span>
                       </div>
-                      <div class="sl-summary-chips">
-                        <span v-if="sale.discountAmount > 0" class="sl-chip sl-chip-red">
-                          {{ $t('dashboard.sales.discount') }}: {{ formatCurrency(sale.discountAmount) }}
+                      <div v-for="item in sale.items" :key="item.uuid" class="sl-rc-irow">
+                        <span class="sl-rc-c-name sl-rc-iname">
+                          {{ item.name }}
+                          <span v-if="item.unit" class="sl-rc-unit">{{ item.unit }}</span>
                         </span>
-                        <span class="sl-chip sl-chip-green">
-                          {{ $t('dashboard.sales.paid') }}: {{ formatCurrency(sale.paidAmount) }}
+                        <span class="sl-rc-c-qty mono">{{ item.quantity }}</span>
+                        <span class="sl-rc-c-price mono">{{ fmtMoney(item.price) }}</span>
+                        <span class="sl-rc-c-disc mono">
+                          {{ lineDiscount(item) > 0 ? fmtMoney(lineDiscount(item)) : '—' }}
                         </span>
-                        <span v-if="sale.changeAmount > 0" class="sl-chip sl-chip-orange">
-                          {{ $t('dashboard.sales.change') }}: {{ formatCurrency(sale.changeAmount) }}
-                        </span>
+                        <span class="sl-rc-c-total mono sl-rc-itotal">{{ fmtMoney(item.total) }}</span>
                       </div>
                     </div>
 
-                    <!-- Items sub-table -->
-                    <div class="sl-items-wrap">
-                      <table class="sl-items-table">
-                        <thead>
-                          <tr>
-                            <th>{{ $t('dashboard.table.product') }}</th>
-                            <th>{{ $t('dashboard.table.code') }}</th>
-                            <th class="th-right">{{ $t('dashboard.table.qty_unit') }}</th>
-                            <th class="th-right">{{ $t('dashboard.table.price') }}</th>
-                            <th class="th-right">{{ $t('dashboard.table.line_total') }}</th>
-                          </tr>
-                        </thead>
-                        <tbody>
-                          <tr v-for="item in sale.items" :key="item.uuid" class="sl-item-row">
-                            <td class="sl-item-name">{{ item.name }}</td>
-                            <td class="sl-item-code">{{ item.code || '—' }}</td>
-                            <td class="td-right">
-                              {{ item.quantity }}
-                              <span class="sl-unit">{{ item.unit }}</span>
-                            </td>
-                            <td class="td-right">{{ formatCurrency(item.price) }}</td>
-                            <td class="td-right sl-item-total">{{ formatCurrency(item.total) }}</td>
-                          </tr>
-                        </tbody>
-                      </table>
+                    <div class="sl-rc-sep"></div>
+
+                    <!-- Summalar -->
+                    <div class="sl-rc-trow">
+                      <span class="sl-rc-tlabel">{{ $t('dashboard.sales.subtotal') }}</span>
+                      <span class="sl-rc-tvalue mono">{{ fmtMoney(subtotal(sale)) }}</span>
+                    </div>
+                    <div v-if="itemsDiscount(sale) > 0" class="sl-rc-trow">
+                      <span class="sl-rc-tlabel">{{ $t('dashboard.sales.line_discounts') }}</span>
+                      <span class="sl-rc-tvalue mono">−{{ fmtMoney(itemsDiscount(sale)) }}</span>
+                    </div>
+                    <div v-if="sale.discountAmount > 0" class="sl-rc-trow">
+                      <span class="sl-rc-tlabel">{{ $t('dashboard.sales.sale_discount') }}</span>
+                      <span class="sl-rc-tvalue mono">−{{ fmtMoney(sale.discountAmount) }}</span>
+                    </div>
+                    <div class="sl-rc-trow">
+                      <span class="sl-rc-tlabel-strong">{{ $t('dashboard.sales.grand_total') }}</span>
+                      <span class="sl-rc-tvalue-strong mono">{{ fmtMoney(sale.totalAmount) }}</span>
+                    </div>
+
+                    <!-- Aralash to'lov -->
+                    <template v-if="isMixed(sale)">
+                      <div class="sl-rc-sep"></div>
+                      <div class="sl-rc-mrow">
+                        <span class="sl-rc-mlabel">{{ $t('dashboard.sales.cash_part') }}</span>
+                        <span class="sl-rc-mvalue mono">{{ fmtMoney(sale.cashAmount) }}</span>
+                      </div>
+                      <div class="sl-rc-mrow">
+                        <span class="sl-rc-mlabel">{{ $t('dashboard.sales.card_part') }}</span>
+                        <span class="sl-rc-mvalue mono">{{ fmtMoney(sale.cardAmount) }}</span>
+                      </div>
+                    </template>
+
+                    <!-- To'langan / qaytim -->
+                    <template v-if="sale.paidAmount > 0 || sale.changeAmount > 0">
+                      <div class="sl-rc-sep"></div>
+                      <div v-if="sale.paidAmount > 0" class="sl-rc-mrow">
+                        <span class="sl-rc-mlabel">{{ $t('dashboard.sales.paid') }}</span>
+                        <span class="sl-rc-mvalue mono">{{ fmtMoney(sale.paidAmount) }}</span>
+                      </div>
+                      <div v-if="sale.changeAmount > 0" class="sl-rc-mrow">
+                        <span class="sl-rc-mlabel">{{ $t('dashboard.sales.change') }}</span>
+                        <span class="sl-rc-mvalue mono">{{ fmtMoney(sale.changeAmount) }}</span>
+                      </div>
+                    </template>
+
+                    <div class="sl-rc-sep"></div>
+
+                    <!-- Meta -->
+                    <div class="sl-rc-mrow">
+                      <span class="sl-rc-mlabel">{{ $t('dashboard.table.cashier') }}</span>
+                      <span class="sl-rc-mvalue">{{ sale.cashierName || '—' }}</span>
+                    </div>
+                    <div class="sl-rc-mrow">
+                      <span class="sl-rc-mlabel">{{ $t('dashboard.sales.datetime') }}</span>
+                      <span class="sl-rc-mvalue mono">{{ fmtDateTime(sale.createdAt) }}</span>
+                    </div>
+                    <div class="sl-rc-mrow">
+                      <span class="sl-rc-mlabel">{{ $t('dashboard.sales.txn_id') }}</span>
+                      <span class="sl-rc-mvalue sl-rc-uuid">{{ sale.uuid }}</span>
                     </div>
 
                   </div>
@@ -517,14 +591,16 @@ onMounted(fetchSales)
 .sl-chevron      { color: #94a3b8; }
 .sl-chevron-active { color: #007bff; }
 
-.sl-uuid {
+.sl-receipt {
   display: inline-block;
   padding: 0.2rem 0.5rem;
   background: #f1f5f9;
   border-radius: 6px;
-  font-size: 0.78rem;
-  font-family: ui-monospace, monospace;
-  color: #475569;
+  font-size: 0.8rem;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  color: #0f172a;
+  white-space: nowrap;
 }
 
 .sl-cashier {
@@ -596,81 +672,6 @@ onMounted(fetchSales)
   border-left: 3px solid #007bff;
 }
 
-.sl-summary-row {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  flex-wrap: wrap;
-  gap: 0.75rem;
-  margin-bottom: 1rem;
-}
-
-.sl-summary-head {
-  display: flex;
-  align-items: center;
-  gap: 0.4rem;
-  font-size: 0.82rem;
-  font-weight: 700;
-  color: #0f172a;
-}
-
-.sl-summary-chips {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  flex-wrap: wrap;
-}
-
-.sl-chip {
-  padding: 0.22rem 0.65rem;
-  border-radius: 100px;
-  font-size: 0.75rem;
-  font-weight: 600;
-}
-.sl-chip-green  { background: rgba(16,185,129,0.1);  color: #059669; border: 1px solid rgba(16,185,129,0.2); }
-.sl-chip-red    { background: rgba(239,68,68,0.08);   color: #dc2626; border: 1px solid rgba(239,68,68,0.2); }
-.sl-chip-orange { background: rgba(249,115,22,0.08);  color: #ea580c; border: 1px solid rgba(249,115,22,0.2); }
-
-/* ─── Items sub-table ──────────────────────────── */
-.sl-items-wrap {
-  border: 1px solid #e2e8f0;
-  border-radius: 10px;
-  overflow: hidden;
-}
-
-.sl-items-table {
-  width: 100%;
-  border-collapse: collapse;
-}
-
-.sl-items-table th {
-  background: #f8fafc;
-  padding: 0.6rem 1rem;
-  font-size: 0.68rem;
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.07em;
-  color: #64748b;
-  text-align: left;
-  border-bottom: 1px solid #e2e8f0;
-}
-
-.sl-items-table td {
-  padding: 0.65rem 1rem;
-  font-size: 0.85rem;
-  color: #334155;
-  border-bottom: 1px solid #f1f5f9;
-  vertical-align: middle;
-}
-
-.sl-item-row:last-child td { border-bottom: none; }
-.sl-item-row:hover td { background: #fff; }
-
-.sl-item-name  { font-weight: 600; color: #0f172a; }
-.sl-item-code  { font-family: ui-monospace, monospace; font-size: 0.75rem; color: #94a3b8; }
-.sl-item-total { font-weight: 700; color: #0f172a; }
-.sl-unit       { font-size: 0.72rem; color: #94a3b8; margin-left: 2px; }
-
 /* ─── Empty ─────────────────────────────────────── */
 .sl-empty { text-align: center; padding: 3rem; }
 .sl-empty-inner {
@@ -706,6 +707,91 @@ onMounted(fetchSales)
 .skel-toggle { width: 24px; height: 24px; border-radius: 6px; }
 .skel-badge  { width: 80px; height: 20px; border-radius: 100px; }
 
+/* ─── Chek tafsiloti (receipt card) ─────────────── */
+.mono { font-variant-numeric: tabular-nums; }
+
+.sl-rc {
+  padding: 0 0.75rem 0.75rem;
+}
+
+/* Mahsulotlar jadvali — grid: nomi o'sadi, qolganlari qat'iy */
+.sl-rc-ihead,
+.sl-rc-irow {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 70px 110px 90px 120px;
+  gap: 0.75rem;
+  align-items: baseline;
+  padding: 4px 0;
+}
+
+.sl-rc-ihead {
+  font-size: 11.5px;
+  font-weight: 700;
+  color: #94a3b8;
+}
+
+.sl-rc-irow {
+  font-size: 13px;
+  color: #334155;
+}
+
+.sl-rc-c-qty,
+.sl-rc-c-price,
+.sl-rc-c-disc,
+.sl-rc-c-total { text-align: right; }
+
+.sl-rc-c-name { min-width: 0; overflow-wrap: anywhere; }
+
+.sl-rc-iname {
+  font-weight: 600;
+  color: #0f172a;
+}
+
+.sl-rc-unit {
+  font-size: 0.72rem;
+  font-weight: 500;
+  color: #94a3b8;
+  margin-left: 4px;
+}
+
+.sl-rc-itotal {
+  font-weight: 700;
+  color: #0f172a;
+}
+
+/* Ajratuvchi */
+.sl-rc-sep {
+  height: 1px;
+  background: #e2e8f0;
+  margin: 0.5rem 0;
+}
+
+/* Summalar */
+.sl-rc-trow,
+.sl-rc-mrow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 3px 0;
+}
+
+.sl-rc-tlabel { font-size: 13px; color: #64748b; }
+.sl-rc-tvalue { font-size: 13px; color: #334155; }
+
+.sl-rc-tlabel-strong { font-size: 14.5px; font-weight: 700; color: #0f172a; }
+.sl-rc-tvalue-strong { font-size: 14.5px; font-weight: 800; color: #007bff; }
+
+/* Meta qatorlari */
+.sl-rc-mlabel { font-size: 12px; color: #94a3b8; }
+.sl-rc-mvalue { font-size: 12px; color: #64748b; text-align: right; }
+
+.sl-rc-uuid {
+  font-family: ui-monospace, monospace;
+  font-size: 11.5px;
+  overflow-wrap: anywhere;
+}
+
 /* ─── Responsive ────────────────────────────────── */
 @media (max-width: 768px) {
   .sl-hero     { padding: 1.25rem; }
@@ -713,8 +799,20 @@ onMounted(fetchSales)
   .sl-toolbar  { flex-direction: column; align-items: stretch; }
   .sl-search-wrap { flex-direction: column; }
   .sl-search-btn  { width: 100%; justify-content: center; text-align: center; }
-  .sl-summary-row { flex-direction: column; align-items: flex-start; }
   .sl-table th,
   .sl-table td  { padding: 0.7rem 0.85rem; }
+
+  /* Jadval ustunlari torayadi: Chegirma ustuni yashiriladi */
+  .sl-rc-ihead,
+  .sl-rc-irow {
+    grid-template-columns: minmax(0, 1fr) 48px 84px;
+    gap: 0.5rem;
+    font-size: 12.5px;
+  }
+  .sl-rc-c-price,
+  .sl-rc-c-disc { display: none; }
+
+  .sl-rc-mrow { align-items: flex-start; }
+  .sl-rc-mvalue { max-width: 60%; }
 }
 </style>

@@ -9,7 +9,12 @@
       "Bash(grep -o '$t\\('\\\\''[^'\\\\'']*'\\\\''' src/components/dashboard/ProductImportModal.vue)",
       "Bash(grep -v \":0$\")",
       "Bash(sort -t: -k2 -rn)",
-      "Bash(grep -rnE \"^\\\\s*\\\\.\\(chip|tbl|muted|mono|spread|btn-ghost|card\\)[\\\\s,{:.]\" src/)"
+      "Bash(grep -rnE \"^\\\\s*\\\\.\\(chip|tbl|muted|mono|spread|btn-ghost|card\\)[\\\\s,{:.]\" src/)",
+      "Bash(npx vite *)",
+      "Bash(grep -n \"useI18n\\\\|const { t }\\\\|[^\\\\$]\\\\bt\\(\" src/views/SalesView.vue)",
+      "Bash(grep -c '\\\\$t\\(' src/views/SalesView.vue)",
+      "Bash(pkill -f \"vite preview --port 4173\")",
+      "Bash(curl -s -o /dev/null -m 2 -w \"%{http_code}\" http://localhost:4173/)"
     ]
   }
 }
