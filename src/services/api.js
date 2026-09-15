@@ -133,6 +133,32 @@ function isAuthEndpoint(url) {
   )
 }
 
+/**
+ * Backend xato javobidan foydalanuvchiga ko'rsatiladigan matnni tanlaydi.
+ *
+ * Javob shakli: { errorCode: "error.auth.phone_exists", message: "Bu telefon
+ * raqami allaqachon mavjud" }. `errorCode` uchun tarjima bo'lsa — o'sha
+ * ishlatiladi (til almashganda ham to'g'ri chiqadi), aks holda backend
+ * yuborgan `message` ko'rsatiladi. `message` ni to'g'ridan-to'g'ri t() ga
+ * berib bo'lmaydi: u kalit emas, tayyor matn — ichidagi nuqta va @ belgilarini
+ * vue-i18n maxsus sintaksis deb o'qib, matnni buzadi.
+ */
+export function resolveErrorMessage(data, fallback = '') {
+  if (!data || typeof data !== 'object') return fallback
+
+  const code = data.errorCode
+  if (typeof code === 'string' && code && i18n.global.te(code)) {
+    return t(code)
+  }
+
+  return data.message || fallback
+}
+
+/** Axios xatosidan matn chiqaradi (tarmoq uzilgan holat ham qamrab olinadi). */
+export function getErrorMessage(error, fallback = '') {
+  return resolveErrorMessage(error?.response?.data, fallback || error?.message || '')
+}
+
 api.interceptors.response.use(
   (response) => response,
   async (error) => {
@@ -202,8 +228,7 @@ api.interceptors.response.use(
       if (error.response && error.response.data) {
         const data = error.response.data
         if (data.message && data.message !== 'Validation Failed') {
-          const translated = t(data.message)
-          showNotification({ type: 'error', message: translated })
+          showNotification({ type: 'error', message: resolveErrorMessage(data) })
         }
         if (data.errors && typeof data.errors === 'object') {
           Object.values(data.errors).forEach((errText) => {
@@ -384,24 +409,27 @@ export function generateSku() {
   return api.get('web/products/generate-sku')
 }
 
+// Kassir amallari xatoni o'zlari ko'rsatadi (getErrorMessage bilan), shuning
+// uchun global interceptor toast'i o'chirilgan — aks holda har xatoda ikkita
+// bildirishnoma chiqadi va ikkinchisi birinchisini almashtiradi.
 export function getCashiers(params) {
-  return api.get('web/cashiers', { params })
+  return api.get('web/cashiers', { params, skipGlobalError: true })
 }
 
 export function createCashier(data) {
-  return api.post('web/cashiers', data)
+  return api.post('web/cashiers', data, { skipGlobalError: true })
 }
 
 export function updateCashier(id, data) {
-  return api.put(`web/cashiers/${id}`, data)
+  return api.put(`web/cashiers/${id}`, data, { skipGlobalError: true })
 }
 
 export function deleteCashier(id) {
-  return api.delete(`web/cashiers/${id}`)
+  return api.delete(`web/cashiers/${id}`, { skipGlobalError: true })
 }
 
 export function toggleCashierStatus(id) {
-  return api.patch(`web/cashiers/${id}/toggle-status`)
+  return api.patch(`web/cashiers/${id}/toggle-status`, null, { skipGlobalError: true })
 }
 
 export function sendPublicContactRequest(payload) {

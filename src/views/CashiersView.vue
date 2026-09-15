@@ -17,6 +17,7 @@ import {
   updateCashier,
   deleteCashier,
   toggleCashierStatus,
+  getErrorMessage,
 } from '@/services/api'
 import { useNotification } from '@/composables/useNotification'
 import { useI18n } from 'vue-i18n'
@@ -44,8 +45,11 @@ const fetchCashiers = async () => {
       totalPages.value = res.data.data.page.totalPages === 0 ? 1 : res.data.data.page.totalPages
       totalElements.value = res.data.data.page.totalElements
     }
-  } catch {
-    showNotification({ type: 'error', message: t('dashboard.cashiers.fetch_error') })
+  } catch (err) {
+    showNotification({
+      type: 'error',
+      message: getErrorMessage(err, t('dashboard.cashiers.fetch_error')),
+    })
   } finally {
     stopLoading()
   }
@@ -74,8 +78,11 @@ const handleToggleStatus = async (cashier) => {
         }),
       })
     }
-  } catch {
-    showNotification({ type: 'error', message: t('dashboard.cashiers.toggle_error') })
+  } catch (err) {
+    showNotification({
+      type: 'error',
+      message: getErrorMessage(err, t('dashboard.cashiers.toggle_error')),
+    })
   }
 }
 
@@ -99,8 +106,11 @@ const handleCreateCashier = async () => {
       currentPage.value = 1
       await fetchCashiers()
     }
-  } catch {
-    showNotification({ type: 'error', message: t('dashboard.cashiers.create_error') })
+  } catch (err) {
+    showNotification({
+      type: 'error',
+      message: getErrorMessage(err, t('dashboard.cashiers.create_error')),
+    })
   } finally {
     isSubmitting.value = false
   }
@@ -133,8 +143,11 @@ const handleUpdateCashier = async () => {
       closeEditModal()
       await fetchCashiers()
     }
-  } catch {
-    showNotification({ type: 'error', message: t('dashboard.cashiers.update_error') })
+  } catch (err) {
+    showNotification({
+      type: 'error',
+      message: getErrorMessage(err, t('dashboard.cashiers.update_error')),
+    })
   } finally {
     isUpdating.value = false
   }
@@ -163,8 +176,11 @@ const handleDeleteCashier = async () => {
       if (cashiers.value.length === 1 && currentPage.value > 1) currentPage.value--
       await fetchCashiers()
     }
-  } catch {
-    showNotification({ type: 'error', message: t('dashboard.cashiers.delete_error') })
+  } catch (err) {
+    showNotification({
+      type: 'error',
+      message: getErrorMessage(err, t('dashboard.cashiers.delete_error')),
+    })
   } finally {
     isDeleting.value = false
   }
