@@ -89,8 +89,19 @@ jobs:
 
             # GHCR login faqat token berilgan bo'lsa. Image public bo'lsa
             # login umuman kerak emas.
+            #
+            # DIQQAT: login xatosi deploy'ni TO'XTATMAYDI. Token eskirgan yoki
+            # read:packages huquqi yo'q bo'lsa ("denied: denied"), public image
+            # baribir anonim tortiladi. Aks holda script_stop: true butun
+            # deploy'ni shu yerda o'ldiradi.
             if [ -n "$GHCR_TOKEN" ]; then
-              echo "$GHCR_TOKEN" | docker login ghcr.io -u "$GHCR_USER" --password-stdin
+              if echo "$GHCR_TOKEN" | docker login ghcr.io -u "$GHCR_USER" --password-stdin; then
+                echo "GHCR login muvaffaqiyatli."
+              else
+                echo "OGOHLANTIRISH: GHCR login muvaffaqiyatsiz (token eskirgan yoki"
+                echo "read:packages huquqi yo'q). Anonim pull bilan davom etilmoqda."
+                docker logout ghcr.io || true
+              fi
             else
               echo "GHCR_TOKEN yo'q — login o'tkazib yuborildi (public image)."
             fi
