@@ -1,9 +1,26 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"
+        xmlns:xhtml="http://www.w3.org/1999/xhtml">
   <url>
     <loc>https://cpos.uz/</loc>
-    <lastmod>2026-09-17</lastmod>
+    <xhtml:link rel="alternate" hreflang="uz-Latn-UZ" href="https://cpos.uz/?lang=uz"/>
+    <xhtml:link rel="alternate" hreflang="uz-Cyrl-UZ" href="https://cpos.uz/?lang=oz"/>
+    <xhtml:link rel="alternate" hreflang="ru-UZ" href="https://cpos.uz/?lang=ru"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://cpos.uz/"/>
+    <lastmod>2026-09-19</lastmod>
     <changefreq>weekly</changefreq>
     <priority>1.0</priority>
+  </url>
+  <url>
+    <loc>https://cpos.uz/privacy</loc>
+    <lastmod>2026-09-19</lastmod>
+    <changefreq>yearly</changefreq>
+    <priority>0.3</priority>
+  </url>
+  <url>
+    <loc>https://cpos.uz/terms</loc>
+    <lastmod>2026-09-19</lastmod>
+    <changefreq>yearly</changefreq>
+    <priority>0.3</priority>
   </url>
 </urlset>

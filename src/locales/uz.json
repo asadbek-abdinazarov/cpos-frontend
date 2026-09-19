@@ -27,7 +27,15 @@
       "margin": "Foyda marjasi",
       "chart_title": "Sotuvlar o'sishi",
       "legend": "Tushum",
-      "days": ["Du", "Se", "Ch", "Pa", "Ju", "Sh", "Ya"],
+      "days": [
+        "Du",
+        "Se",
+        "Ch",
+        "Pa",
+        "Ju",
+        "Sh",
+        "Ya"
+      ],
       "top_products": "Top mahsulotlar",
       "export": "Hisobot"
     },
@@ -176,7 +184,11 @@
         "name": "Boshlang'ich",
         "desc": "Endi ish boshlagan kichik do'konlar uchun.",
         "btn": "Boshlash",
-        "features": ["1 Kassa", "Asosiy hisobotlar", "500 tagacha mahsulot"]
+        "features": [
+          "1 Kassa",
+          "Asosiy hisobotlar",
+          "500 tagacha mahsulot"
+        ]
       },
       "growth": {
         "name": "O'sish",
@@ -891,5 +903,21 @@
         "items": []
       }
     ]
+  },
+  "seo": {
+    "home": {
+      "title": "CPOS — Savdoni avtomatlashtirish va kassa dasturi | Bulutli POS tizimi",
+      "description": "CPOS — do'kon va xizmat ko'rsatish biznesi uchun bulutli kassa dasturi. Sotuvni avtomatlashtirish, ombor va qoldiq nazorati, savdo hisobotlari, kassirlar nazorati hamda mijozlar bazasi (CRM) yagona tizimda.",
+      "keywords": "savdoni avtomatlashtirish, sotuvni avtomatlashtirish, kassa dasturi, POS tizimi, do'kon dasturi, ombor dasturi, savdo hisoboti, mahsulot hisobi, biznes avtomatlashtirish, onlayn kassa, kassirlar nazorati, CRM, O'zbekiston",
+      "og_description": "Sotuvni avtomatlashtirish, ombor nazorati, savdo hisobotlari va CRM bitta bulutli tizimda. Oflayn rejimda ham ishlaydi."
+    },
+    "login": {
+      "title": "Tizimga kirish"
+    },
+    "about": {
+      "title": "CPOS haqida",
+      "description": "CPOS — O'zbekiston bizneslari uchun yaratilgan bulutli savdo avtomatlashtirish tizimi."
+    },
+    "og_alt": "CPOS — savdoni avtomatlashtirish tizimi"
   }
 }

@@ -1,7 +1,14 @@
 <script setup>
+import { watch } from 'vue'
 import { RouterView } from 'vue-router'
+import { useI18n } from 'vue-i18n'
 import AppNotification from '@/components/AppNotification.vue'
 import { isLoading } from '@/composables/useAppLoader'
+import { persistLocale } from '@/i18n'
+
+// Tanlangan til qayta tashrifda ham saqlanib qolsin
+const { locale } = useI18n()
+watch(locale, persistLocale, { immediate: true })
 </script>
 
 <template>

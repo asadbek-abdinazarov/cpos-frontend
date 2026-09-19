@@ -5,9 +5,16 @@ import { useI18n } from 'vue-i18n'
 import { login } from '@/services/api'
 import { useNotification } from '@/composables/useNotification'
 import { enterDashboard } from '@/composables/useAppLoader'
+import { useSeo } from '@/composables/useSeo'
 import { Eye, EyeOff } from 'lucide-vue-next'
 
 const { t } = useI18n()
+
+useSeo({
+  path: '/login',
+  title: () => `CPOS — ${t('seo.login.title')}`,
+  noindex: true,
+})
 const router = useRouter()
 const { showNotification } = useNotification()
 const username = ref('')
@@ -81,7 +88,6 @@ const onVisibilityChange = () => {
 }
 
 onMounted(() => {
-  document.title = `CPOS - ${t('nav.login')}`
   if (!prefersReducedMotion()) ledgerTimer = setInterval(tickLedger, 1500)
   document.addEventListener('visibilitychange', onVisibilityChange)
 })

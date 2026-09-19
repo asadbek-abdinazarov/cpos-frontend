@@ -1,7 +1,9 @@
 <script setup>
 import { onMounted, nextTick } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
+import { useI18n } from 'vue-i18n'
 import { scrollToSectionId } from '@/composables/useHomeSectionNav'
+import { useSeo } from '@/composables/useSeo'
 import NavBar from '../components/NavBar.vue'
 import HeroSection from '../components/HeroSection.vue'
 import StatsSection from '../components/StatsSection.vue'
@@ -16,6 +18,15 @@ import Footer from '../components/Footer.vue'
 
 const route = useRoute()
 const router = useRouter()
+const { t } = useI18n()
+
+useSeo({
+  path: '/',
+  title: () => t('seo.home.title'),
+  description: () => t('seo.home.description'),
+  keywords: () => t('seo.home.keywords'),
+  ogDescription: () => t('seo.home.og_description'),
+})
 
 function scrollFromQueryIfPresent() {
   const section = route.query.section
@@ -29,8 +40,6 @@ function scrollFromQueryIfPresent() {
 }
 
 onMounted(async () => {
-  document.title = 'CPOS - Smart POS for Retail & Services'
-
   const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches
   if (!prefersReducedMotion) {
     await import('aos/dist/aos.css')

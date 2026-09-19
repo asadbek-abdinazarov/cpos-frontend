@@ -1,11 +1,12 @@
 <script setup>
-import { computed, onMounted, watch } from 'vue'
+import { computed } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useRouter } from 'vue-router'
 import { ArrowLeft, Mail } from 'lucide-vue-next'
 import NavBar from '@/components/NavBar.vue'
 import Footer from '@/components/Footer.vue'
 import { goToHomeSection } from '@/composables/useHomeSectionNav'
+import { useSeo } from '@/composables/useSeo'
 
 const props = defineProps({
   /** Qaysi hujjat ko'rsatiladi: locale'dagi ildiz kalit */
@@ -32,9 +33,11 @@ const updatedLabel = computed(() =>
   }).format(new Date(UPDATED_AT)),
 )
 
-const setTitle = () => {
-  document.title = `${t(`${props.docKey}.title`)} — CPOS`
-}
+useSeo({
+  path: `/${props.docKey}`,
+  title: () => `${t(`${props.docKey}.title`)} — CPOS`,
+  description: () => t(`${props.docKey}.subtitle`),
+})
 
 const goContact = () => goToHomeSection(router, 'contact')
 
@@ -46,8 +49,6 @@ const scrollTo = (i) => {
   window.scrollTo({ top, behavior: 'smooth' })
 }
 
-onMounted(setTitle)
-watch(locale, setTitle)
 </script>
 
 <template>
